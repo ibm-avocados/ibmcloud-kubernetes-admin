@@ -5,6 +5,7 @@ package ibmcloud
 import (
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 	"net/url"
 	"time"
@@ -95,7 +96,9 @@ func getToken(endpoint string, otp string) (*Token, error) {
 
 	result := Token{}
 	err := postForm(endpoint, header, form, &result)
+
 	if err != nil {
+		log.Println("error in post form")
 		return nil, err
 	}
 

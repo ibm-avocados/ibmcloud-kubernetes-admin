@@ -1,6 +1,7 @@
 package ibmcloud
 
 import (
+	"fmt"
 	"log"
 	"time"
 )
@@ -47,8 +48,10 @@ func (s *Session) GetAccounts() (*Accounts, error) {
 
 func (s *Session) IsValid() bool {
 	now := time.Now().Unix()
-	difference := now - int64(s.Token.Expiration)
-	return difference < (int64(s.Token.ExpiresIn) - 100) // expires in 3600 second. keeping 100 second buffer
+	fmt.Println(now)
+	difference := int64(s.Token.Expiration) - now
+	fmt.Println("difference:", difference)
+	return difference > 100 // expires in 3600 second. keeping 100 second buffer
 }
 
 func (s *Session) getAccountsWithEndpoint(nextURL *string) (*Accounts, error) {

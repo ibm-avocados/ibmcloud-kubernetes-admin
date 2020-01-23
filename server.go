@@ -13,6 +13,7 @@ func main() {
 	api.HandleFunc("/identity-endpoints", tokenEndpointHandler).Methods(http.MethodGet)
 	api.HandleFunc("/authenticate", authenticationHandler).Methods(http.MethodPost)
 	api.HandleFunc("/accounts", accountListHandler).Methods(http.MethodGet)
+	api.HandleFunc("/login", loginHandler).Methods(http.MethodGet)
 
 	r.HandleFunc("/", notFoundHandler)
 

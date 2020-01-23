@@ -45,7 +45,59 @@ func tokenEndpointHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func authenticationWithAccountHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Content-Type", "application/json")
 
+	session, err := store.Get(r, sessionID)
+
+	if err != nil {
+		handleError(w, http.StatusInternalServerError, "could not get session", err.Error())
+		return
+	}
+
+	cloudSession, err := getCloudSessions(r, session)
+	if err != nil {
+		handleError(w, http.StatusNotFound, "could not get session", err.Error())
+		return
+	}
+
+	if !cloudSession.IsValid() {
+		handleError(w, http.StatusUnauthorized, "session not valid")
+		return
+	}
+
+	session.Options = &sessions.Options{
+		MaxAge: 3600 * 60 * 24,
+	}
+
+	var account ibmcloud.Account
+	decoder := json.NewDecoder(r.Body)
+	err = decoder.Decode(&account)
+	if err != nil {
+		handleError(w, http.StatusInternalServerError, "could not decode", err.Error())
+		return
+	}
+
+	accountID := account.Metadata.GUID
+
+	fmt.Println(accountID)
+
+	accountSession, err := cloudSession.BindAccountToToken(account)
+	if err != nil {
+		handleError(w, http.StatusInternalServerError, "could not bind account to token", err.Error())
+		return
+	}
+
+	session.Values[sessionName] = accountSession
+
+	err = sessions.Save(r, w)
+
+	if err != nil {
+		handleError(w, http.StatusInternalServerError, "could not save session", err.Error())
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintln(w, statusOkMessage)
 }
 
 func authenticationHandler(w http.ResponseWriter, r *http.Request) {
@@ -72,6 +124,7 @@ func authenticationHandler(w http.ResponseWriter, r *http.Request) {
 
 	otp := fmt.Sprintf("%v", body["otp"])
 
+	fmt.Println(otp)
 	cloudSession, err := ibmcloud.Authenticate(otp)
 	if err != nil {
 		log.Println("could not authenticate with the otp provided")
@@ -93,15 +146,21 @@ func authenticationHandler(w http.ResponseWriter, r *http.Request) {
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "application/json")
+	session, err := store.Get(r, sessionID)
 
-	cloudSession, err := getCloudSessions(r)
+	if err != nil {
+		handleError(w, http.StatusInternalServerError, "could not get session", err.Error())
+		return
+	}
+	cloudSession, err := getCloudSessions(r, session)
 	if err != nil {
 		handleError(w, http.StatusNotFound, "could not get session", err.Error())
 		return
 	}
+	fmt.Println(cloudSession.Token.Expiration)
 
 	if !cloudSession.IsValid() {
-		handleError(w, http.StatusUnauthorized, "session not valid")
+		handleError(w, http.StatusUnauthorized, "session expired")
 		return
 	}
 
@@ -110,7 +169,13 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func accountListHandler(w http.ResponseWriter, r *http.Request) {
-	cloudSession, err := getCloudSessions(r)
+	session, err := store.Get(r, sessionID)
+
+	if err != nil {
+		handleError(w, http.StatusInternalServerError, "could not get session", err.Error())
+		return
+	}
+	cloudSession, err := getCloudSessions(r, session)
 	if err != nil {
 		handleError(w, http.StatusNotFound, "could not get session", err.Error())
 		return
@@ -131,11 +196,7 @@ func handleError(w http.ResponseWriter, code int, message ...string) {
 	fmt.Fprintln(w, fmt.Sprintf(errorMessageFormat, strings.Join(message, " ")))
 }
 
-func getCloudSessions(r *http.Request) (*ibmcloud.Session, error) {
-	session, err := store.Get(r, sessionID)
-	if err != nil {
-		return nil, err
-	}
+func getCloudSessions(r *http.Request, session *sessions.Session) (*ibmcloud.Session, error) {
 	val := session.Values[sessionName]
 	var cloudSession *ibmcloud.Session
 	var ok bool
