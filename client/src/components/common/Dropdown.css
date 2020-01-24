@@ -1,0 +1,42 @@
+.bx--dropdown__wrapper {
+  margin-left: auto;
+}
+
+.bx--dropdown {
+  max-height: none;
+  height: 4rem;
+  background-color: var(--ui-05);
+}
+
+.bx--dropdown:hover {
+  background-color: var(--ui-04);
+}
+
+.bx--list-box__menu{
+  max-height: 20rem;
+}
+
+.bx--list-box__menu-icon > svg{
+  fill: var(--ui-01);
+}
+
+.bx--list-box__menu-item {
+  display: flex;
+  align-items: center;
+  background-color: var(--ui-05);
+  height: 4rem;
+}
+
+.bx--list-box__menu-item__option {
+  color: var(--text-04);
+  border-top: 0;
+}
+
+.bx--list-box__menu-item--highlighted {
+  color: var(--text-02);
+  background-color: var(--ui-03);
+}
+
+.bx--list-box__label {
+  color: var(--text-04);
+}

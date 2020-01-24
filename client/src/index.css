@@ -1,0 +1,86 @@
+body {
+  margin: 0;
+  font-family: "ibm-plex-sans", Helvetica Neue, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 16px;
+  background-color: var(--ui-background);
+}
+
+body.light {
+  --ui-background: #ffffff;
+  --interactive-01: #0f62fe;
+  --interactive-02: #393939;
+  --interactive-03: #0f62fe;
+  --interactive-04: #0f62fe;
+  --danger: #da1e28;
+  --ui-01: #f4f4f4;
+  --ui-02: #ffffff;
+  --ui-03: #e0e0e0;
+  --ui-04: #8d8d8d;
+  --ui-05: #161616;
+  --text-01: #161616;
+  --text-02: #393939;
+  --text-03: #a8a8a8;
+  --text-04: #ffffff;
+  --text-05: #6f6f6f;
+  --link-01: #0f62fe;
+  --inverse-link: #78a9ff;
+  --icon-01: #161616;
+  --icon-02: #525252;
+  --icon-03: #ffffff;
+  --field-01: #f4f4f4;
+  --field-02: #ffffff;
+  --inverse-01: #ffffff;
+  --inverse-02: #393939;
+  --support-01: #da1e28;
+  --support-02: #24a148;
+  --support-03: #f1c21b;
+  --support-04: #0043ce;
+  --inverse-support-01: #fa4d56;
+  --inverse-support-02: #42be65;
+  --inverse-support-03: #f1c21b;  
+  --inverse-support-04: #4589ff;
+  --overlay-01: #16161688;
+}
+
+body.dark {
+  --ui-background: #161616;
+  --interactive-01: #0f62fe;
+  --interactive-02: #6f6f6f;
+  --interactive-03: #ffffff;
+  --interactive-04: #4589ff;
+  --danger: #da1e28;
+  --ui-01: #262626;
+  --ui-02: #393939;
+  --ui-03: #393939;
+  --ui-04: #6f6f6f;
+  --ui-05: #f4f4f4;
+  --text-01: #f4f4f4;
+  --text-02: #c6c6c6;
+  --text-03: #6f6f6f;
+  --text-04: #ffffff;
+  --text-05: #8d8d8d;
+  --link-01: #78a9ff;
+  --inverse-link: #0f62fe;
+  --icon-01: #f4f4f4;
+  --icon-02: #c6c6c6;
+  --icon-03: #ffffff;
+  --field-01: #262626;
+  --field-02: #393939;
+  --inverse-01: #161616;
+  --inverse-02: #f4f4f4;
+  --support-01: #fa4d56;
+  --support-02: #42be65;
+  --support-03: #f1c21b;
+  --support-04: #4589ff;
+  --inverse-support-01: #da1e28;
+  --inverse-support-02: #24a148;
+  --inverse-support-03: #f1c21b;
+  --inverse-support-04: #0043ce;
+  --overlay-01: #16161688;
+}
+
+* {
+  box-sizing: border-box;
+}

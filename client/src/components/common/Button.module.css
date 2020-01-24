@@ -1,0 +1,8 @@
+.button {
+  font-size: 1rem;
+  font-weight: 400;
+  background: var(--interactive-01);
+  border: none;
+  padding: 1rem;
+  color: var(--text-04);
+}

@@ -1,0 +1,26 @@
+.status {
+  height: .75rem;
+  width: .75rem;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: .5rem;
+}
+
+.normal {
+  background-color: #5BA703;
+}
+
+.warning {
+  background-color: #EFC003;
+}
+
+.oneline {
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.logo-image {
+  width: 1rem;
+  height: 1rem;
+  margin-right: .25rem;
+}

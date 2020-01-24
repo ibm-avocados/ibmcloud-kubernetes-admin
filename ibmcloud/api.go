@@ -203,10 +203,8 @@ func getClusters(token string, location string) ([]*Cluster, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("Looking for tags")
 
 	var wg = sync.WaitGroup{}
-	defer TimeTaken(time.Now(), "get clusters")
 
 	for _, cluster := range result {
 		wg.Add(1)
@@ -219,21 +217,12 @@ func getClusters(token string, location string) ([]*Cluster, error) {
 			}
 			wg.Done()
 		}(cluster)
-
-		// tags, err := getTags(token, cluster.Crn)
-		// if err != nil {
-		// 	fmt.Println("error in getting tags", err)
-		// } else {
-		// 	cluster.Tags = tags.Items
-		// }
-
 	}
 	wg.Wait()
 	return result, nil
-
 }
 
-func TimeTaken(t time.Time, name string) {
+func timeTaken(t time.Time, name string) {
 	elapsed := time.Since(t)
 	log.Printf("TIME: %s took %s\n", name, elapsed)
 }
@@ -255,3 +244,5 @@ func getTags(token string, crn string) (*Tags, error) {
 	}
 	return &result, nil
 }
+
+func setTags(token string, crn string)

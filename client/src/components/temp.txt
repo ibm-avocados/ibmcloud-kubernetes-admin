@@ -1,0 +1,43 @@
+import React from "react";
+
+class Login extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { value: "" };
+
+    this.handleChange = this.handleChange.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
+  }
+
+  handleChange(event) {
+    this.setState({ value: event.target.value });
+    console.log(this.state.value);
+  }
+
+  async handleSubmit(event) {
+    event.preventDefault();
+    let body = { 
+      otp: this.state.value
+    };
+    let response = await fetch("/api/v1/authenticate", {
+      method: 'POST',
+      body: JSON.stringify(body)
+    });
+    let responseJson = await response.json();
+    console.log(responseJson);
+  }
+
+  render() {
+    return (
+      <form onSubmit={this.handleSubmit}>
+        <input
+          type="text"
+          value={this.state.value}
+          onChange={this.handleChange}
+        />
+        <input type="submit" value="Submit" />
+      </form>
+    );
+  }
+}
+export default Login;
