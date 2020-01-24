@@ -21,42 +21,24 @@ const {
   TableBatchAction
 } = DataTable;
 
-// We would have a headers array like the following
-const headers = [
-  {
-    key: "name",
-    header: "Name"
-  },
-  {
-    key: "state",
-    header: "State"
-  },
-  {
-    key: "masterKubeVersion",
-    header: "Master Version"
-  },
-  {
-    // `key` is the name of the field on the row object itself for the header
-    key: "location",
-    // `header` will be the name you want rendered in the Table Header
-    header: "Location"
-  },
-  {
-    key: "dataCenter",
-    header: "Data Center"
-  },
-  {
-    key: "workerCount",
-    header: "Worker Count"
-  },
-  {
-    key: "crn",
-    header: "Crn"
+var data={};
+
+const getClusterData = (data) => {
+  var obj = {}
+  var len = data.length;
+  for (var i = 0; i<len; i++){
+    var key = data[i].id;
+    obj[key] = data[i]
   }
-];
+  console.log(obj);
+  return obj;
+}
+
+// 
 
 const buttonClicked = rows => () => {
-  console.log("slected rows", rows);
+  console.log("slected rows", data[rows[0].id]);
+
 };
 
 const render = ({
@@ -129,9 +111,6 @@ const render = ({
 };
 
 const processHeader = header => {
-  if (header.key === "crn") {
-    return <></>;
-  }
   return header.header;
 };
 
@@ -186,23 +165,24 @@ const process = cell => {
         </span>
       </>
     );
-  } else if (field === "crn") {
-    return <></>;
   }
   return <>{value}</>;
 };
 
 const Clusters = props => {
+  data = getClusterData(props.data);
+  // console.log(data);
   return (
     <DataTable
       rows={props.data}
-      headers={headers}
+      headers={props.headers}
       render={render}
       isSortable={true}
       stickyHeader={true}
-      useZebraStyles={true}
+      zebra={true}
     />
   );
 };
 
 export default Clusters;
+

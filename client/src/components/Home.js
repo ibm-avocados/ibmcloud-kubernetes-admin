@@ -4,7 +4,7 @@ import TextInput from "./common/TextInput";
 import Navbar from "./common/Navbar";
 import Clusters from "./common/Clusters";
 import { DataTableSkeleton } from "carbon-components-react";
-
+import headers from "./data/headers";
 class Home extends React.Component {
   constructor(props) {
     super(props);
@@ -96,22 +96,18 @@ class Home extends React.Component {
   showCluster = () => (
     <>
       {this.state.clusterLoaded ? (
-        <Clusters data={this.state.clusters} />
+        <Clusters headers={headers} data={this.state.clusters} />
       ) : (
+        <>
+        <div class="bx--data-table-header"><h4>Clusters</h4></div>
         <DataTableSkeleton
-          columnCount={6}
+          columnCount={headers.length}
           compact={false}
-          headers={[
-            "Name",
-            "State",
-            "Master Version",
-            "Location",
-            "Data Center",
-            "Worker Count"
-          ]}
+          headers={headers}
           rowCount={5}
-          zebra={false}
+          zebra={true}
         />
+        </>
       )}
     </>
   );
@@ -135,8 +131,7 @@ class Home extends React.Component {
     }
 
     if (this.state.isLoggedIn === 1) {
-      let data = this.loggedIn();
-      return data;
+      return this.loggedIn();
     }
 
     return (
