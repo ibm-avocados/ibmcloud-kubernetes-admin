@@ -117,10 +117,6 @@ type Account struct {
 	Entity   Entity   `json:"entity"`
 }
 
-type Clusters struct {
-	Clusters []Cluster
-}
-
 type Cluster struct {
 	Location                      string        `json:"location"`
 	DataCenter                    string        `json:"dataCenter"`
@@ -168,6 +164,7 @@ type Cluster struct {
 	PodSubnet                     string        `json:"podSubnet"`
 	ServiceSubnet                 string        `json:"serviceSubnet"`
 	Type                          string        `json:"type"`
+	Tags                          []Tag         `json:"tags"`
 }
 
 type Tags struct {

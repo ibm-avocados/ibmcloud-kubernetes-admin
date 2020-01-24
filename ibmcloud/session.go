@@ -1,7 +1,6 @@
 package ibmcloud
 
 import (
-	"fmt"
 	"log"
 	"time"
 )
@@ -48,9 +47,7 @@ func (s *Session) GetAccounts() (*Accounts, error) {
 
 func (s *Session) IsValid() bool {
 	now := time.Now().Unix()
-	fmt.Println(now)
 	difference := int64(s.Token.Expiration) - now
-	fmt.Println("difference:", difference)
 	return difference > 100 // expires in 3600 second. keeping 100 second buffer
 }
 
@@ -79,12 +76,16 @@ func (s *Session) getAccountsWithEndpoint(nextURL *string) (*Accounts, error) {
 	return accounts, nil
 }
 
-func (s *Session) BindAccountToToken(account Account) (*Session, error) {
+func (s *Session) GetClusters(location string) ([]*Cluster, error) {
+	return getClusters(s.Token.AccessToken, location)
+}
+
+func (s *Session) BindAccountToToken(accountID string) (*Session, error) {
 	err := cacheIdentityEndpoints()
 	if err != nil {
 		return nil, err
 	}
-	token, err := upgradeToken(endpoints.TokenEndpoint, s.Token.RefreshToken, account.Metadata.GUID)
+	token, err := upgradeToken(endpoints.TokenEndpoint, s.Token.RefreshToken, accountID)
 	if err != nil {
 		return nil, err
 	}

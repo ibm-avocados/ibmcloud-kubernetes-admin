@@ -3,25 +3,24 @@ package main
 import (
 	"encoding/gob"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
 	"net/http"
-	"os"
+	"strconv"
 	"strings"
 
-	"github.com/gorilla/sessions"
 	"github.com/moficodes/ibmcloud-kubernetes-admin/ibmcloud"
 )
 
 const (
 	errorMessageFormat = `{"msg": "error: %s"}`
 	statusOkMessage    = `{"status": "ok"}`
-	sessionID          = "ibmcloud_token"
 	sessionName        = "cloud_session"
+	accessToken        = "access_token"
+	refreshToken       = "refresh_token"
+	expiration         = "expiration"
+	cookiePath         = "/api/v1"
 )
-
-var store = sessions.NewCookieStore([]byte(os.Getenv("SESSION_KEY")))
 
 func init() {
 	gob.Register(&ibmcloud.Session{})
@@ -47,49 +46,36 @@ func tokenEndpointHandler(w http.ResponseWriter, r *http.Request) {
 func authenticationWithAccountHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "application/json")
 
-	session, err := store.Get(r, sessionID)
-
-	if err != nil {
-		handleError(w, http.StatusInternalServerError, "could not get session", err.Error())
-		return
-	}
-
-	cloudSession, err := getCloudSessions(r, session)
+	session, err := getCloudSessions(r)
 	if err != nil {
 		handleError(w, http.StatusNotFound, "could not get session", err.Error())
 		return
 	}
 
-	if !cloudSession.IsValid() {
+	if !session.IsValid() {
 		handleError(w, http.StatusUnauthorized, "session not valid")
 		return
 	}
 
-	session.Options = &sessions.Options{
-		MaxAge: 3600 * 60 * 24,
-	}
-
-	var account ibmcloud.Account
+	var body map[string]interface{}
 	decoder := json.NewDecoder(r.Body)
-	err = decoder.Decode(&account)
+	err = decoder.Decode(&body)
 	if err != nil {
 		handleError(w, http.StatusInternalServerError, "could not decode", err.Error())
 		return
 	}
 
-	accountID := account.Metadata.GUID
+	accountID := fmt.Sprintf("%v", body["id"])
 
-	fmt.Println(accountID)
+	fmt.Println("Account id", accountID)
 
-	accountSession, err := cloudSession.BindAccountToToken(account)
+	accountSession, err := session.BindAccountToToken(accountID)
 	if err != nil {
 		handleError(w, http.StatusInternalServerError, "could not bind account to token", err.Error())
 		return
 	}
 
-	session.Values[sessionName] = accountSession
-
-	err = sessions.Save(r, w)
+	setCookie(w, accountSession)
 
 	if err != nil {
 		handleError(w, http.StatusInternalServerError, "could not save session", err.Error())
@@ -103,20 +89,9 @@ func authenticationWithAccountHandler(w http.ResponseWriter, r *http.Request) {
 func authenticationHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "application/json")
 
-	session, err := store.Get(r, sessionID)
-
-	if err != nil {
-		handleError(w, http.StatusInternalServerError, "could not get session", err.Error())
-		return
-	}
-
-	session.Options = &sessions.Options{
-		MaxAge: 3600 * 60 * 24,
-	}
-
 	var body map[string]interface{}
 	decoder := json.NewDecoder(r.Body)
-	err = decoder.Decode(&body)
+	err := decoder.Decode(&body)
 	if err != nil {
 		handleError(w, http.StatusInternalServerError, "could not decode", err.Error())
 		return
@@ -125,7 +100,7 @@ func authenticationHandler(w http.ResponseWriter, r *http.Request) {
 	otp := fmt.Sprintf("%v", body["otp"])
 
 	fmt.Println(otp)
-	cloudSession, err := ibmcloud.Authenticate(otp)
+	session, err := ibmcloud.Authenticate(otp)
 	if err != nil {
 		log.Println("could not authenticate with the otp provided")
 		log.Println(err.Error())
@@ -133,33 +108,38 @@ func authenticationHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	session.Values[sessionName] = cloudSession
-	err = sessions.Save(r, w)
-	if err != nil {
-		handleError(w, http.StatusInternalServerError, "could not save session", err.Error())
-		return
-	}
+	fmt.Println(session.Token.Expiration)
+
+	setCookie(w, session)
 
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintln(w, statusOkMessage)
 }
 
+func setCookie(w http.ResponseWriter, session *ibmcloud.Session) {
+	accessTokenCookie := http.Cookie{Name: accessToken, Value: session.Token.AccessToken, Path: cookiePath}
+	http.SetCookie(w, &accessTokenCookie)
+
+	refreshTokenCookie := http.Cookie{Name: refreshToken, Value: session.Token.RefreshToken, Path: cookiePath}
+	http.SetCookie(w, &refreshTokenCookie)
+
+	expirationStr := strconv.Itoa(session.Token.Expiration)
+
+	expirationCookie := http.Cookie{Name: expiration, Value: expirationStr, Path: cookiePath}
+	http.SetCookie(w, &expirationCookie)
+}
+
 func loginHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "application/json")
-	session, err := store.Get(r, sessionID)
 
-	if err != nil {
-		handleError(w, http.StatusInternalServerError, "could not get session", err.Error())
-		return
-	}
-	cloudSession, err := getCloudSessions(r, session)
+	session, err := getCloudSessions(r)
 	if err != nil {
 		handleError(w, http.StatusNotFound, "could not get session", err.Error())
 		return
 	}
-	fmt.Println(cloudSession.Token.Expiration)
+	fmt.Println(session.Token.Expiration)
 
-	if !cloudSession.IsValid() {
+	if !session.IsValid() {
 		handleError(w, http.StatusUnauthorized, "session expired")
 		return
 	}
@@ -169,19 +149,13 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func accountListHandler(w http.ResponseWriter, r *http.Request) {
-	session, err := store.Get(r, sessionID)
-
-	if err != nil {
-		handleError(w, http.StatusInternalServerError, "could not get session", err.Error())
-		return
-	}
-	cloudSession, err := getCloudSessions(r, session)
+	session, err := getCloudSessions(r)
 	if err != nil {
 		handleError(w, http.StatusNotFound, "could not get session", err.Error())
 		return
 	}
 
-	accounts, err := cloudSession.GetAccounts()
+	accounts, err := session.GetAccounts()
 	if err != nil {
 		handleError(w, http.StatusInternalServerError, "could not get accounts using access token", err.Error())
 		return
@@ -191,17 +165,51 @@ func accountListHandler(w http.ResponseWriter, r *http.Request) {
 	e.Encode(accounts)
 }
 
+func clusterListHandler(w http.ResponseWriter, r *http.Request) {
+	session, err := getCloudSessions(r)
+	if err != nil {
+		handleError(w, http.StatusNotFound, "could not get session", err.Error())
+		return
+	}
+	clusters, err := session.GetClusters("")
+	if err != nil {
+		handleError(w, http.StatusNotFound, "could not get clusters", err.Error())
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	e := json.NewEncoder(w)
+	e.Encode(clusters)
+	// w.WriteHeader(http.StatusOK)
+	// fmt.Fprintln(w, statusOkMessage)
+}
+
 func handleError(w http.ResponseWriter, code int, message ...string) {
 	w.WriteHeader(code)
 	fmt.Fprintln(w, fmt.Sprintf(errorMessageFormat, strings.Join(message, " ")))
 }
 
-func getCloudSessions(r *http.Request, session *sessions.Session) (*ibmcloud.Session, error) {
-	val := session.Values[sessionName]
-	var cloudSession *ibmcloud.Session
-	var ok bool
-	if cloudSession, ok = val.(*ibmcloud.Session); !ok {
-		return nil, errors.New("could not cast session to cloud session object")
+func getCloudSessions(r *http.Request) (*ibmcloud.Session, error) {
+	accessTokenVal, err := r.Cookie(accessToken)
+	if err != nil {
+		return nil, err
 	}
-	return cloudSession, nil
+	refreshTokenVal, err := r.Cookie(refreshToken)
+	if err != nil {
+		return nil, err
+	}
+	expirationValStr, err := r.Cookie(expiration)
+	if err != nil {
+		return nil, err
+	}
+	expirationVal, _ := strconv.Atoi(expirationValStr.Value)
+	session := &ibmcloud.Session{
+		Token: &ibmcloud.Token{
+			AccessToken:  accessTokenVal.Value,
+			RefreshToken: refreshTokenVal.Value,
+			Expiration:   expirationVal,
+		},
+	}
+
+	return session, nil
 }

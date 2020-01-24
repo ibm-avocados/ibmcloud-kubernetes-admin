@@ -10,10 +10,17 @@ import (
 	"strings"
 )
 
-func handleRequest(request *http.Request, header map[string]string, res interface{}) error {
+func handleRequest(request *http.Request, header map[string]string, query map[string]string, res interface{}) error {
 	for key, value := range header {
 		request.Header.Add(key, value)
 	}
+
+	q := request.URL.Query()
+	for key, value := range query {
+		q.Add(key, value)
+	}
+
+	request.URL.RawQuery = q.Encode()
 
 	resp, err := client.Do(request)
 	if err != nil {
@@ -37,52 +44,52 @@ func handleRequest(request *http.Request, header map[string]string, res interfac
 }
 
 // fileUpload takes in data and handles making the put request
-func fileUpload(endpoint string, header map[string]string, body io.Reader, res interface{}) error {
+func fileUpload(endpoint string, header, query map[string]string, body io.Reader, res interface{}) error {
 	request, err := http.NewRequest(http.MethodPut, endpoint, body)
 	if err != nil {
 		return err
 	}
 
-	return handleRequest(request, header, res)
+	return handleRequest(request, header, query, res)
 }
 
 // postForm makes a post request with form data
-func postForm(endpoint string, header map[string]string, form url.Values, res interface{}) error {
+func postForm(endpoint string, header, query map[string]string, form url.Values, res interface{}) error {
 	request, err := http.NewRequest(http.MethodPost, endpoint, strings.NewReader(form.Encode()))
 	if err != nil {
 		return err
 	}
 
-	return handleRequest(request, header, res)
+	return handleRequest(request, header, query, res)
 }
 
 // postBody makes a post request with json body
-func postBody(endpoint string, header map[string]string, jsonValue []byte, res interface{}) error {
+func postBody(endpoint string, header, query map[string]string, jsonValue []byte, res interface{}) error {
 	request, err := http.NewRequest(http.MethodPost, endpoint, bytes.NewBuffer(jsonValue))
 	if err != nil {
 		return err
 	}
 
-	return handleRequest(request, header, res)
+	return handleRequest(request, header, query, res)
 }
 
 // patch makes a patch request to url
-func patch(endpoint string, header map[string]string, body []byte, res interface{}) error {
+func patch(endpoint string, header, query map[string]string, body []byte, res interface{}) error {
 	request, err := http.NewRequest(http.MethodPatch, endpoint, bytes.NewBuffer(body))
 	if err != nil {
 		return err
 	}
 
-	return handleRequest(request, header, res)
+	return handleRequest(request, header, query, res)
 }
 
 // fetch makes a get request to endpoint
-func fetch(endpoint string, header map[string]string, res interface{}) error {
+func fetch(endpoint string, header, query map[string]string, res interface{}) error {
 	request, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		fmt.Println("error creating request")
 		return err
 	}
 
-	return handleRequest(request, header, res)
+	return handleRequest(request, header, query, res)
 }

@@ -5,9 +5,11 @@ package ibmcloud
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"net/url"
+	"sync"
 	"time"
 )
 
@@ -21,6 +23,7 @@ const (
 	subdomainResourceController = "resource-controller."
 	subdomainClusters           = "containers."
 	subdomainUsers              = "users."
+	subdomainTags               = "tags.global-search-tagging."
 )
 
 // domain
@@ -34,6 +37,8 @@ const (
 	resourceKeysEndpoint = protocol + subdomainResourceController + api + "/v2/resource_keys"
 	containersEndpoint   = protocol + subdomainClusters + api + "/global/v1"
 	usersEndpoint        = protocol + subdomainUsers + api + "/v2"
+	clusterEndpoint      = protocol + subdomainClusters + api + "/global/v1/clusters"
+	tagEndpoint          = protocol + subdomainTags + api + "/v3/tags"
 )
 
 // grant types
@@ -74,10 +79,8 @@ func getError(resp *http.Response) error {
 }
 
 func getIdentityEndpoints() (*IdentityEndpoints, error) {
-	header := map[string]string{}
-
 	result := &IdentityEndpoints{}
-	err := fetch(identityEndpoint, header, result)
+	err := fetch(identityEndpoint, nil, nil, result)
 	if err != nil {
 		return nil, err
 	}
@@ -95,7 +98,7 @@ func getToken(endpoint string, otp string) (*Token, error) {
 	form.Add("passcode", otp)
 
 	result := Token{}
-	err := postForm(endpoint, header, form, &result)
+	err := postForm(endpoint, header, nil, form, &result)
 
 	if err != nil {
 		log.Println("error in post form")
@@ -115,7 +118,7 @@ func getTokenFromIAM(endpoint string, apikey string) (*Token, error) {
 	form.Add("apikey", apikey)
 
 	result := &Token{}
-	err := postForm(endpoint, header, form, result)
+	err := postForm(endpoint, header, nil, form, result)
 	if err != nil {
 		return nil, err
 	}
@@ -136,7 +139,7 @@ func upgradeToken(endpoint string, refreshToken string, accountID string) (*Toke
 	}
 
 	result := &Token{}
-	err := postForm(endpoint, header, form, result)
+	err := postForm(endpoint, header, nil, form, result)
 	if err != nil {
 		return nil, err
 	}
@@ -156,9 +159,8 @@ func getAccounts(endpoint *string, token string) (*Accounts, error) {
 	header := map[string]string{
 		"Authorization": "Bearer " + token,
 	}
-
 	var result Accounts
-	err := fetch(*endpoint, header, &result)
+	err := fetch(*endpoint, header, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -169,7 +171,7 @@ func getAccounts(endpoint *string, token string) (*Accounts, error) {
 func getZones() (*Zones, error) {
 	var result Zones
 	header := map[string]string{}
-	err := fetch(containersEndpoint+"/zones", header, &result)
+	err := fetch(containersEndpoint+"/zones", header, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -178,9 +180,77 @@ func getZones() (*Zones, error) {
 
 func getLocations() (*Locations, error) {
 	var result Locations
-	header := map[string]string{}
-	err := fetch(containersEndpoint+"/zones", header, &result)
+	err := fetch(containersEndpoint+"/zones", nil, nil, &result)
 	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func getClusters(token string, location string) ([]*Cluster, error) {
+	var result []*Cluster
+	header := map[string]string{
+		"Authorization": "Bearer " + token,
+	}
+
+	query := map[string]string{}
+	if len(location) > 0 {
+		query["location"] = location
+	}
+
+	err := fetch(clusterEndpoint, header, query, &result)
+
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println("Looking for tags")
+
+	var wg = sync.WaitGroup{}
+	defer TimeTaken(time.Now(), "get clusters")
+
+	for _, cluster := range result {
+		wg.Add(1)
+		go func(cluster *Cluster) {
+			tags, err := getTags(token, cluster.Crn)
+			if err != nil {
+				fmt.Println("error in getting tags", err)
+			} else {
+				cluster.Tags = tags.Items
+			}
+			wg.Done()
+		}(cluster)
+
+		// tags, err := getTags(token, cluster.Crn)
+		// if err != nil {
+		// 	fmt.Println("error in getting tags", err)
+		// } else {
+		// 	cluster.Tags = tags.Items
+		// }
+
+	}
+	wg.Wait()
+	return result, nil
+
+}
+
+func TimeTaken(t time.Time, name string) {
+	elapsed := time.Since(t)
+	log.Printf("TIME: %s took %s\n", name, elapsed)
+}
+
+func getTags(token string, crn string) (*Tags, error) {
+
+	var result Tags
+	header := map[string]string{
+		"Authorization": "Bearer " + token,
+	}
+	query := map[string]string{
+		"provider":    "ghost",
+		"attached_to": crn,
+	}
+	err := fetch(tagEndpoint, header, query, &result)
+	if err != nil {
+		fmt.Println("err in fetching tags")
 		return nil, err
 	}
 	return &result, nil
