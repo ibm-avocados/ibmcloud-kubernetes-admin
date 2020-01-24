@@ -211,7 +211,8 @@ func getClusters(token string, location string) ([]*Cluster, error) {
 		go func(cluster *Cluster) {
 			tags, err := getTags(token, cluster.Crn)
 			if err != nil {
-				fmt.Println("error in getting tags", err)
+				fmt.Println("error for tag: ", cluster.Name)
+				fmt.Println("error : ", err)
 			} else {
 				cluster.Tags = tags.Items
 			}
@@ -234,15 +235,15 @@ func getTags(token string, crn string) (*Tags, error) {
 		"Authorization": "Bearer " + token,
 	}
 	query := map[string]string{
-		"provider":    "ghost",
 		"attached_to": crn,
 	}
 	err := fetch(tagEndpoint, header, query, &result)
 	if err != nil {
-		fmt.Println("err in fetching tags")
 		return nil, err
 	}
 	return &result, nil
 }
 
-func setTags(token string, crn string)
+func setTags(token string, crn ...string) {
+
+}

@@ -3,7 +3,6 @@ package ibmcloud
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -37,7 +36,6 @@ func handleRequest(request *http.Request, header map[string]string, query map[st
 	// fmt.Println(string(body))
 
 	if err = json.NewDecoder(resp.Body).Decode(&res); err != nil {
-		fmt.Println("Error in decoding", err.Error())
 		return err
 	}
 	return nil
@@ -87,7 +85,6 @@ func patch(endpoint string, header, query map[string]string, body []byte, res in
 func fetch(endpoint string, header, query map[string]string, res interface{}) error {
 	request, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
-		fmt.Println("error creating request")
 		return err
 	}
 

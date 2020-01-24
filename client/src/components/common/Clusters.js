@@ -1,5 +1,5 @@
 import React from "react";
-import { DataTable, Button } from "carbon-components-react";
+import { DataTable } from "carbon-components-react";
 import { Delete16 as Delete, Save16 as Save } from "@carbon/icons-react";
 
 import "./Cluster.css";
@@ -48,14 +48,14 @@ const headers = [
   {
     key: "workerCount",
     header: "Worker Count"
-  }, 
+  },
   {
     key: "crn",
     header: "Crn"
   }
 ];
 
-const buttonClicked = rows => {
+const buttonClicked = rows => () => {
   console.log("slected rows", rows);
 };
 
@@ -77,13 +77,13 @@ const render = ({
           <TableBatchAction
             tabIndex={getBatchActionProps().shouldShowBatchActions ? 0 : -1}
             renderIcon={Delete}
-            onClick={buttonClicked(() => selectedRows)}
+            onClick={buttonClicked(selectedRows)}
           >
             Delete
           </TableBatchAction>
           <TableBatchAction
             renderIcon={Save}
-            onClick={() => buttonClicked(selectedRows)}
+            onClick={buttonClicked(selectedRows)}
           >
             Save
           </TableBatchAction>
@@ -129,11 +129,11 @@ const render = ({
 };
 
 const processHeader = header => {
-  if(header.key == "crn") {
+  if (header.key === "crn") {
     return <></>;
   }
   return header.header;
-}
+};
 
 const process = cell => {
   let id = cell.id;
@@ -165,6 +165,7 @@ const process = cell => {
         <>
           <span className="oneline">
             <img
+              alt="openshift logo"
               className="logo-image"
               src="https://cloud.ibm.com/kubernetes/img/openshift_logo-7825001afb.svg"
             />
@@ -177,6 +178,7 @@ const process = cell => {
       <>
         <span className="oneline">
           <img
+            alt="iks logo"
             className="logo-image"
             src="https://cloud.ibm.com/kubernetes/img/container-service-logo-7e87826329.svg"
           />
@@ -198,6 +200,7 @@ const Clusters = props => {
       render={render}
       isSortable={true}
       stickyHeader={true}
+      useZebraStyles={true}
     />
   );
 };

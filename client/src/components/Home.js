@@ -3,11 +3,17 @@ import Login from "./Login";
 import TextInput from "./common/TextInput";
 import Navbar from "./common/Navbar";
 import Clusters from "./common/Clusters";
+import { DataTableSkeleton } from "carbon-components-react";
 
 class Home extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { isLoggedIn: 0 };
+    this.state = {
+      isLoggedIn: 0,
+      clusterLoaded: false,
+      accountsLoaded: false,
+      accountSelected: false
+    };
   }
   handleLoginResponse = loggedIn => {
     if (loggedIn !== this.state.isLoggedIn) {
@@ -45,10 +51,11 @@ class Home extends React.Component {
     let response = await fetch("/api/v1/accounts");
     let accounts = await response.json();
 
-    this.setState({items: accounts.resources})
-  }
+    this.setState({ accountsLoaded: true });
+    this.setState({ accounts: accounts.resources });
+  };
 
-  accountSelected = async ({selectedItem}) => {
+  accountSelected = async ({ selectedItem }) => {
     console.log(selectedItem);
     let response = await fetch("/api/v1/authenticate/account", {
       method: "POST",
@@ -57,48 +64,87 @@ class Home extends React.Component {
       })
     });
     if (response.status === 200) {
-      this.loadClusters()
+      this.setState({ accountSelected: true });
+      this.loadClusters();
     }
-  }
+  };
 
   loadClusters = async () => {
+    this.setState({ clusterLoaded: false });
     let clusterResponse = await fetch("/api/v1/clusters");
-    let clusters = await clusterResponse.json()
-    this.setState({clusters: clusters});
-    console.log(this.state.clusters);
-  }
+    let clusters = await clusterResponse.json();
+    this.setState({ clusters: clusters });
+    this.setState({ clusterLoaded: true });
+  };
 
+  otp = () => (
+    <>
+      <TextInput
+        style={{
+          position: "absolute",
+          left: "50%",
+          top: "50%",
+          transform: "translate(-50%, -50%)"
+        }}
+        onChange={this.handleOtp}
+        placeholder="One Time Passcode"
+        onKeyDown={this.onKeyDown}
+      />
+    </>
+  );
+
+  showCluster = () => (
+    <>
+      {this.state.clusterLoaded ? (
+        <Clusters data={this.state.clusters} />
+      ) : (
+        <DataTableSkeleton
+          columnCount={6}
+          compact={false}
+          headers={[
+            "Name",
+            "State",
+            "Master Version",
+            "Location",
+            "Data Center",
+            "Worker Count"
+          ]}
+          rowCount={5}
+          zebra={false}
+        />
+      )}
+    </>
+  );
+
+  loggedIn = () => {
+    return (
+      <>
+        <Navbar
+          isLoaded={this.state.accountsLoaded}
+          items={this.state.accounts}
+          accountSelected={this.accountSelected}
+        />
+        {this.state.accountSelected ? this.showCluster() : <></>}
+      </>
+    );
+  };
 
   render() {
     if (this.state.isLoggedIn === 2) {
-      return (
-        <>
-          <TextInput
-            style={{
-              position: "absolute",
-              left: "50%",
-              top: "50%",
-              transform: "translate(-50%, -50%)"
-            }}
-            onChange={this.handleOtp}
-            placeholder="One Time Passcode"
-            onKeyDown={this.onKeyDown}
-          />
-        </>
-      );
+      return this.otp();
     }
 
     if (this.state.isLoggedIn === 1) {
-      return (
-        <>
-          <Navbar items={this.state.items} accountSelected={this.accountSelected}/>
-          {this.state.clusters ? <Clusters data={this.state.clusters}/> : <></>}
-        </>
-      );
+      let data = this.loggedIn();
+      return data;
     }
+
     return (
       <>
-        <Login onResult={this.handleLoginResponse} getAccounts={this.loadAccounts}/>
+        <Login
+          onResult={this.handleLoginResponse}
+          getAccounts={this.loadAccounts}
+        />
       </>
     );
   }

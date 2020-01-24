@@ -16,12 +16,6 @@ const Navbar = props => {
   };
 
 
-  // const dropDownChanged = async ({ selectedItem }) => {
-  //   // console.log(selectedItem);
-
-  // };
-
-  console.log(props);
   return (
     <>
       <div className={styles.wrapper}>
@@ -30,10 +24,11 @@ const Navbar = props => {
         </div>
 
         <Dropdown
+          disabled={props.accountsLoaded}
           className={styles.dropdown}
           ariaLabel="Dropdown"
           label="Select Account"
-          items={props.items}
+          items={props.items || []}
           onChange={props.accountSelected}
           itemToString={itemToString}
           id="account-dropdown"
