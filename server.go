@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -19,6 +20,9 @@ func main() {
 	api.HandleFunc("/clusters", clusterListHandler).Methods(http.MethodGet)
 
 	r.HandleFunc("/", notFoundHandler)
+	port := "9000"
 
-	http.ListenAndServe(":9000", r)
+	log.Println("starting server on port ", port)
+
+	log.Fatalln(":"+port, http.ListenAndServe("", r))
 }

@@ -84,6 +84,9 @@ func patch(endpoint string, header, query map[string]string, body []byte, res in
 // fetch makes a get request to endpoint
 func fetch(endpoint string, header, query map[string]string, res interface{}) error {
 	request, err := http.NewRequest(http.MethodGet, endpoint, nil)
+
+	request.Close = true
+
 	if err != nil {
 		return err
 	}
