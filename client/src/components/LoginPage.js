@@ -1,7 +1,7 @@
 import React from "react";
 import Button from "./common/Button";
 
-import styles from "./Login.module.css";
+import styles from "./pagestyles.module.css";
 
 const LoginPage = ({ onLoginClick }) => (
   <div className={styles.wrapper}>

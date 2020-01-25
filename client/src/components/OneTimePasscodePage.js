@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from "react";
 import TextInput from "./common/TextInput";
+import styles from "./pagestyles.module.css";
 
 const OneTimePasscodePage = ({ onSubmit }) => {
   const [value, setValue] = useState("");
@@ -21,12 +22,7 @@ const OneTimePasscodePage = ({ onSubmit }) => {
 
   return (
     <TextInput
-      style={{
-        position: "absolute",
-        left: "50%",
-        top: "50%",
-        transform: "translate(-50%, -50%)"
-      }}
+      className={styles.wrapper}
       value={value}
       onChange={handleChange}
       placeholder="One Time Passcode"
