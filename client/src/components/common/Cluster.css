@@ -7,11 +7,15 @@
 }
 
 .normal {
-  background-color: #5BA703;
+  background-color: var(--support-02);
 }
 
 .warning {
-  background-color: #EFC003;
+  background-color: var(--support-03);
+}
+
+.deleting {
+  background-color: var(--support-01);
 }
 
 .oneline {

@@ -32,9 +32,6 @@ func handleRequest(request *http.Request, header map[string]string, query map[st
 		return getError(resp)
 	}
 
-	// body, _ := ioutil.ReadAll(resp.Body)
-	// fmt.Println(string(body))
-
 	if err = json.NewDecoder(resp.Body).Decode(&res); err != nil {
 		return err
 	}
@@ -85,7 +82,15 @@ func patch(endpoint string, header, query map[string]string, body []byte, res in
 func fetch(endpoint string, header, query map[string]string, res interface{}) error {
 	request, err := http.NewRequest(http.MethodGet, endpoint, nil)
 
-	request.Close = true
+	if err != nil {
+		return err
+	}
+
+	return handleRequest(request, header, query, res)
+}
+
+func delete(endpoint string, header, query map[string]string, res interface{}) error {
+	request, err := http.NewRequest(http.MethodDelete, endpoint, nil)
 
 	if err != nil {
 		return err

@@ -72,7 +72,7 @@ const ConditionalClusterTable = ({ clusters, hidden, loading }) => {
   if (loading) {
     return (
       <>
-        <div class="bx--data-table-header">
+        <div className="bx--data-table-header">
           <h4>Clusters</h4>
         </div>
         <DataTableSkeleton

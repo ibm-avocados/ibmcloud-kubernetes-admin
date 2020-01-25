@@ -24,5 +24,5 @@ func main() {
 
 	log.Println("starting server on port ", port)
 
-	log.Fatalln(":"+port, http.ListenAndServe("", r))
+	log.Fatalln(http.ListenAndServe(":"+port, r))
 }

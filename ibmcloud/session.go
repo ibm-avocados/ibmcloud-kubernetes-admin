@@ -91,3 +91,7 @@ func (s *Session) BindAccountToToken(accountID string) (*Session, error) {
 	}
 	return &Session{Token: token}, nil
 }
+
+func (s *Session) DeleteCluster(id, resourceGroup, deleteResources string) error {
+	return deleteCluster(s.Token.AccessToken, id, resourceGroup, deleteResources)
+}

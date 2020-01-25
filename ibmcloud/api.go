@@ -52,10 +52,10 @@ const basicAuth = "Basic Yng6Yng="
 
 // TODO: logical timeout, 10 seconds wasn't long enough.
 var client = http.Client{
-	Timeout: time.Duration(0 * time.Second),
+	Timeout: time.Duration(30 * time.Second),
 }
 
-//// useful for logging
+//// useful for loagging
 // bodyBytes, err := ioutil.ReadAll(resp.Body)
 // if err != nil {
 // 	panic(err)
@@ -188,6 +188,7 @@ func getLocations() (*Locations, error) {
 }
 
 func getClusters(token string, location string) ([]*Cluster, error) {
+	defer timeTaken(time.Now(), "GetCluster :")
 	var result []*Cluster
 	header := map[string]string{
 		"Authorization": "Bearer " + token,
@@ -204,9 +205,10 @@ func getClusters(token string, location string) ([]*Cluster, error) {
 		return nil, err
 	}
 
-	var wg = sync.WaitGroup{}
+	wg := &sync.WaitGroup{}
 
 	for _, cluster := range result {
+		time.Sleep(5 * time.Millisecond)
 		wg.Add(1)
 		go func(cluster *Cluster) {
 			tags, err := getTags(token, cluster.Crn)
@@ -219,6 +221,7 @@ func getClusters(token string, location string) ([]*Cluster, error) {
 			wg.Done()
 		}(cluster)
 	}
+
 	wg.Wait()
 	return result, nil
 }
@@ -246,4 +249,23 @@ func getTags(token string, crn string) (*Tags, error) {
 
 func setTags(token string, crn ...string) {
 
+}
+
+func deleteCluster(token, id, resourceGroup, deleteResources string) error {
+	var result interface{}
+	header := map[string]string{
+		"Authorization":         "Bearer " + token,
+		"X-Auth-Resource-Group": resourceGroup,
+	}
+
+	query := map[string]string{
+		"deleteResources": deleteResources,
+	}
+
+	deleteEndpoint := clusterEndpoint + "/" + id
+	err := delete(deleteEndpoint, header, query, result)
+	if err != nil {
+		return err
+	}
+	return nil
 }

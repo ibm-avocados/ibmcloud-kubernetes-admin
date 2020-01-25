@@ -165,6 +165,33 @@ func accountListHandler(w http.ResponseWriter, r *http.Request) {
 	e.Encode(accounts)
 }
 
+func clusterDeleteHandler(w http.ResponseWriter, r *http.Request) {
+	// session, err := getCloudSessions(r)
+	// if err != nil {
+	// 	handleError(w, http.StatusNotFound, "could not get session", err.Error())
+	// 	return
+	// }
+	var body map[string]interface{}
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&body)
+	if err != nil {
+		handleError(w, http.StatusInternalServerError, "could not decode", err.Error())
+		return
+	}
+
+	id := fmt.Sprintf("%v", body["id"])
+	resoueceGroup := fmt.Sprintf("%v", body["resoueceGroup"])
+	deleteResources := body["deleteResources"].(bool)
+	fmt.Println(id, resoueceGroup, deleteResources)
+	// err = session.DeleteCluster(id, resoueceGroup, deleteResources)
+	// if err != nil {
+	// 	handleError(w, http.StatusInternalServerError, "could not decode", err.Error())
+	// 	return
+	// }
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintln(w, statusOkMessage)
+}
+
 func clusterListHandler(w http.ResponseWriter, r *http.Request) {
 	session, err := getCloudSessions(r)
 	if err != nil {
