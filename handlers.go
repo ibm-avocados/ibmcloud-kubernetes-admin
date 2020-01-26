@@ -166,28 +166,28 @@ func accountListHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func clusterDeleteHandler(w http.ResponseWriter, r *http.Request) {
-	// session, err := getCloudSessions(r)
-	// if err != nil {
-	// 	handleError(w, http.StatusNotFound, "could not get session", err.Error())
-	// 	return
-	// }
+	session, err := getCloudSessions(r)
+	if err != nil {
+		handleError(w, http.StatusNotFound, "could not get session", err.Error())
+		return
+	}
 	var body map[string]interface{}
 	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&body)
+	err = decoder.Decode(&body)
 	if err != nil {
 		handleError(w, http.StatusInternalServerError, "could not decode", err.Error())
 		return
 	}
 
 	id := fmt.Sprintf("%v", body["id"])
-	resoueceGroup := fmt.Sprintf("%v", body["resoueceGroup"])
-	deleteResources := body["deleteResources"].(bool)
+	resoueceGroup := fmt.Sprintf("%v", body["resourceGroup"])
+	deleteResources := fmt.Sprintf("%v", body["deleteResources"])
 	fmt.Println(id, resoueceGroup, deleteResources)
-	// err = session.DeleteCluster(id, resoueceGroup, deleteResources)
-	// if err != nil {
-	// 	handleError(w, http.StatusInternalServerError, "could not decode", err.Error())
-	// 	return
-	// }
+	err = session.DeleteCluster(id, resoueceGroup, deleteResources)
+	if err != nil {
+		handleError(w, http.StatusInternalServerError, "could not decode", err.Error())
+		return
+	}
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintln(w, statusOkMessage)
 }

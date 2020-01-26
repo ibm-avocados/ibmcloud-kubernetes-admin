@@ -18,6 +18,7 @@ func main() {
 	api.HandleFunc("/accounts", accountListHandler).Methods(http.MethodGet)
 	api.HandleFunc("/login", loginHandler).Methods(http.MethodGet)
 	api.HandleFunc("/clusters", clusterListHandler).Methods(http.MethodGet)
+	api.HandleFunc("/clusters", clusterDeleteHandler).Methods(http.MethodDelete)
 
 	r.HandleFunc("/", notFoundHandler)
 	port := "9000"

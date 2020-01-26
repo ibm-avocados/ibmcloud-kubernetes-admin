@@ -252,7 +252,6 @@ func setTags(token string, crn ...string) {
 }
 
 func deleteCluster(token, id, resourceGroup, deleteResources string) error {
-	var result interface{}
 	header := map[string]string{
 		"Authorization":         "Bearer " + token,
 		"X-Auth-Resource-Group": resourceGroup,
@@ -263,7 +262,7 @@ func deleteCluster(token, id, resourceGroup, deleteResources string) error {
 	}
 
 	deleteEndpoint := clusterEndpoint + "/" + id
-	err := delete(deleteEndpoint, header, query, result)
+	err := delete(deleteEndpoint, header, query, nil)
 	if err != nil {
 		return err
 	}

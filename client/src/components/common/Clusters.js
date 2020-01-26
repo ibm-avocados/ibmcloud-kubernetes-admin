@@ -1,6 +1,6 @@
 import React, { useCallback } from "react";
-import { DataTable } from "carbon-components-react";
-import { Delete16 as Delete, Save16 as Save } from "@carbon/icons-react";
+import { DataTable, Button } from "carbon-components-react";
+import { Delete16 as Delete, Save16 as Save, Reset16 as Reset } from "@carbon/icons-react";
 
 import "./Cluster.css";
 
@@ -18,7 +18,8 @@ const {
   TableToolbarSearch,
   TableToolbarContent,
   TableBatchActions,
-  TableBatchAction
+  TableBatchAction,
+  TableToolbarAction
 } = DataTable;
 
 const getClusterData = data => {
@@ -34,11 +35,21 @@ const getClusterData = data => {
 const Clusters = props => {
   let data = getClusterData(props.data);
 
-  const buttonClicked = useCallback(rows => async () => {
-    for (var i = 0; i < rows.length; i++) {
-      console.log("Cluster ", data[rows[i].id]);
-    }
-  },[data]);
+  const deleteClusters = useCallback(rows => () => {
+    rows.forEach(element => {
+      console.log("Element: ", element);
+      console.log("Data: ", data[element.id].resourceGroup);
+      fetch('/api/v1/clusters', {
+        method: "DELETE",
+        body: JSON.stringify({
+          id: element.id,
+          resourceGroup: data[element.id].resourceGroup,
+          deleteResources: true
+        })
+      })
+        .then(response => console.log(response.status));
+    });
+  }, [data]);
 
   const processHeader = header => {
     return header.header;
@@ -119,13 +130,13 @@ const Clusters = props => {
               <TableBatchAction
                 tabIndex={getBatchActionProps().shouldShowBatchActions ? 0 : -1}
                 renderIcon={Delete}
-                onClick={buttonClicked(selectedRows)}
+                onClick={deleteClusters(selectedRows)}
               >
                 Delete
               </TableBatchAction>
               <TableBatchAction
                 renderIcon={Save}
-                onClick={buttonClicked(selectedRows)}
+                onClick={() => alert("Do what now?")}
               >
                 Save
               </TableBatchAction>
@@ -135,6 +146,7 @@ const Clusters = props => {
                 tabIndex={getBatchActionProps().shouldShowBatchActions ? -1 : 0}
                 onChange={onInputChange}
               />
+              <Button onClick={() => alert("Do what now?")} renderIcon={Reset}>Reload</Button>
             </TableToolbarContent>
             {/* <TableToolbarContent>
             <Button onClick={() => buttonClicked(selectedRows)}  kind="primary">
@@ -169,7 +181,7 @@ const Clusters = props => {
         </TableContainer>
       );
     },
-    [buttonClicked]
+    [deleteClusters]
   );
 
   return (
@@ -178,8 +190,6 @@ const Clusters = props => {
       headers={props.headers}
       render={render}
       isSortable={true}
-      stickyHeader={true}
-      zebra={true}
     />
   );
 };

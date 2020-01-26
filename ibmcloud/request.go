@@ -32,6 +32,12 @@ func handleRequest(request *http.Request, header map[string]string, query map[st
 		return getError(resp)
 	}
 
+	// This was a delete request and was successful.
+	// no need to try decode the body.
+	if resp.StatusCode == 204 {
+		return nil
+	}
+
 	if err = json.NewDecoder(resp.Body).Decode(&res); err != nil {
 		return err
 	}
