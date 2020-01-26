@@ -29,7 +29,14 @@ const {
   TableBatchAction
 } = DataTable;
 
-// mmm so sexy and unreadable 🥵💦
+// Takes an array of objects and tranforms it into a map of objects, with ID
+// being the key and the object being the value.
+// e.g.
+// [{ id: 'a1', x: 'hello' }, { id: 'b2', x: 'world' }] =>
+// {
+//   a1: { id: 'a1', x: 'hello' },
+//   b2: { id: 'b2', x: 'world' }
+// }
 const arrayToMap = arr =>
   arr.reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {});
 
@@ -43,14 +50,9 @@ const deleteCluster = cluster =>
     })
   });
 
-const processHeader = header => {
-  return header.header;
-};
-
-const process = cell => {
-  let id = cell.id;
-  let field = id.split(":")[1];
-  let value = cell.value;
+const CustomCell = ({ cell }) => {
+  const field = cell.info.header;
+  const value = cell.value;
   if (field === "state") {
     if (value === "normal") {
       return (
@@ -77,16 +79,14 @@ const process = cell => {
   } else if (field === "masterKubeVersion") {
     if (value.includes("openshift")) {
       return (
-        <>
-          <span className="oneline">
-            <img
-              alt="openshift logo"
-              className="logo-image"
-              src="https://cloud.ibm.com/kubernetes/img/openshift_logo-7825001afb.svg"
-            />
-            {value}
-          </span>
-        </>
+        <span className="oneline">
+          <img
+            alt="openshift logo"
+            className="logo-image"
+            src="https://cloud.ibm.com/kubernetes/img/openshift_logo-7825001afb.svg"
+          />
+          {value}
+        </span>
       );
     }
     return (
@@ -184,7 +184,7 @@ const Clusters = ({ accountChanged }) => {
                 <TableSelectAll {...getSelectionProps()} />
                 {headers.map(header => (
                   <TableHeader {...getHeaderProps({ header })}>
-                    {processHeader(header)}
+                    {header.header}
                   </TableHeader>
                 ))}
               </TableRow>
@@ -195,7 +195,9 @@ const Clusters = ({ accountChanged }) => {
                   <TableRow key={row.id}>
                     <TableSelectRow {...getSelectionProps({ row })} />
                     {row.cells.map(cell => (
-                      <TableCell key={cell.id}>{process(cell)}</TableCell>
+                      <TableCell key={cell.id}>
+                        <CustomCell cell={cell} />
+                      </TableCell>
                     ))}
                   </TableRow>
                 );
