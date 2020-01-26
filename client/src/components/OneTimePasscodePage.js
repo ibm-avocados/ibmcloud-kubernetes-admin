@@ -21,13 +21,14 @@ const OneTimePasscodePage = ({ onSubmit }) => {
   );
 
   return (
-    <TextInput
-      className={styles.wrapper}
-      value={value}
-      onChange={handleChange}
-      placeholder="One Time Passcode"
-      onKeyDown={handleKeyDown}
-    />
+    <div className={styles.wrapper}>
+      <TextInput
+        value={value}
+        onChange={handleChange}
+        placeholder="One Time Passcode"
+        onKeyDown={handleKeyDown}
+      />
+    </div>
   );
 };
 

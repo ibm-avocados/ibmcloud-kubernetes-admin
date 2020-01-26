@@ -1,8 +1,12 @@
-import React, { useCallback } from "react";
-import { DataTable, Button } from "carbon-components-react";
+import React, { useCallback, useState } from "react";
+import { DataTable, DataTableSkeleton, Button } from "carbon-components-react";
 import { Delete16 as Delete, Save16 as Save, Reset16 as Reset } from "@carbon/icons-react";
+import { getJSON } from "../../fetchUtil";
+
+import headers from "../data/headers";
 
 import "./Cluster.css";
+import { useEffect } from "react";
 
 const {
   TableContainer,
@@ -32,8 +36,23 @@ const getClusterData = data => {
   return obj;
 };
 
-const Clusters = props => {
-  let data = getClusterData(props.data);
+const Clusters = ({accountChanged}) => {
+  const [isLoadingClusters, setLoadingClusters] = useState(true);
+  const [clusters, setClusters] = useState([]);
+
+
+  const loadClusters = async () => {
+    setLoadingClusters(true);
+    const clusters = await fetch("/api/v1/clusters").then(getJSON);
+    setClusters(clusters);
+    setLoadingClusters(false);
+  };
+
+  useEffect(() => {
+    loadClusters()
+  }, [])
+
+  let data = getClusterData(clusters);
 
   const deleteClusters = useCallback(rows => () => {
     rows.forEach(element => {
@@ -46,9 +65,9 @@ const Clusters = props => {
           resourceGroup: data[element.id].resourceGroup,
           deleteResources: true
         })
-      })
-        .then(response => console.log(response.status));
+      }).then(response => console.log(response.status));      
     });
+    loadClusters();
   }, [data]);
 
   const processHeader = header => {
@@ -146,7 +165,7 @@ const Clusters = props => {
                 tabIndex={getBatchActionProps().shouldShowBatchActions ? -1 : 0}
                 onChange={onInputChange}
               />
-              <Button onClick={() => alert("Do what now?")} renderIcon={Reset}>Reload</Button>
+              <Button onClick={loadClusters} renderIcon={Reset}>Reload</Button>
             </TableToolbarContent>
             {/* <TableToolbarContent>
             <Button onClick={() => buttonClicked(selectedRows)}  kind="primary">
@@ -184,10 +203,27 @@ const Clusters = props => {
     [deleteClusters]
   );
 
+  if (isLoadingClusters) {
+    return (
+      <>
+        <div className="bx--data-table-header">
+          <h4>Clusters</h4>
+        </div>
+        <DataTableSkeleton
+          columnCount={headers.length}
+          compact={false}
+          headers={headers}
+          rowCount={5}
+          zebra={true}
+        />
+      </>
+    );
+  }
+
   return (
     <DataTable
-      rows={props.data}
-      headers={props.headers}
+      rows={clusters}
+      headers={headers}
       render={render}
       isSortable={true}
     />
