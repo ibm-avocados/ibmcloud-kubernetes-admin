@@ -167,6 +167,14 @@ type Cluster struct {
 	Tags                          []Tag         `json:"tags"`
 }
 
+type SetTag struct {
+	TagName   string     `json:"tag_name"`
+	Resources []Resource `json:"resources"`
+}
+type Resource struct {
+	ResourceID string `json:"resource_id"`
+}
+
 type Tags struct {
 	TotalCount int   `json:"total_count"`
 	Offset     int   `json:"offset"`
