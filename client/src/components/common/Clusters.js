@@ -193,10 +193,10 @@ const Clusters = ({ accountChanged }) => {
         </div>
         <DataTableSkeleton
           columnCount={headers.length}
-          compact={false}
+          // compact={false}
           headers={headers}
           rowCount={5}
-          zebra={true}
+          zebra //={true}
         />
       </>
     );
@@ -207,7 +207,7 @@ const Clusters = ({ accountChanged }) => {
       rows={clusters}
       headers={headers}
       render={render}
-      isSortable={true}
+      isSortable //={true}
     />
   );
 };
