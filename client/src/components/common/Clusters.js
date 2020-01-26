@@ -51,9 +51,8 @@ const deleteCluster = cluster =>
   });
 
 const CustomCell = ({ cell }) => {
-  const field = cell.info.header;
-  const value = cell.value;
-  switch (field) {
+  const { info, value } = cell;
+  switch (info.header) {
     case "state":
       return (
         <span className="oneline">
@@ -62,24 +61,16 @@ const CustomCell = ({ cell }) => {
         </span>
       );
     case "masterKubeVersion":
-      if (value.includes("openshift")) {
-        return (
-          <span className="oneline">
-            <img
-              alt="openshift logo"
-              className="logo-image"
-              src="https://cloud.ibm.com/kubernetes/img/openshift_logo-7825001afb.svg"
-            />
-            {value}
-          </span>
-        );
-      }
       return (
         <span className="oneline">
           <img
-            alt="iks logo"
+            alt="logo"
             className="logo-image"
-            src="https://cloud.ibm.com/kubernetes/img/container-service-logo-7e87826329.svg"
+            src={
+              value.includes("openshift")
+                ? "https://cloud.ibm.com/kubernetes/img/openshift_logo-7825001afb.svg"
+                : "https://cloud.ibm.com/kubernetes/img/container-service-logo-7e87826329.svg"
+            }
           />
           {value}
         </span>
