@@ -36,7 +36,7 @@ const getClusterData = data => {
   return obj;
 };
 
-const Clusters = ({accountChanged}) => {
+const Clusters = ({ accountChanged }) => {
   const [isLoadingClusters, setLoadingClusters] = useState(true);
   const [clusters, setClusters] = useState([]);
 
@@ -54,21 +54,24 @@ const Clusters = ({accountChanged}) => {
 
   let data = getClusterData(clusters);
 
-  const deleteClusters = useCallback(rows => () => {
-    rows.forEach(element => {
-      console.log("Element: ", element);
-      console.log("Data: ", data[element.id].resourceGroup);
-      fetch('/api/v1/clusters', {
-        method: "DELETE",
-        body: JSON.stringify({
-          id: element.id,
-          resourceGroup: data[element.id].resourceGroup,
-          deleteResources: true
-        })
-      }).then(response => console.log(response.status));      
+  const deleteCluster = cluster =>
+    fetch("/api/v1/clusters", {
+      method: "DELETE",
+      body: JSON.stringify({
+        id: cluster.id,
+        resourceGroup: cluster.resourceGroup,
+        deleteResources: true
+      })
     });
-    loadClusters();
-  }, [data]);
+
+  const deleteClusters = useCallback(
+    rows => async () => {
+      const promises = rows.map(row => deleteCluster(data[row.id]));
+      await Promise.all(promises);
+      loadClusters();
+    },
+    [data]
+  );
 
   const processHeader = header => {
     return header.header;
@@ -92,10 +95,10 @@ const Clusters = ({accountChanged}) => {
             {value}
           </span>
         );
-      } else if (value === "deleting") {
+      } else if (value === "critical") {
         return (
           <span className="oneline">
-            <span className="status deleting"></span>
+            <span className="status critical"></span>
             {value}
           </span>
         );
