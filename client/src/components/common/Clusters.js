@@ -53,44 +53,28 @@ const deleteCluster = cluster =>
 const CustomCell = ({ cell }) => {
   const field = cell.info.header;
   const value = cell.value;
-  if (field === "state") {
-    if (value === "normal") {
+  switch (field) {
+    case "state":
       return (
         <span className="oneline">
-          <span className="status normal"></span>
+          <span className={`status ${value}`}></span>
           {value}
         </span>
       );
-    } else if (value === "warning") {
+    case "masterKubeVersion":
+      if (value.includes("openshift")) {
+        return (
+          <span className="oneline">
+            <img
+              alt="openshift logo"
+              className="logo-image"
+              src="https://cloud.ibm.com/kubernetes/img/openshift_logo-7825001afb.svg"
+            />
+            {value}
+          </span>
+        );
+      }
       return (
-        <span className="oneline">
-          <span className="status warning"></span>
-          {value}
-        </span>
-      );
-    } else if (value === "critical") {
-      return (
-        <span className="oneline">
-          <span className="status critical"></span>
-          {value}
-        </span>
-      );
-    }
-  } else if (field === "masterKubeVersion") {
-    if (value.includes("openshift")) {
-      return (
-        <span className="oneline">
-          <img
-            alt="openshift logo"
-            className="logo-image"
-            src="https://cloud.ibm.com/kubernetes/img/openshift_logo-7825001afb.svg"
-          />
-          {value}
-        </span>
-      );
-    }
-    return (
-      <>
         <span className="oneline">
           <img
             alt="iks logo"
@@ -99,10 +83,10 @@ const CustomCell = ({ cell }) => {
           />
           {value}
         </span>
-      </>
-    );
+      );
+    default:
+      return <>{value}</>;
   }
-  return <>{value}</>;
 };
 
 const Clusters = ({ accountChanged }) => {
