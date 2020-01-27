@@ -80,13 +80,14 @@ const CustomCell = ({ cell }) => {
   }
 };
 
-const Clusters = ({ accountChanged }) => {
+const Clusters = () => {
   const [isLoadingClusters, setLoadingClusters] = useState(true);
   const [clusters, setClusters] = useState([]);
 
   const loadClusters = useCallback(async () => {
     setLoadingClusters(true);
     const clusters = await fetch("/api/v1/clusters").then(getJSON);
+    console.log(clusters);
     setClusters(clusters);
     setLoadingClusters(false);
   }, []);
@@ -96,10 +97,10 @@ const Clusters = ({ accountChanged }) => {
   }, [loadClusters]);
 
   const deleteClusters = useCallback(
-    clusters => async () => {
+    clusters => async ({accountID}) => {
       console.log(clusters);
-      // const promises = clusters.map(cluster => deleteCluster(cluster));
-      // await Promise.all(promises);
+      const promises = clusters.map(cluster => deleteCluster(cluster));
+      await Promise.all(promises);
       loadClusters();
     },
     [loadClusters]

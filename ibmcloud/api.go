@@ -24,6 +24,7 @@ const (
 	subdomainClusters           = "containers."
 	subdomainUsers              = "users."
 	subdomainTags               = "tags.global-search-tagging."
+	subdomainBilling            = "billing."
 )
 
 // domain
@@ -39,6 +40,7 @@ const (
 	usersEndpoint        = protocol + subdomainUsers + api + "/v2"
 	clusterEndpoint      = protocol + subdomainClusters + api + "/global/v1/clusters"
 	tagEndpoint          = protocol + subdomainTags + api + "/v3/tags"
+	billingEndpoint      = protocol + subdomainBilling + api + "/v4/accounts"
 )
 
 // grant types
@@ -274,6 +276,10 @@ func getClusterWorkers(token, id string) ([]Worker, error) {
 	}
 
 	return result, nil
+}
+
+func getBillingPerNode(token, accountID, billingMonth, resourceInstanceID, workerID string) {
+
 }
 
 func getTags(token string, crn string) (*Tags, error) {
