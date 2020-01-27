@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from "react";
-import { DataTable, DataTableSkeleton, Button } from "carbon-components-react";
+import { DataTable, DataTableSkeleton, Button, TableExpandRow } from "carbon-components-react";
 import {
   Delete16 as Delete,
   Save16 as Save,
@@ -20,7 +20,9 @@ const {
   TableBody,
   TableCell,
   TableHeader,
+  TableExpandHeader,
   TableSelectRow,
+  TableExpandedRow,
   TableSelectAll,
   TableToolbar,
   TableToolbarSearch,
@@ -50,7 +52,7 @@ const deleteCluster = cluster =>
     })
   });
 
-const CustomCell = ({ cell }) => {
+const CustomCell = ({ cell, row }) => {
   const { info, value } = cell;
   switch (info.header) {
     case "state":
@@ -75,6 +77,9 @@ const CustomCell = ({ cell }) => {
           {value}
         </span>
       );
+    case "tags":
+
+          return <>{value.join(", ")}</>
     default:
       return <>{value}</>;
   }
@@ -97,7 +102,7 @@ const Clusters = () => {
   }, [loadClusters]);
 
   const deleteClusters = useCallback(
-    clusters => async ({accountID}) => {
+    clusters => async ({ accountID }) => {
       console.log(clusters);
       const promises = clusters.map(cluster => deleteCluster(cluster));
       await Promise.all(promises);
@@ -106,15 +111,21 @@ const Clusters = () => {
     [loadClusters]
   );
 
+  const buttonClicked = rows => () => {
+    console.log("slected rows", rows);
+  };
+
   const render = useCallback(
     ({
       rows,
       headers,
       getHeaderProps,
+      getRowProps,
       getBatchActionProps,
       getSelectionProps,
       selectedRows,
-      onInputChange
+      onInputChange,
+      getExpandHeaderProps
     }) => {
       const clusterMap = arrayToMap(clusters);
 
@@ -134,7 +145,7 @@ const Clusters = () => {
               </TableBatchAction>
               <TableBatchAction
                 renderIcon={Save}
-                onClick={() => alert("Do what now?")}
+                onClick={buttonClicked(selectedRows)}
               >
                 Save
               </TableBatchAction>
@@ -157,6 +168,10 @@ const Clusters = () => {
           <Table>
             <TableHead>
               <TableRow>
+                <TableExpandHeader
+                  enableExpando={true}
+                  {...getExpandHeaderProps()}
+                />
                 <TableSelectAll {...getSelectionProps()} />
                 {headers.map(header => (
                   <TableHeader {...getHeaderProps({ header })}>
@@ -166,18 +181,23 @@ const Clusters = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {rows.map(row => {
-                return (
-                  <TableRow key={row.id}>
+              {rows.map(row => (
+                <React.Fragment key={row.id}>
+                  <TableExpandRow {...getRowProps({ row })}>
                     <TableSelectRow {...getSelectionProps({ row })} />
                     {row.cells.map(cell => (
                       <TableCell key={cell.id}>
-                        <CustomCell cell={cell} />
+                        <CustomCell cell={cell} row={row}/>
                       </TableCell>
                     ))}
-                  </TableRow>
-                );
-              })}
+                  </TableExpandRow>
+                  <TableExpandedRow colSpan={headers.length + 2}>
+                    <h1>{clusterMap[row.id].name}</h1>
+                    <h6>{clusterMap[row.id].createdDate}</h6>
+                    <h6>{clusterMap[row.id].ownerEmail}</h6>
+                  </TableExpandedRow>
+                </React.Fragment>
+              ))}
             </TableBody>
           </Table>
         </TableContainer>

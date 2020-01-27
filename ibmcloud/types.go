@@ -166,7 +166,7 @@ type Cluster struct {
 	PodSubnet                     string        `json:"podSubnet"`
 	ServiceSubnet                 string        `json:"serviceSubnet"`
 	Type                          string        `json:"type"`
-	Tags                          []Tag         `json:"tags"`
+	Tags                          []string      `json:"tags"`
 	Workers                       []Worker      `json:"workers`
 }
 

@@ -175,23 +175,23 @@ func getAccounts(endpoint *string, token string) (*Accounts, error) {
 	return &result, nil
 }
 
-func getZones() (*Zones, error) {
-	var result Zones
+func getZones() ([]Zone, error) {
+	var result []Zone
 	header := map[string]string{}
 	err := fetch(containersEndpoint+"/zones", header, nil, &result)
 	if err != nil {
 		return nil, err
 	}
-	return &result, nil
+	return result, nil
 }
 
-func getLocations() (*Locations, error) {
-	var result Locations
+func getLocations() ([]Location, error) {
+	var result []Location
 	err := fetch(containersEndpoint+"/zones", nil, nil, &result)
 	if err != nil {
 		return nil, err
 	}
-	return &result, nil
+	return result, nil
 }
 
 func getClusters(token string, location string) ([]*Cluster, error) {
@@ -223,7 +223,10 @@ func getClusters(token string, location string) ([]*Cluster, error) {
 				fmt.Println("error for tag: ", cluster.Name)
 				fmt.Println("error : ", err)
 			} else {
-				cluster.Tags = tags.Items
+				cluster.Tags = make([]string, len(tags.Items))
+				for i, val := range tags.Items {
+					cluster.Tags[i] = val.Name
+				}
 			}
 			wg.Done()
 		}(cluster)
