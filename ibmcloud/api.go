@@ -64,6 +64,11 @@ var client = http.Client{
 // fmt.Println(bodyString)
 ////
 
+func timeTaken(t time.Time, name string) {
+	elapsed := time.Since(t)
+	log.Printf("TIME: %s took %s\n", name, elapsed)
+}
+
 func getError(resp *http.Response) error {
 	var errorTemplate ErrorMessage
 	if err := json.NewDecoder(resp.Body).Decode(&errorTemplate); err != nil {
@@ -220,35 +225,21 @@ func getClusters(token string, location string) ([]*Cluster, error) {
 			}
 			wg.Done()
 		}(cluster)
+		wg.Add(1)
+		go func(cluster *Cluster) {
+			workers, err := getClusterWorkers(token, cluster.ID)
+			if err != nil {
+				fmt.Println("error for worker: ", cluster.Name)
+				fmt.Println("error : ", err)
+			} else {
+				cluster.Workers = workers
+			}
+			wg.Done()
+		}(cluster)
 	}
 
 	wg.Wait()
 	return result, nil
-}
-
-func timeTaken(t time.Time, name string) {
-	elapsed := time.Since(t)
-	log.Printf("TIME: %s took %s\n", name, elapsed)
-}
-
-func getTags(token string, crn string) (*Tags, error) {
-
-	var result Tags
-	header := map[string]string{
-		"Authorization": "Bearer " + token,
-	}
-	query := map[string]string{
-		"attached_to": crn,
-	}
-	err := fetch(tagEndpoint, header, query, &result)
-	if err != nil {
-		return nil, err
-	}
-	return &result, nil
-}
-
-func setTags(token string, crn ...string) {
-
 }
 
 func deleteCluster(token, id, resourceGroup, deleteResources string) error {
@@ -267,4 +258,70 @@ func deleteCluster(token, id, resourceGroup, deleteResources string) error {
 		return err
 	}
 	return nil
+}
+
+func getClusterWorkers(token, id string) ([]Worker, error) {
+	var result []Worker
+	header := map[string]string{
+		"Authorization": "Bearer " + token,
+	}
+
+	workerEndpoint := clusterEndpoint + "/" + id + "/workers"
+
+	err := fetch(workerEndpoint, header, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func getTags(token string, crn string) (*Tags, error) {
+
+	var result Tags
+	header := map[string]string{
+		"Authorization": "Bearer " + token,
+	}
+	query := map[string]string{
+		"attached_to": crn,
+	}
+	err := fetch(tagEndpoint, header, query, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func setTags(token string, tag string, crn ...string) (*SetTagResult, error) {
+	var result SetTagResult
+	header := map[string]string{
+		"Authorization": "Bearer " + token,
+		"Content-Type":  "application/json",
+		"Accept":        "application/json",
+	}
+
+	query := map[string]string{
+		"providers": "ghost",
+	}
+
+	setTagsEndpoint := tagEndpoint + "/" + "attach"
+
+	settag := &SetTag{}
+	settag.TagName = tag
+	resources := make([]Resource, len(crn))
+	for i, val := range crn {
+		resource := Resource{ResourceID: val}
+		resources[i] = resource
+	}
+	settag.Resources = resources
+
+	body, err := json.Marshal(settag)
+	if err != nil {
+		return nil, err
+	}
+	err = postBody(setTagsEndpoint, header, query, body, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
 }

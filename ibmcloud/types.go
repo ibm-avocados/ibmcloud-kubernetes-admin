@@ -165,6 +165,33 @@ type Cluster struct {
 	ServiceSubnet                 string        `json:"serviceSubnet"`
 	Type                          string        `json:"type"`
 	Tags                          []Tag         `json:"tags"`
+	Workers                       []Worker      `json:"workers`
+}
+
+type Worker struct {
+	PrivateVlan      string `json:"privateVlan"`
+	PublicVlan       string `json:"publicVlan"`
+	PrivateIP        string `json:"privateIP"`
+	PublicIP         string `json:"publicIP"`
+	MachineType      string `json:"machineType"`
+	Location         string `json:"location"`
+	ID               string `json:"id"`
+	State            string `json:"state"`
+	Status           string `json:"status"`
+	StatusDate       string `json:"statusDate"`
+	StatusDetails    string `json:"statusDetails"`
+	ErrorMessage     string `json:"errorMessage"`
+	ErrorMessageDate string `json:"errorMessageDate"`
+	Isolation        string `json:"isolation"`
+	KubeVersion      string `json:"kubeVersion"`
+	TargetVersion    string `json:"targetVersion"`
+	ReasonForDelete  string `json:"reasonForDelete"`
+	VersionEOS       string `json:"versionEOS"`
+	MasterVersionEOS string `json:"masterVersionEOS"`
+	TrustedStatus    string `json:"trustedStatus"`
+	Poolid           string `json:"poolid"`
+	PoolName         string `json:"poolName"`
+	PendingOperation string `json:"pendingOperation"`
 }
 
 type SetTag struct {
@@ -173,6 +200,15 @@ type SetTag struct {
 }
 type Resource struct {
 	ResourceID string `json:"resource_id"`
+}
+
+type SetTagResult struct {
+	Results []Results `json:"results"`
+}
+type Results struct {
+	ResourceID string `json:"resource_id"`
+	IsError    string `json:"isError"`
+	ISError    string `json:"is_error"`
 }
 
 type Tags struct {
