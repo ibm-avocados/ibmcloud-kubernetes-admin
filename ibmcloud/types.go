@@ -167,7 +167,7 @@ type Cluster struct {
 	ServiceSubnet                 string        `json:"serviceSubnet"`
 	Type                          string        `json:"type"`
 	Tags                          []string      `json:"tags"`
-	Workers                       []Worker      `json:"workers`
+	Workers                       []Worker      `json:"workers"`
 }
 
 type Worker struct {

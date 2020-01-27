@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from "react";
-import { DataTable, DataTableSkeleton, Button, TableExpandRow } from "carbon-components-react";
+import { DataTable, DataTableSkeleton, Button, TableExpandRow, Loading } from "carbon-components-react";
 import {
   Delete16 as Delete,
   Save16 as Save,
@@ -52,7 +52,27 @@ const deleteCluster = cluster =>
     })
   });
 
-const CustomCell = ({ cell, row }) => {
+const CustomExpandedRow = ({ name, dateCreated, workers }) => {
+  return (
+    <>
+      <h1>Cluster Name: {name}</h1>
+      <h5>Date Created: {dateCreated}</h5>
+      <h4>Worker Info</h4>
+      {workers.map(worker => {
+        return (
+          <div key={worker.id}>
+            <h5>Worker State: {worker.state}</h5>
+            <h5>Machine Type: {worker.machineType}</h5>
+          </div>
+        )
+      })}
+    </>
+  )
+}
+
+
+
+const CustomCell = ({ cell }) => {
   const { info, value } = cell;
   switch (info.header) {
     case "state":
@@ -79,7 +99,7 @@ const CustomCell = ({ cell, row }) => {
       );
     case "tags":
 
-          return <>{value.join(", ")}</>
+      return <>{value.join(", ")}</>
     default:
       return <>{value}</>;
   }
@@ -87,6 +107,7 @@ const CustomCell = ({ cell, row }) => {
 
 const Clusters = () => {
   const [isLoadingClusters, setLoadingClusters] = useState(true);
+  const [isDeletingClusters, setDeletingClusters] = useState(false);
   const [clusters, setClusters] = useState([]);
 
   const loadClusters = useCallback(async () => {
@@ -103,9 +124,11 @@ const Clusters = () => {
 
   const deleteClusters = useCallback(
     clusters => async ({ accountID }) => {
+      setDeletingClusters(true);
       console.log(clusters);
       const promises = clusters.map(cluster => deleteCluster(cluster));
       await Promise.all(promises);
+      setDeletingClusters(false);
       loadClusters();
     },
     [loadClusters]
@@ -187,14 +210,16 @@ const Clusters = () => {
                     <TableSelectRow {...getSelectionProps({ row })} />
                     {row.cells.map(cell => (
                       <TableCell key={cell.id}>
-                        <CustomCell cell={cell} row={row}/>
+                        <CustomCell cell={cell} row={row} />
                       </TableCell>
                     ))}
                   </TableExpandRow>
                   <TableExpandedRow colSpan={headers.length + 2}>
-                    <h1>{clusterMap[row.id].name}</h1>
-                    <h6>{clusterMap[row.id].createdDate}</h6>
-                    <h6>{clusterMap[row.id].ownerEmail}</h6>
+                    <CustomExpandedRow name={clusterMap[row.id].name}
+                      dateCreated={clusterMap[row.id].createdDate}
+                      workers={clusterMap[row.id].workers}
+                    />
+
                   </TableExpandedRow>
                 </React.Fragment>
               ))}
@@ -224,12 +249,15 @@ const Clusters = () => {
   }
 
   return (
+    <>
     <DataTable
       rows={clusters}
       headers={headers}
       render={render}
       isSortable //={true}
     />
+    <Loading active={isDeletingClusters}/>)
+    </>
   );
 };
 
