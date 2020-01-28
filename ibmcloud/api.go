@@ -24,6 +24,7 @@ const (
 	subdomainClusters           = "containers."
 	subdomainUsers              = "users."
 	subdomainTags               = "tags.global-search-tagging."
+	subdomainBilling            = "billing."
 )
 
 // domain
@@ -39,6 +40,7 @@ const (
 	usersEndpoint        = protocol + subdomainUsers + api + "/v2"
 	clusterEndpoint      = protocol + subdomainClusters + api + "/global/v1/clusters"
 	tagEndpoint          = protocol + subdomainTags + api + "/v3/tags"
+	billingEndpoint      = protocol + subdomainBilling + api + "/v4/accounts"
 )
 
 // grant types
@@ -52,7 +54,7 @@ const basicAuth = "Basic Yng6Yng="
 
 // TODO: logical timeout, 10 seconds wasn't long enough.
 var client = http.Client{
-	Timeout: time.Duration(30 * time.Second),
+	Timeout: time.Duration(20 * time.Second),
 }
 
 //// useful for loagging
@@ -173,23 +175,23 @@ func getAccounts(endpoint *string, token string) (*Accounts, error) {
 	return &result, nil
 }
 
-func getZones() (*Zones, error) {
-	var result Zones
+func getZones() ([]Zone, error) {
+	var result []Zone
 	header := map[string]string{}
 	err := fetch(containersEndpoint+"/zones", header, nil, &result)
 	if err != nil {
 		return nil, err
 	}
-	return &result, nil
+	return result, nil
 }
 
-func getLocations() (*Locations, error) {
-	var result Locations
+func getLocations() ([]Location, error) {
+	var result []Location
 	err := fetch(containersEndpoint+"/zones", nil, nil, &result)
 	if err != nil {
 		return nil, err
 	}
-	return &result, nil
+	return result, nil
 }
 
 func getClusters(token string, location string) ([]*Cluster, error) {
@@ -213,7 +215,7 @@ func getClusters(token string, location string) ([]*Cluster, error) {
 	wg := &sync.WaitGroup{}
 
 	for _, cluster := range result {
-		time.Sleep(5 * time.Millisecond)
+		time.Sleep(10 * time.Millisecond)
 		wg.Add(1)
 		go func(cluster *Cluster) {
 			tags, err := getTags(token, cluster.Crn)
@@ -221,7 +223,10 @@ func getClusters(token string, location string) ([]*Cluster, error) {
 				fmt.Println("error for tag: ", cluster.Name)
 				fmt.Println("error : ", err)
 			} else {
-				cluster.Tags = tags.Items
+				cluster.Tags = make([]string, len(tags.Items))
+				for i, val := range tags.Items {
+					cluster.Tags[i] = val.Name
+				}
 			}
 			wg.Done()
 		}(cluster)
@@ -274,6 +279,10 @@ func getClusterWorkers(token, id string) ([]Worker, error) {
 	}
 
 	return result, nil
+}
+
+func getBillingPerNode(token, accountID, billingMonth, resourceInstanceID, workerID string) {
+
 }
 
 func getTags(token string, crn string) (*Tags, error) {

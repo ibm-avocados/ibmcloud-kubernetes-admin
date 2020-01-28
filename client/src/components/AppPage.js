@@ -7,6 +7,8 @@ import { getJSON } from "../fetchUtil";
 const AppPage = () => {
   const [isLoadingAccounts, setLoadingAccounts] = useState(true);
   const [accounts, setAccounts] = useState([]);
+  const [accountID, setSelectedAccountID] = useState();
+
 
   const [hasChosenAccount, setHasChosenAccount] = useState(false);
   const [tokenUpgraded, setTokenUpgraded] = useState(false);
@@ -25,6 +27,7 @@ const AppPage = () => {
 
   const handleAccountChosen = useCallback(
     async ({ selectedItem }) => {
+      setSelectedAccountID(selectedItem.metadata.guid);
       setTokenUpgraded(false);
       setHasChosenAccount(true);
       const { status } = await fetch("/api/v1/authenticate/account", {
@@ -50,16 +53,17 @@ const AppPage = () => {
       <ConditionalClusterTable
         accountChanged={hasChosenAccount}
         tokenUpgraded={tokenUpgraded}
+        accountID={accountID}
       />
     </>
   );
 };
 
-const ConditionalClusterTable = ({ accountChanged, tokenUpgraded }) => {
+const ConditionalClusterTable = ({ accountChanged, tokenUpgraded, accountID }) => {
   if (!accountChanged) {
     return null;
   } else if(tokenUpgraded){
-    return <Clusters />;
+    return <Clusters accountID={accountID}/>;
   } else {
     return <h1>Token Not Valid</h1>
   }

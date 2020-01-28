@@ -24,7 +24,12 @@ const headers = [
   {
     key: "workerCount",
     header: "Worker Count"
-  }
+  },
+  {
+    key: "tags",
+    header: "Tags"
+  },
+
 ];
 
 export default headers;

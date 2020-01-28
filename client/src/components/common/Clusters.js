@@ -1,5 +1,17 @@
 import React, { useCallback, useState } from "react";
-import { DataTable, DataTableSkeleton, Button } from "carbon-components-react";
+import {
+  DataTable,
+  DataTableSkeleton,
+  Button,
+  TableExpandRow,
+  Loading,
+  Tag,
+  StructuredListWrapper,
+  StructuredListHead,
+  StructuredListBody,
+  StructuredListRow,
+  StructuredListCell
+} from "carbon-components-react";
 import {
   Delete16 as Delete,
   Save16 as Save,
@@ -20,7 +32,9 @@ const {
   TableBody,
   TableCell,
   TableHeader,
+  TableExpandHeader,
   TableSelectRow,
+  TableExpandedRow,
   TableSelectAll,
   TableToolbar,
   TableToolbarSearch,
@@ -50,6 +64,50 @@ const deleteCluster = cluster =>
     })
   });
 
+const CustomExpandedRow = ({ name, dateCreated, workers }) => {
+  return (
+    <>
+      <h1>Cluster Name: {name}</h1>
+      <h5>Date Created: {dateCreated}</h5>
+      {workers ? <h3>Workers</h3> : <></>}
+      {workers ? <WorkerDetails workers={workers} /> : <></>}
+    </>
+  )
+}
+
+const WorkerDetails = ({ workers }) => {
+
+  return (
+    <StructuredListWrapper>
+      <StructuredListHead>
+        <StructuredListRow head>
+          <StructuredListCell head>State</StructuredListCell>
+          <StructuredListCell head>Status</StructuredListCell>
+          <StructuredListCell head>Public Vlan</StructuredListCell>
+          <StructuredListCell head>Private Vlan</StructuredListCell>
+          <StructuredListCell head>Machine Type</StructuredListCell>
+        </StructuredListRow>
+      </StructuredListHead>
+      <StructuredListBody>
+        {workers.map(worker => {
+          const { id, state, machineType, privateVlan, publicVlan, status } = worker;
+          return (
+            <StructuredListRow key={id}>
+              <StructuredListCell noWrap>{state}</StructuredListCell>
+              <StructuredListCell noWrap>{status}</StructuredListCell>
+              <StructuredListCell>{publicVlan}</StructuredListCell>
+              <StructuredListCell>{privateVlan}</StructuredListCell>
+              <StructuredListCell>{machineType}</StructuredListCell>
+            </StructuredListRow>
+          )
+        })}
+      </StructuredListBody>
+    </StructuredListWrapper>
+  )
+}
+
+
+
 const CustomCell = ({ cell }) => {
   const { info, value } = cell;
   switch (info.header) {
@@ -75,18 +133,22 @@ const CustomCell = ({ cell }) => {
           {value}
         </span>
       );
+    case "tags":
+      return (<>{value.map(tag => <Tag type='blue'>{tag}</Tag>)}</>)
     default:
       return <>{value}</>;
   }
 };
 
-const Clusters = ({ accountChanged }) => {
+const Clusters = () => {
   const [isLoadingClusters, setLoadingClusters] = useState(true);
+  const [isDeletingClusters, setDeletingClusters] = useState(false);
   const [clusters, setClusters] = useState([]);
 
   const loadClusters = useCallback(async () => {
     setLoadingClusters(true);
     const clusters = await fetch("/api/v1/clusters").then(getJSON);
+    console.log(clusters);
     setClusters(clusters);
     setLoadingClusters(false);
   }, []);
@@ -96,24 +158,32 @@ const Clusters = ({ accountChanged }) => {
   }, [loadClusters]);
 
   const deleteClusters = useCallback(
-    clusters => async () => {
+    clusters => async ({ accountID }) => {
+      setDeletingClusters(true);
       console.log(clusters);
-      // const promises = clusters.map(cluster => deleteCluster(cluster));
-      // await Promise.all(promises);
+      const promises = clusters.map(cluster => deleteCluster(cluster));
+      await Promise.all(promises);
+      setDeletingClusters(false);
       loadClusters();
     },
     [loadClusters]
   );
+
+  const buttonClicked = rows => () => {
+    console.log("slected rows", rows);
+  };
 
   const render = useCallback(
     ({
       rows,
       headers,
       getHeaderProps,
+      getRowProps,
       getBatchActionProps,
       getSelectionProps,
       selectedRows,
-      onInputChange
+      onInputChange,
+      getExpandHeaderProps
     }) => {
       const clusterMap = arrayToMap(clusters);
 
@@ -133,7 +203,7 @@ const Clusters = ({ accountChanged }) => {
               </TableBatchAction>
               <TableBatchAction
                 renderIcon={Save}
-                onClick={() => alert("Do what now?")}
+                onClick={buttonClicked(selectedRows)}
               >
                 Save
               </TableBatchAction>
@@ -156,6 +226,10 @@ const Clusters = ({ accountChanged }) => {
           <Table>
             <TableHead>
               <TableRow>
+                <TableExpandHeader
+                  enableExpando={true}
+                  {...getExpandHeaderProps()}
+                />
                 <TableSelectAll {...getSelectionProps()} />
                 {headers.map(header => (
                   <TableHeader {...getHeaderProps({ header })}>
@@ -165,18 +239,25 @@ const Clusters = ({ accountChanged }) => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {rows.map(row => {
-                return (
-                  <TableRow key={row.id}>
+              {rows.map(row => (
+                <React.Fragment key={row.id}>
+                  <TableExpandRow {...getRowProps({ row })}>
                     <TableSelectRow {...getSelectionProps({ row })} />
                     {row.cells.map(cell => (
                       <TableCell key={cell.id}>
-                        <CustomCell cell={cell} />
+                        <CustomCell cell={cell} row={row} />
                       </TableCell>
                     ))}
-                  </TableRow>
-                );
-              })}
+                  </TableExpandRow>
+                  <TableExpandedRow colSpan={headers.length + 2}>
+                    <CustomExpandedRow name={clusterMap[row.id].name}
+                      dateCreated={clusterMap[row.id].createdDate}
+                      workers={clusterMap[row.id].workers}
+                    />
+
+                  </TableExpandedRow>
+                </React.Fragment>
+              ))}
             </TableBody>
           </Table>
         </TableContainer>
@@ -203,12 +284,15 @@ const Clusters = ({ accountChanged }) => {
   }
 
   return (
-    <DataTable
-      rows={clusters}
-      headers={headers}
-      render={render}
-      isSortable //={true}
-    />
+    <>
+      <DataTable
+        rows={clusters}
+        headers={headers}
+        render={render}
+        isSortable //={true}
+      />
+      <Loading active={isDeletingClusters} />)
+    </>
   );
 };
 
