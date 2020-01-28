@@ -134,28 +134,30 @@ const CustomCell = ({ cell }) => {
         </span>
       );
     case "tags":
-      return (<>{value.map(tag => <Tag type='blue'>{tag}</Tag>)}</>)
+      return (<>{value.map(tag => <Tag key={tag} type='blue'>{tag}</Tag>)}</>)
+    case "cost":
+      return (<>$ {value}</>)
     default:
       return <>{value}</>;
   }
 };
 
-const Clusters = () => {
+const Clusters = ({accountID}) => {
   const [isLoadingClusters, setLoadingClusters] = useState(true);
   const [isDeletingClusters, setDeletingClusters] = useState(false);
   const [clusters, setClusters] = useState([]);
 
-  const loadClusters = useCallback(async () => {
+  const loadClusters = useCallback(async (accountID) => {
     setLoadingClusters(true);
-    const clusters = await fetch("/api/v1/clusters").then(getJSON);
+    const clusters = await fetch(`/api/v1/clusters/${accountID}`).then(getJSON);
     console.log(clusters);
     setClusters(clusters);
     setLoadingClusters(false);
   }, []);
 
   useEffect(() => {
-    loadClusters();
-  }, [loadClusters]);
+    loadClusters(accountID);
+  }, [loadClusters, accountID]);
 
   const deleteClusters = useCallback(
     clusters => async ({ accountID }) => {
@@ -274,10 +276,9 @@ const Clusters = () => {
         </div>
         <DataTableSkeleton
           columnCount={headers.length}
-          // compact={false}
           headers={headers}
           rowCount={5}
-          zebra //={true}
+          zebra
         />
       </>
     );
