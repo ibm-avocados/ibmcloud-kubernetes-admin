@@ -1,5 +1,17 @@
 import React, { useCallback, useState } from "react";
-import { DataTable, DataTableSkeleton, Button, TableExpandRow, Loading } from "carbon-components-react";
+import {
+  DataTable,
+  DataTableSkeleton,
+  Button,
+  TableExpandRow,
+  Loading,
+  Tag,
+  StructuredListWrapper,
+  StructuredListHead,
+  StructuredListBody,
+  StructuredListRow,
+  StructuredListCell
+} from "carbon-components-react";
 import {
   Delete16 as Delete,
   Save16 as Save,
@@ -57,16 +69,40 @@ const CustomExpandedRow = ({ name, dateCreated, workers }) => {
     <>
       <h1>Cluster Name: {name}</h1>
       <h5>Date Created: {dateCreated}</h5>
-      <h4>Worker Info</h4>
-      {workers.map(worker => {
-        return (
-          <div key={worker.id}>
-            <h5>Worker State: {worker.state}</h5>
-            <h5>Machine Type: {worker.machineType}</h5>
-          </div>
-        )
-      })}
+      {workers ? <h3>Workers</h3> : <></>}
+      {workers ? <WorkerDetails workers={workers} /> : <></>}
     </>
+  )
+}
+
+const WorkerDetails = ({ workers }) => {
+
+  return (
+    <StructuredListWrapper>
+      <StructuredListHead>
+        <StructuredListRow head>
+          <StructuredListCell head>State</StructuredListCell>
+          <StructuredListCell head>Status</StructuredListCell>
+          <StructuredListCell head>Public Vlan</StructuredListCell>
+          <StructuredListCell head>Private Vlan</StructuredListCell>
+          <StructuredListCell head>Machine Type</StructuredListCell>
+        </StructuredListRow>
+      </StructuredListHead>
+      <StructuredListBody>
+        {workers.map(worker => {
+          const { id, state, machineType, privateVlan, publicVlan, status } = worker;
+          return (
+            <StructuredListRow key={id}>
+              <StructuredListCell noWrap>{state}</StructuredListCell>
+              <StructuredListCell noWrap>{status}</StructuredListCell>
+              <StructuredListCell>{publicVlan}</StructuredListCell>
+              <StructuredListCell>{privateVlan}</StructuredListCell>
+              <StructuredListCell>{machineType}</StructuredListCell>
+            </StructuredListRow>
+          )
+        })}
+      </StructuredListBody>
+    </StructuredListWrapper>
   )
 }
 
@@ -98,8 +134,7 @@ const CustomCell = ({ cell }) => {
         </span>
       );
     case "tags":
-
-      return <>{value.join(", ")}</>
+      return (<>{value.map(tag => <Tag type='blue'>{tag}</Tag>)}</>)
     default:
       return <>{value}</>;
   }
@@ -250,13 +285,13 @@ const Clusters = () => {
 
   return (
     <>
-    <DataTable
-      rows={clusters}
-      headers={headers}
-      render={render}
-      isSortable //={true}
-    />
-    <Loading active={isDeletingClusters}/>)
+      <DataTable
+        rows={clusters}
+        headers={headers}
+        render={render}
+        isSortable //={true}
+      />
+      <Loading active={isDeletingClusters} />)
     </>
   );
 };

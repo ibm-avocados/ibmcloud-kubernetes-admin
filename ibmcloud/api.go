@@ -54,7 +54,7 @@ const basicAuth = "Basic Yng6Yng="
 
 // TODO: logical timeout, 10 seconds wasn't long enough.
 var client = http.Client{
-	Timeout: time.Duration(30 * time.Second),
+	Timeout: time.Duration(20 * time.Second),
 }
 
 //// useful for loagging
@@ -215,7 +215,7 @@ func getClusters(token string, location string) ([]*Cluster, error) {
 	wg := &sync.WaitGroup{}
 
 	for _, cluster := range result {
-		time.Sleep(5 * time.Millisecond)
+		time.Sleep(10 * time.Millisecond)
 		wg.Add(1)
 		go func(cluster *Cluster) {
 			tags, err := getTags(token, cluster.Crn)
