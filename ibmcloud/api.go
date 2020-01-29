@@ -3,7 +3,6 @@ package ibmcloud
 // TODO: return errors
 
 import (
-	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -13,8 +12,6 @@ import (
 	"strings"
 	"sync"
 	"time"
-
-	"github.com/certifi/gocertifi"
 )
 
 // protocol
@@ -60,10 +57,7 @@ const basicAuth = "Basic Yng6Yng="
 var client *http.Client
 
 func init() {
-	transport := http.DefaultTransport.(*http.Transport).Clone()
-	certPool, _ := gocertifi.CACerts()
-	transport.TLSClientConfig = &tls.Config{RootCAs: certPool}
-	client = &http.Client{Transport: transport, Timeout: time.Duration(30 * time.Second)}
+	client = &http.Client{Timeout: time.Duration(30 * time.Second)}
 }
 
 //// useful for loagging

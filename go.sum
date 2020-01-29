@@ -1,4 +1,2 @@
-github.com/certifi/gocertifi v0.0.0-20200104152315-a6d78f326758 h1:epkmRmrjzR0Km6DrVMk/ZQwDdMY2w31I3kQT91DbxS0=
-github.com/certifi/gocertifi v0.0.0-20200104152315-a6d78f326758/go.mod h1:sGbDF6GwGcLpkNXPUTkMRoywsNa/ol15pxFe6ERfguA=
 github.com/gorilla/mux v1.7.3 h1:gnP5JzjVOuiZD07fKKToCAOjS0yOpj/qPETTXCCS6hw=
 github.com/gorilla/mux v1.7.3/go.mod h1:1lud6UwP+6orDFRuTfBEV8e9/aOM/c4fVVCaMa2zaAs=
