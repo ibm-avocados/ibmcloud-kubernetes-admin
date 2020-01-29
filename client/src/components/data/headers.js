@@ -29,7 +29,10 @@ const headers = [
     key: "tags",
     header: "Tags"
   },
-
+  {
+    key: "cost",
+    header: "Cost"
+  }
 ];
 
 export default headers;
