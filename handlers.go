@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/gorilla/mux"
 	"github.com/moficodes/ibmcloud-kubernetes-admin/ibmcloud"
 )
 
@@ -198,7 +199,12 @@ func clusterListHandler(w http.ResponseWriter, r *http.Request) {
 		handleError(w, http.StatusNotFound, "could not get session", err.Error())
 		return
 	}
-	clusters, err := session.GetClusters("")
+
+	vars := mux.Vars(r)
+
+	accountID := vars["accountID"]
+
+	clusters, err := session.GetClusters(accountID, "")
 	if err != nil {
 		handleError(w, http.StatusNotFound, "could not get clusters", err.Error())
 		return
@@ -209,6 +215,54 @@ func clusterListHandler(w http.ResponseWriter, r *http.Request) {
 	e.Encode(clusters)
 	// w.WriteHeader(http.StatusOK)
 	// fmt.Fprintln(w, statusOkMessage)
+}
+
+func deleteTagHandler(w http.ResponseWriter, r *http.Request) {
+	session, err := getCloudSessions(r)
+	if err != nil {
+		handleError(w, http.StatusNotFound, "could not get session", err.Error())
+		return
+	}
+
+	var body ibmcloud.UpdateTag
+	decoder := json.NewDecoder(r.Body)
+	err = decoder.Decode(&body)
+	if err != nil {
+		handleError(w, http.StatusInternalServerError, "could not decode", err.Error())
+		return
+	}
+
+	res, err := session.DeleteTag(body)
+	if err != nil {
+		handleError(w, http.StatusInternalServerError, "could not delete tag", err.Error())
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, `{"status": "ok, delete %d tags"}`, len(res.Results))
+}
+
+func setTagHandler(w http.ResponseWriter, r *http.Request) {
+	session, err := getCloudSessions(r)
+	if err != nil {
+		handleError(w, http.StatusNotFound, "could not get session", err.Error())
+		return
+	}
+
+	var body ibmcloud.UpdateTag
+	decoder := json.NewDecoder(r.Body)
+	err = decoder.Decode(&body)
+	if err != nil {
+		handleError(w, http.StatusInternalServerError, "could not decode", err.Error())
+		return
+	}
+
+	res, err := session.SetTag(body)
+	if err != nil {
+		handleError(w, http.StatusInternalServerError, "could not update tag", err.Error())
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, `{"status": "ok, wrote %d tags"}`, len(res.Results))
 }
 
 func handleError(w http.ResponseWriter, code int, message ...string) {

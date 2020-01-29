@@ -76,8 +76,8 @@ func (s *Session) getAccountsWithEndpoint(nextURL *string) (*Accounts, error) {
 	return accounts, nil
 }
 
-func (s *Session) GetClusters(location string) ([]*Cluster, error) {
-	return getClusters(s.Token.AccessToken, location)
+func (s *Session) GetClusters(accountID, location string) ([]*Cluster, error) {
+	return getClusters(s.Token.AccessToken, accountID, location)
 }
 
 func (s *Session) BindAccountToToken(accountID string) (*Session, error) {
@@ -94,4 +94,13 @@ func (s *Session) BindAccountToToken(accountID string) (*Session, error) {
 
 func (s *Session) DeleteCluster(id, resourceGroup, deleteResources string) error {
 	return deleteCluster(s.Token.AccessToken, id, resourceGroup, deleteResources)
+}
+
+func (s *Session) SetTag(updateTag UpdateTag) (*TagResult, error) {
+	return setTags(s.Token.AccessToken, updateTag)
+}
+
+func (s *Session) DeleteTag(updateTag UpdateTag) (*TagResult, error) {
+
+	return deleteTags(s.Token.AccessToken, updateTag)
 }

@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"strings"
 	"sync"
 	"time"
 )
@@ -54,7 +55,7 @@ const basicAuth = "Basic Yng6Yng="
 
 // TODO: logical timeout, 10 seconds wasn't long enough.
 var client = http.Client{
-	Timeout: time.Duration(20 * time.Second),
+	Timeout: time.Duration(30 * time.Second),
 }
 
 //// useful for loagging
@@ -194,7 +195,7 @@ func getLocations() ([]Location, error) {
 	return result, nil
 }
 
-func getClusters(token string, location string) ([]*Cluster, error) {
+func getClusters(token, accountID, location string) ([]*Cluster, error) {
 	defer timeTaken(time.Now(), "GetCluster :")
 	var result []*Cluster
 	header := map[string]string{
@@ -238,6 +239,11 @@ func getClusters(token string, location string) ([]*Cluster, error) {
 				fmt.Println("error : ", err)
 			} else {
 				cluster.Workers = workers
+				cost, err := getBillingData(token, accountID, cluster.Crn, workers)
+				if err != nil {
+					fmt.Println("error for cost: ", cluster.Name)
+				}
+				cluster.Cost = cost
 			}
 			wg.Done()
 		}(cluster)
@@ -245,6 +251,33 @@ func getClusters(token string, location string) ([]*Cluster, error) {
 
 	wg.Wait()
 	return result, nil
+}
+
+func getBillingData(token, accountID, resourceInstanceID string, workers []Worker) (string, error) {
+	currentMonth := time.Now().Format("2006-01")
+	total := 0.0
+	for _, worker := range workers {
+		usage, err := getResourceUsagePerNode(token, accountID, currentMonth, resourceInstanceID, worker.ID)
+		if err != nil {
+			log.Printf("error getting resource usage %v\n", err)
+			return "N/A", err
+		}
+		costForWorker := calcuateCostFromResourceUsage(usage)
+		total += costForWorker
+	}
+
+	s := fmt.Sprintf("%.2f", total)
+	return s, nil
+}
+
+func calcuateCostFromResourceUsage(usage *ResourceUsage) float64 {
+	total := 0.0
+	for _, resource := range usage.Resources {
+		for _, use := range resource.Usage {
+			total += use.Cost
+		}
+	}
+	return total
 }
 
 func deleteCluster(token, id, resourceGroup, deleteResources string) error {
@@ -281,8 +314,28 @@ func getClusterWorkers(token, id string) ([]Worker, error) {
 	return result, nil
 }
 
-func getBillingPerNode(token, accountID, billingMonth, resourceInstanceID, workerID string) {
+func getResourceUsagePerNode(token, accountID, billingMonth, resourceInstanceID, workerID string) (*ResourceUsage, error) {
+	var result ResourceUsage
+	header := map[string]string{
+		"Authorization": "Bearer " + token,
+	}
 
+	crn := strings.ReplaceAll(resourceInstanceID, "::", ":worker:") + workerID
+	query := map[string]string{
+		"resource_id":          "containers-kubernetes",
+		"_names":               "true",
+		"resource_instance_id": crn,
+	}
+
+	endpoint := billingEndpoint + "/" + accountID + "/resource_instances/usage/" + billingMonth
+
+	err := fetch(endpoint, header, query, &result)
+
+	if err != nil {
+		return nil, fmt.Errorf("error fetching resources usage %v", err)
+	}
+
+	return &result, err
 }
 
 func getTags(token string, crn string) (*Tags, error) {
@@ -301,8 +354,19 @@ func getTags(token string, crn string) (*Tags, error) {
 	return &result, nil
 }
 
-func setTags(token string, tag string, crn ...string) (*SetTagResult, error) {
-	var result SetTagResult
+func setTags(token string, updateTag UpdateTag) (*TagResult, error) {
+	setTagsEndpoint := tagEndpoint + "/" + "attach"
+	return updateTags(setTagsEndpoint, token, updateTag)
+}
+
+func deleteTags(token string, updateTag UpdateTag) (*TagResult, error) {
+	setTagsEndpoint := tagEndpoint + "/" + "detach"
+
+	return updateTags(setTagsEndpoint, token, updateTag)
+}
+
+func updateTags(endpoint, token string, updateTag UpdateTag) (*TagResult, error) {
+	var result TagResult
 	header := map[string]string{
 		"Authorization": "Bearer " + token,
 		"Content-Type":  "application/json",
@@ -313,22 +377,11 @@ func setTags(token string, tag string, crn ...string) (*SetTagResult, error) {
 		"providers": "ghost",
 	}
 
-	setTagsEndpoint := tagEndpoint + "/" + "attach"
-
-	settag := &SetTag{}
-	settag.TagName = tag
-	resources := make([]Resource, len(crn))
-	for i, val := range crn {
-		resource := Resource{ResourceID: val}
-		resources[i] = resource
-	}
-	settag.Resources = resources
-
-	body, err := json.Marshal(settag)
+	body, err := json.Marshal(updateTag)
 	if err != nil {
 		return nil, err
 	}
-	err = postBody(setTagsEndpoint, header, query, body, &result)
+	err = postBody(endpoint, header, query, body, &result)
 	if err != nil {
 		return nil, err
 	}

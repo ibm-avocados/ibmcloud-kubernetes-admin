@@ -10,11 +10,12 @@ import {
   StructuredListHead,
   StructuredListBody,
   StructuredListRow,
-  StructuredListCell
+  StructuredListCell,
+  TextInput
 } from "carbon-components-react";
 import {
   Delete16 as Delete,
-  Save16 as Save,
+  TagGroup16 as TagGroup,
   Reset16 as Reset
 } from "@carbon/icons-react";
 import { getJSON } from "../../fetchUtil";
@@ -54,6 +55,10 @@ const {
 const arrayToMap = arr =>
   arr.reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {});
 
+// const mapToArray = data =>
+//   Object.keys(data).map(val => data[val]);
+
+
 const deleteCluster = cluster =>
   fetch("/api/v1/clusters", {
     method: "DELETE",
@@ -76,7 +81,6 @@ const CustomExpandedRow = ({ name, dateCreated, workers }) => {
 }
 
 const WorkerDetails = ({ workers }) => {
-
   return (
     <StructuredListWrapper>
       <StructuredListHead>
@@ -106,90 +110,110 @@ const WorkerDetails = ({ workers }) => {
   )
 }
 
-
-
-const CustomCell = ({ cell }) => {
-  const { info, value } = cell;
-  switch (info.header) {
-    case "state":
-      return (
-        <span className="oneline">
-          <span className={`status ${value}`}></span>
-          {value}
-        </span>
-      );
-    case "masterKubeVersion":
-      return (
-        <span className="oneline">
-          <img
-            alt="logo"
-            className="logo-image"
-            src={
-              value.includes("openshift")
-                ? "https://cloud.ibm.com/kubernetes/img/openshift_logo-7825001afb.svg"
-                : "https://cloud.ibm.com/kubernetes/img/container-service-logo-7e87826329.svg"
-            }
-          />
-          {value}
-        </span>
-      );
-    case "tags":
-      return (<>{value.map(tag => <Tag key={tag} type='blue'>{tag}</Tag>)}</>)
-    case "cost":
-      return (<>${value}</>)
-    default:
-      return <>{value}</>;
-  }
-};
-
-const Clusters = ({accountID}) => {
+const Clusters = ({ accountID }) => {
   const [isLoadingClusters, setLoadingClusters] = useState(true);
   const [showLoading, setShowLoading] = useState(false);
   const [clusters, setClusters] = useState([]);
+  const [tagText, setTagText] = useState("");
+  // const [accountIDData, setAccountID] = useState(accountID);
 
-  const loadClusters = useCallback(async (accountID) => {
+  const loadClusters = useCallback(async () => {
     setLoadingClusters(true);
     const clusters = await fetch(`/api/v1/clusters/${accountID}`).then(getJSON);
-    console.log(clusters);
     setClusters(clusters);
     setLoadingClusters(false);
-  }, []);
+  }, [accountID]);
 
   useEffect(() => {
-    loadClusters(accountID);
-  }, [loadClusters, accountID]);
+    loadClusters();
+  }, [loadClusters]);
+
+
+
+  
+
 
   const deleteClusters = useCallback(
-    clusters => async (accountID) => {
+    clusters => async () => {
       setShowLoading(true);
-      console.log(clusters);
       const promises = clusters.map(cluster => deleteCluster(cluster));
       await Promise.all(promises);
       setShowLoading(false);
-      loadClusters(accountID);
+      loadClusters();
     },
     [loadClusters]
   );
 
-  const buttonClicked = rows => () => {
-    console.log("slected rows", rows);
-  };
+  // const buttonClicked = rows => () => {
+  //   console.log("slected rows", rows);
+  // };
 
-  const setTag = useCallback(clusters => async (accountID) => {
-    let resources = clusters.map(cluster => {return ({resource_id: cluster.crn})});
+  const deleteTag = useCallback((tagName, crn) => async () => {
     let body = {
-      tag_name: "test-add-mofi-1",
+      tag_name: tagName,
+      resources: [{ resource_id: crn }]
+    };
+    const result = await fetch("/api/v1/clusters/deletetag", {
+      method: "POST",
+      body: JSON.stringify(body)
+    }).then(getJSON);
+    console.log(result);
+    loadClusters();
+  }, [loadClusters]);
+
+  const setTag = useCallback(clusters => async () => {
+    if (tagText === "") {
+      return;
+    }
+    let resources = clusters.map(cluster => { return ({ resource_id: cluster.crn }) });
+    let body = {
+      tag_name: tagText,
       resources: resources
     };
     setShowLoading(true);
     const result = await fetch("/api/v1/clusters/settag", {
-      method: "post",
+      method: "POST",
       body: JSON.stringify(body)
     }).then(getJSON)
     setShowLoading(false);
-    loadClusters(accountID);
+    loadClusters();
     console.log(result);
-  },[loadClusters]);
+    setTagText("");
+  }, [loadClusters, tagText]);
+
+  const CustomCell = ({ cell, crn }) => {
+    const { info, value } = cell;
+    switch (info.header) {
+      case "state":
+        return (
+          <span className="oneline">
+            <span className={`status ${value}`}></span>
+            {value}
+          </span>
+        );
+      case "masterKubeVersion":
+        return (
+          <span className="oneline">
+            <img
+              alt="logo"
+              className="logo-image"
+              src={
+                value.includes("openshift")
+                  ? "https://cloud.ibm.com/kubernetes/img/openshift_logo-7825001afb.svg"
+                  : "https://cloud.ibm.com/kubernetes/img/container-service-logo-7e87826329.svg"
+              }
+            />
+            {value}
+          </span>
+        );
+      case "tags":
+        return (<>{value.map(tag => <Tag onClick={deleteTag(tag, crn)} filter key={tag} type='blue'>{tag}</Tag>)}</>)
+      case "cost":
+        return (<>${value}</>)
+      default:
+        return <>{value}</>;
+    }
+  };
 
   const render = useCallback(
     ({
@@ -204,7 +228,6 @@ const Clusters = ({accountID}) => {
       getExpandHeaderProps
     }) => {
       const clusterMap = arrayToMap(clusters);
-
       return (
         <TableContainer title="Clusters">
           <TableToolbar>
@@ -219,14 +242,24 @@ const Clusters = ({accountID}) => {
               >
                 Delete
               </TableBatchAction>
-              <TableBatchAction
-                renderIcon={Save}
+              <div className="tag-input">
+                <TextInput
+                  id="tag-input"
+                  hideLabel
+                  onChange={e => setTagText(e.target.value.trim())}
+                  labelText="tag"
+                  placeholder="Tag" />
+              </div>
+              <Button
+                renderIcon={TagGroup}
+                iconDescription="Group Tag"
+                hasIconOnly kind="primary"
+                size="default"
+                type="button"
+                tooltipPosition="bottom"
                 onClick={setTag(
                   selectedRows.map(r => clusterMap[r.id])
-                )}
-              >
-                Save
-              </TableBatchAction>
+                )} />
             </TableBatchActions>
             <TableToolbarContent>
               <TableToolbarSearch
@@ -265,7 +298,7 @@ const Clusters = ({accountID}) => {
                     <TableSelectRow {...getSelectionProps({ row })} />
                     {row.cells.map(cell => (
                       <TableCell key={cell.id}>
-                        <CustomCell cell={cell} row={row} />
+                        <CustomCell cell={cell} crn={clusterMap[row.id].crn} />
                       </TableCell>
                     ))}
                   </TableExpandRow>

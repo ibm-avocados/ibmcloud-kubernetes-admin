@@ -17,10 +17,14 @@ func main() {
 	api.HandleFunc("/authenticate", authenticationHandler).Methods(http.MethodPost)
 	api.HandleFunc("/accounts", accountListHandler).Methods(http.MethodGet)
 	api.HandleFunc("/login", loginHandler).Methods(http.MethodGet)
-	api.HandleFunc("/clusters", clusterListHandler).Methods(http.MethodGet)
+	api.HandleFunc("/clusters/{accountID}", clusterListHandler).Methods(http.MethodGet)
 	api.HandleFunc("/clusters", clusterDeleteHandler).Methods(http.MethodDelete)
+	api.HandleFunc("/clusters/settag", setTagHandler).Methods(http.MethodPost)
+	api.HandleFunc("/clusters/deletetag", deleteTagHandler).Methods(http.MethodPost)
 
+	r.PathPrefix("/").Handler(http.FileServer(http.Dir("client/build/"))).Methods("GET")
 	r.HandleFunc("/", notFoundHandler)
+
 	port := "9000"
 
 	log.Println("starting server on port ", port)
