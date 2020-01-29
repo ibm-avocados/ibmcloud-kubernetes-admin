@@ -136,7 +136,7 @@ const CustomCell = ({ cell }) => {
     case "tags":
       return (<>{value.map(tag => <Tag key={tag} type='blue'>{tag}</Tag>)}</>)
     case "cost":
-      return (<>$ {value}</>)
+      return (<>${value}</>)
     default:
       return <>{value}</>;
   }
