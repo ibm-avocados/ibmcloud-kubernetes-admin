@@ -144,7 +144,7 @@ const CustomCell = ({ cell }) => {
 
 const Clusters = ({accountID}) => {
   const [isLoadingClusters, setLoadingClusters] = useState(true);
-  const [isDeletingClusters, setDeletingClusters] = useState(false);
+  const [showLoading, setShowLoading] = useState(false);
   const [clusters, setClusters] = useState([]);
 
   const loadClusters = useCallback(async (accountID) => {
@@ -160,13 +160,13 @@ const Clusters = ({accountID}) => {
   }, [loadClusters, accountID]);
 
   const deleteClusters = useCallback(
-    clusters => async ({ accountID }) => {
-      setDeletingClusters(true);
+    clusters => async (accountID) => {
+      setShowLoading(true);
       console.log(clusters);
       const promises = clusters.map(cluster => deleteCluster(cluster));
       await Promise.all(promises);
-      setDeletingClusters(false);
-      loadClusters();
+      setShowLoading(false);
+      loadClusters(accountID);
     },
     [loadClusters]
   );
@@ -174,6 +174,22 @@ const Clusters = ({accountID}) => {
   const buttonClicked = rows => () => {
     console.log("slected rows", rows);
   };
+
+  const setTag = useCallback(clusters => async (accountID) => {
+    let resources = clusters.map(cluster => {return ({resource_id: cluster.crn})});
+    let body = {
+      tag_name: "test-add-mofi-1",
+      resources: resources
+    };
+    setShowLoading(true);
+    const result = await fetch("/api/v1/clusters/settag", {
+      method: "post",
+      body: JSON.stringify(body)
+    }).then(getJSON)
+    setShowLoading(false);
+    loadClusters(accountID);
+    console.log(result);
+  },[loadClusters]);
 
   const render = useCallback(
     ({
@@ -205,7 +221,9 @@ const Clusters = ({accountID}) => {
               </TableBatchAction>
               <TableBatchAction
                 renderIcon={Save}
-                onClick={buttonClicked(selectedRows)}
+                onClick={setTag(
+                  selectedRows.map(r => clusterMap[r.id])
+                )}
               >
                 Save
               </TableBatchAction>
@@ -265,7 +283,7 @@ const Clusters = ({accountID}) => {
         </TableContainer>
       );
     },
-    [clusters, deleteClusters, loadClusters]
+    [clusters, deleteClusters, loadClusters, setTag]
   );
 
   if (isLoadingClusters) {
@@ -292,7 +310,7 @@ const Clusters = ({accountID}) => {
         render={render}
         isSortable //={true}
       />
-      <Loading active={isDeletingClusters} />)
+      <Loading active={showLoading} />)
     </>
   );
 };
