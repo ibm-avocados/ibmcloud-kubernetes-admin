@@ -152,12 +152,14 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 func accountListHandler(w http.ResponseWriter, r *http.Request) {
 	session, err := getCloudSessions(r)
 	if err != nil {
+		log.Printf("could not get session %v\n", err)
 		handleError(w, http.StatusNotFound, "could not get session", err.Error())
 		return
 	}
 
 	accounts, err := session.GetAccounts()
 	if err != nil {
+		log.Printf("could not get accounts using access token %v\n", err)
 		handleError(w, http.StatusInternalServerError, "could not get accounts using access token", err.Error())
 		return
 	}
