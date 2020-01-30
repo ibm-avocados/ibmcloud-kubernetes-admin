@@ -120,6 +120,7 @@ const Clusters = ({ accountID }) => {
   const loadClusters = useCallback(async () => {
     setLoadingClusters(true);
     const clusters = await fetch(`/api/v1/clusters/${accountID}`).then(getJSON);
+    console.log(clusters);
     setClusters(clusters);
     setLoadingClusters(false);
   }, [accountID]);
@@ -130,7 +131,7 @@ const Clusters = ({ accountID }) => {
 
 
 
-  
+
 
 
   const deleteClusters = useCallback(

@@ -3,6 +3,7 @@ import { getJSON } from "./fetchUtil";
 import AppPage from "./components/AppPage";
 import LoginPage from "./components/LoginPage";
 import OneTimePasscodePage from "./components/OneTimePasscodePage";
+import Router from "./Router";
 
 const STATE_INIT = 0;
 const STATE_IS_LOGGED_IN = 1;
@@ -45,7 +46,7 @@ const App = () => {
     case STATE_SHOW_OTP:
       return <OneTimePasscodePage onSubmit={handleOTPSubmit} />;
     case STATE_IS_LOGGED_IN:
-      return <AppPage />;
+      return <Router />;
     default:
       return <LoginPage onLoginClick={handleLoginClick} />;
   }

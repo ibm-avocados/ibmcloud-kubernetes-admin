@@ -1,6 +1,7 @@
 import React from "react";
 import styles from "./Navbar.module.css";
 import { Dropdown } from "carbon-components-react";
+import {Link} from 'react-router-dom';
 import "./Dropdown.css";
 
 const Navbar = props => {
@@ -22,7 +23,7 @@ const Navbar = props => {
         <div className={styles.title}>
           <span className={styles.bold}>IBM</span> Cloud
         </div>
-
+        <Link to="/create" >Create</Link>
         <Dropdown
           disabled={props.accountsLoaded}
           className={styles.dropdown}
