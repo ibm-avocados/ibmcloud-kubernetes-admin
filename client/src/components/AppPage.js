@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React from "react";
 import Clusters from "./common/Clusters";
 
 const AppPage = ({ hasChosenAccount, tokenUpgraded, accountID }) => {

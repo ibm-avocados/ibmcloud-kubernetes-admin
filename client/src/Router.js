@@ -9,6 +9,10 @@ const DumPage = () => {
   return <div>Hello</div>;
 };
 
+const Login = () => {
+  return <div>Login</div>
+};
+
 const history = createBrowserHistory();
 
 const AppRouter = () => {
@@ -60,8 +64,13 @@ const AppRouter = () => {
       
         <Switch>
           <Route path="/" exact>
-            <AppPage hasChosenAccount={hasChosenAccount} tokenUpgraded={tokenUpgraded} accountID={accountID} />
+            <AppPage 
+              hasChosenAccount={hasChosenAccount} 
+              tokenUpgraded={tokenUpgraded} 
+              accountID={accountID} 
+            />
           </Route>
+          <Route path="/login" exact component={Login}/>
           <Route path="/create" component={DumPage} />
         </Switch>
       </Router>
