@@ -1,19 +1,15 @@
 import React, {useCallback, useEffect, useState} from "react";
 import { Router, Switch, Route } from "react-router-dom";
 import AppPage from "./components/AppPage";
+import Login from './components/Login';
 import { createBrowserHistory } from "history";
 import Navbar from "./components/common/Navbar";
 import { getJSON } from "./fetchUtil";
+import history from './globalHistory'
 
 const DumPage = () => {
   return <div>Hello</div>;
 };
-
-const Login = () => {
-  return <div>Login</div>
-};
-
-const history = createBrowserHistory();
 
 const AppRouter = () => {
   const [isLoadingAccounts, setLoadingAccounts] = useState(true);
