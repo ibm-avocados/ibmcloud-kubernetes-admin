@@ -135,7 +135,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 
 	session, err := getCloudSessions(r)
 	if err != nil {
-		handleError(w, http.StatusNotFound, "could not get session", err.Error())
+		handleError(w, http.StatusUnauthorized, "could not get session", err.Error())
 		return
 	}
 	fmt.Println(session.Token.Expiration)
