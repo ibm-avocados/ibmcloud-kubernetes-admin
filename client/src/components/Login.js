@@ -1,7 +1,8 @@
-import React, {useState, useCallback} from 'react';
+import React, {useState, useCallback, useEffect} from 'react';
 import Button from "./common/Button";
 import TextInput from "./common/TextInput";
 import styles from "./pagestyles.module.css";
+import history from "../globalHistory";
 
 const LoginPage = ({ onLoginClick }) => (
   <div className={styles.wrapper}>

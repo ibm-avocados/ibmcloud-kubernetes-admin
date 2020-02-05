@@ -1,11 +1,9 @@
-import React, {useCallback, useEffect, useState} from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Router, Switch, Route } from "react-router-dom";
 import AppPage from "./components/AppPage";
-import Login from './components/Login';
-import { createBrowserHistory } from "history";
+import Login from "./components/Login";
 import Navbar from "./components/common/Navbar";
-import { getJSON } from "./fetchUtil";
-import history from './globalHistory'
+import history from "./globalHistory";
 
 const DumPage = () => {
   return <div>Hello</div>;
@@ -16,13 +14,16 @@ const AppRouter = () => {
   const [accounts, setAccounts] = useState([]);
   const [accountID, setSelectedAccountID] = useState();
 
-
   const [hasChosenAccount, setHasChosenAccount] = useState(false);
   const [tokenUpgraded, setTokenUpgraded] = useState(false);
 
   const loadAccounts = async () => {
     setLoadingAccounts(true);
-    const accounts = await fetch("/api/v1/accounts").then(getJSON);
+    const response = await fetch("/api/v1/accounts");
+    if (response.status !== 200) {
+      // Somehow did not get any account back.  
+    }
+    const accounts = await response.json();
     setAccounts(accounts.resources);
     setLoadingAccounts(false);
   };
@@ -32,45 +33,46 @@ const AppRouter = () => {
     loadAccounts();
   }, []);
 
-  const handleAccountChosen = useCallback(
-    async ({ selectedItem }) => {
-      setSelectedAccountID(selectedItem.metadata.guid);
-      setTokenUpgraded(false);
-      setHasChosenAccount(true);
-      const { status } = await fetch("/api/v1/authenticate/account", {
-        method: "POST",
-        body: JSON.stringify({
-          id: selectedItem.metadata.guid
-        })
-      });
-      if (status === 200) {
-        setTokenUpgraded(true);
-      }
-    },
-    []
-  );
+  const handleAccountChosen = useCallback(async ({ selectedItem }) => {
+    setSelectedAccountID(selectedItem.metadata.guid);
+    setTokenUpgraded(false);
+    setHasChosenAccount(true);
+    const { status } = await fetch("/api/v1/authenticate/account", {
+      method: "POST",
+      body: JSON.stringify({
+        id: selectedItem.metadata.guid
+      })
+    });
+    if (status === 200) {
+      setTokenUpgraded(true);
+    }
+  }, []);
   return (
-    
     <Router history={history}>
-      <Navbar
-        isLoaded={!isLoadingAccounts}
-        items={accounts}
-        accountSelected={handleAccountChosen}
-      />
-      
-        <Switch>
-          <Route path="/" exact>
-            <AppPage 
-              hasChosenAccount={hasChosenAccount} 
-              tokenUpgraded={tokenUpgraded} 
-              accountID={accountID} 
-            />
-          </Route>
-          <Route path="/login" exact component={Login}/>
-          <Route path="/create" component={DumPage} />
-        </Switch>
-      </Router>
-    
+      <Switch>
+        <Route path="/" exact>
+          <Navbar
+            isLoaded={!isLoadingAccounts}
+            items={accounts}
+            accountSelected={handleAccountChosen}
+          />
+          <AppPage
+            hasChosenAccount={hasChosenAccount}
+            tokenUpgraded={tokenUpgraded}
+            accountID={accountID}
+          />
+        </Route>
+        <Route path="/login" exact component={Login} />
+        <Route path="/create" exact>
+          <Navbar
+            isLoaded={!isLoadingAccounts}
+            items={accounts}
+            accountSelected={handleAccountChosen}
+          />
+          <DumPage />
+        </Route>
+      </Switch>
+    </Router>
   );
 };
 

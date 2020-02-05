@@ -10,7 +10,12 @@
   margin-left: 2rem;
   font-size: 1.25rem;
   font-weight: 400;
-  color: var(--ui-01);
+  color: var(--ui-03);
+}
+
+.title:hover {
+  cursor: pointer;
+  color: var(--ui-02);
 }
 
 .bold {
@@ -19,4 +24,18 @@
 
 .dropdown {
   min-width: 400px;
+}
+
+.menuItem {
+  font-size: 1rem;
+  font-weight: 400;
+  border: none;
+  padding: 1rem;
+  color: var(--text-03);
+  background: transparent;
+}
+
+.menuItem:hover {
+  color: var(--text-04);
+  cursor: pointer;
 }

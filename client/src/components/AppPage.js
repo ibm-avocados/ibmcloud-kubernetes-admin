@@ -1,25 +1,14 @@
 import React from "react";
 import Clusters from "./common/Clusters";
+import {Loading} from 'carbon-components-react';
 
 const AppPage = ({ hasChosenAccount, tokenUpgraded, accountID }) => {
-  return (
-    <>
-      <ConditionalClusterTable
-        accountChanged={hasChosenAccount}
-        tokenUpgraded={tokenUpgraded}
-        accountID={accountID}
-      />
-    </>
-  );
-};
-
-const ConditionalClusterTable = ({ accountChanged, tokenUpgraded, accountID }) => {
-  if (!accountChanged) {
+  if (!hasChosenAccount) {
     return null;
   } else if (tokenUpgraded) {
     return <Clusters accountID={accountID} />;
   } else {
-    return <h1>Token Not Valid</h1>
+    return <Loading />
   }
 };
 export default AppPage;

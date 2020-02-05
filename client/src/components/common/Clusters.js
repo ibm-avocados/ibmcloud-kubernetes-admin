@@ -18,7 +18,6 @@ import {
   TagGroup16 as TagGroup,
   Reset16 as Reset
 } from "@carbon/icons-react";
-import { getJSON } from "../../fetchUtil";
 
 import headers from "../data/headers";
 
@@ -119,7 +118,11 @@ const Clusters = ({ accountID }) => {
 
   const loadClusters = useCallback(async () => {
     setLoadingClusters(true);
-    const clusters = await fetch(`/api/v1/clusters/${accountID}`).then(getJSON);
+    const response = await fetch(`/api/v1/clusters/${accountID}`);
+    if (response.status !== 200) {
+
+    }
+    const clusters = await response.json();
     console.log(clusters);
     setClusters(clusters);
     setLoadingClusters(false);
@@ -154,10 +157,15 @@ const Clusters = ({ accountID }) => {
       tag_name: tagName,
       resources: [{ resource_id: crn }]
     };
-    const result = await fetch("/api/v1/clusters/deletetag", {
+    const response = await fetch("/api/v1/clusters/deletetag", {
       method: "POST",
       body: JSON.stringify(body)
-    }).then(getJSON);
+    });
+
+    if (response.status !== 200) {
+
+    }  
+    const result = await response.json();
     console.log(result);
     loadClusters();
   }, [loadClusters]);
@@ -172,13 +180,16 @@ const Clusters = ({ accountID }) => {
       resources: resources
     };
     setShowLoading(true);
-    const result = await fetch("/api/v1/clusters/settag", {
+    const response = await fetch("/api/v1/clusters/settag", {
       method: "POST",
       body: JSON.stringify(body)
-    }).then(getJSON)
+    });
+    if (response.status !== 200) {
+
+    }
+
     setShowLoading(false);
     loadClusters();
-    console.log(result);
     setTagText("");
   }, [loadClusters, tagText]);
 

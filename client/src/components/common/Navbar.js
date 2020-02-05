@@ -1,8 +1,18 @@
 import React from "react";
 import styles from "./Navbar.module.css";
 import { Dropdown } from "carbon-components-react";
-import {Link} from 'react-router-dom';
+import history from "../../globalHistory";
 import "./Dropdown.css";
+
+const MenuItem = props => {
+  return (
+    <>
+      <div className={styles.menuItem} style={props.style} onClick={props.onClickHandler}>
+        {props.label}
+      </div>
+    </>
+  );
+}
 
 const Navbar = props => {
   const itemToString = item => {
@@ -16,14 +26,22 @@ const Navbar = props => {
     return "Unknown";
   };
 
+  const handleClick = () => {
+    history.push("/create");
+  };
+
+  const homeClick = () => {
+    history.push("/");
+  }
+
 
   return (
     <>
       <div className={styles.wrapper}>
-        <div className={styles.title}>
+        <div className={styles.title} onClick={homeClick} >
           <span className={styles.bold}>IBM</span> Cloud
         </div>
-        <Link to="/create" >Create</Link>
+        <MenuItem label="Create" onClickHandler={handleClick}/>
         <Dropdown
           disabled={props.accountsLoaded}
           className={styles.dropdown}
