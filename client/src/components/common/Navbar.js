@@ -7,14 +7,18 @@ import "./Dropdown.css";
 const MenuItem = props => {
   return (
     <>
-      <div className={styles.menuItem} style={props.style} onClick={props.onClickHandler}>
+      <div
+        className={styles.menuItem}
+        style={props.style}
+        onClick={props.onClickHandler}
+      >
         {props.label}
       </div>
     </>
   );
-}
+};
 
-const Navbar = props => {
+const Navbar = ({ items, accountsLoaded, accountSelected }) => {
   const itemToString = item => {
     if (item) {
       let name = item.entity.name;
@@ -32,23 +36,22 @@ const Navbar = props => {
 
   const homeClick = () => {
     history.push("/");
-  }
-
+  };
 
   return (
     <>
       <div className={styles.wrapper}>
-        <div className={styles.title} onClick={homeClick} >
+        <div className={styles.title} onClick={homeClick}>
           <span className={styles.bold}>IBM</span> Cloud
         </div>
-        <MenuItem label="Create" onClickHandler={handleClick}/>
+        <MenuItem label="Create" onClickHandler={handleClick} />
         <Dropdown
-          disabled={props.accountsLoaded}
+          disabled={accountsLoaded}
           className={styles.dropdown}
           ariaLabel="Dropdown"
           label="Select Account"
-          items={props.items || []}
-          onChange={props.accountSelected}
+          items={items || []}
+          onChange={accountSelected}
           itemToString={itemToString}
           id="account-dropdown"
           light={false}

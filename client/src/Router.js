@@ -10,6 +10,7 @@ const DumPage = () => {
 };
 
 const AppRouter = () => {
+  console.log("APP Router Invoked");
   const [isLoadingAccounts, setLoadingAccounts] = useState(true);
   const [accounts, setAccounts] = useState([]);
   const [accountID, setSelectedAccountID] = useState();

@@ -68,7 +68,7 @@ func authenticationWithAccountHandler(w http.ResponseWriter, r *http.Request) {
 
 	accountID := fmt.Sprintf("%v", body["id"])
 
-	fmt.Println("Account id", accountID)
+	log.Println("Account id", accountID)
 
 	accountSession, err := session.BindAccountToToken(accountID)
 	if err != nil {
@@ -94,7 +94,7 @@ func authenticationHandler(w http.ResponseWriter, r *http.Request) {
 
 	otp := fmt.Sprintf("%v", body["otp"])
 
-	fmt.Println(otp)
+	log.Println(otp)
 	session, err := ibmcloud.Authenticate(otp)
 	if err != nil {
 		log.Println("could not authenticate with the otp provided")
@@ -103,7 +103,7 @@ func authenticationHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println(session.Token.Expiration)
+	log.Println(session.Token.Expiration)
 
 	setCookie(w, session)
 	w.WriteHeader(http.StatusOK)
@@ -131,7 +131,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		handleError(w, http.StatusUnauthorized, "could not get session", err.Error())
 		return
 	}
-	fmt.Println(session.Token.Expiration)
+	log.Println(session.Token.Expiration)
 
 	if !session.IsValid() {
 		handleError(w, http.StatusUnauthorized, "session expired")
@@ -178,7 +178,7 @@ func clusterDeleteHandler(w http.ResponseWriter, r *http.Request) {
 	id := fmt.Sprintf("%v", body["id"])
 	resoueceGroup := fmt.Sprintf("%v", body["resourceGroup"])
 	deleteResources := fmt.Sprintf("%v", body["deleteResources"])
-	fmt.Println(id, resoueceGroup, deleteResources)
+	log.Println(id, resoueceGroup, deleteResources)
 	err = session.DeleteCluster(id, resoueceGroup, deleteResources)
 	if err != nil {
 		handleError(w, http.StatusInternalServerError, "could not delete", err.Error())
