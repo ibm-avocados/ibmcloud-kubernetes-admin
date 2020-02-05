@@ -49,7 +49,7 @@ func authenticationWithAccountHandler(w http.ResponseWriter, r *http.Request) {
 
 	session, err := getCloudSessions(r)
 	if err != nil {
-		handleError(w, http.StatusNotFound, "could not get session", err.Error())
+		handleError(w, http.StatusUnauthorized, "could not get session", err.Error())
 		return
 	}
 
@@ -62,7 +62,7 @@ func authenticationWithAccountHandler(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	err = decoder.Decode(&body)
 	if err != nil {
-		handleError(w, http.StatusInternalServerError, "could not decode", err.Error())
+		handleError(w, http.StatusBadRequest, "could not decode", err.Error())
 		return
 	}
 
@@ -72,17 +72,11 @@ func authenticationWithAccountHandler(w http.ResponseWriter, r *http.Request) {
 
 	accountSession, err := session.BindAccountToToken(accountID)
 	if err != nil {
-		handleError(w, http.StatusInternalServerError, "could not bind account to token", err.Error())
+		handleError(w, http.StatusUnauthorized, "could not bind account to token", err.Error())
 		return
 	}
 
 	setCookie(w, accountSession)
-
-	if err != nil {
-		handleError(w, http.StatusInternalServerError, "could not save session", err.Error())
-		return
-	}
-
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintln(w, statusOkMessage)
 }
@@ -94,7 +88,7 @@ func authenticationHandler(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&body)
 	if err != nil {
-		handleError(w, http.StatusInternalServerError, "could not decode", err.Error())
+		handleError(w, http.StatusUnauthorized, "could not decode", err.Error())
 		return
 	}
 
@@ -105,14 +99,13 @@ func authenticationHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println("could not authenticate with the otp provided")
 		log.Println(err.Error())
-		handleError(w, http.StatusInternalServerError, "could not authenticate with the otp provided", err.Error())
+		handleError(w, http.StatusUnauthorized, "could not authenticate with the otp provided", err.Error())
 		return
 	}
 
 	fmt.Println(session.Token.Expiration)
 
 	setCookie(w, session)
-
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintln(w, statusOkMessage)
 }
@@ -135,7 +128,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 
 	session, err := getCloudSessions(r)
 	if err != nil {
-		handleError(w, http.StatusNotFound, "could not get session", err.Error())
+		handleError(w, http.StatusUnauthorized, "could not get session", err.Error())
 		return
 	}
 	fmt.Println(session.Token.Expiration)
@@ -153,14 +146,14 @@ func accountListHandler(w http.ResponseWriter, r *http.Request) {
 	session, err := getCloudSessions(r)
 	if err != nil {
 		log.Printf("could not get session %v\n", err)
-		handleError(w, http.StatusNotFound, "could not get session", err.Error())
+		handleError(w, http.StatusUnauthorized, "could not get session", err.Error())
 		return
 	}
 
 	accounts, err := session.GetAccounts()
 	if err != nil {
 		log.Printf("could not get accounts using access token %v\n", err)
-		handleError(w, http.StatusInternalServerError, "could not get accounts using access token", err.Error())
+		handleError(w, http.StatusUnauthorized, "could not get accounts using access token", err.Error())
 		return
 	}
 	w.WriteHeader(http.StatusOK)
@@ -171,14 +164,14 @@ func accountListHandler(w http.ResponseWriter, r *http.Request) {
 func clusterDeleteHandler(w http.ResponseWriter, r *http.Request) {
 	session, err := getCloudSessions(r)
 	if err != nil {
-		handleError(w, http.StatusNotFound, "could not get session", err.Error())
+		handleError(w, http.StatusUnauthorized, "could not get session", err.Error())
 		return
 	}
 	var body map[string]interface{}
 	decoder := json.NewDecoder(r.Body)
 	err = decoder.Decode(&body)
 	if err != nil {
-		handleError(w, http.StatusInternalServerError, "could not decode", err.Error())
+		handleError(w, http.StatusBadRequest, "could not decode", err.Error())
 		return
 	}
 
@@ -188,7 +181,7 @@ func clusterDeleteHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(id, resoueceGroup, deleteResources)
 	err = session.DeleteCluster(id, resoueceGroup, deleteResources)
 	if err != nil {
-		handleError(w, http.StatusInternalServerError, "could not decode", err.Error())
+		handleError(w, http.StatusInternalServerError, "could not delete", err.Error())
 		return
 	}
 	w.WriteHeader(http.StatusOK)
@@ -198,31 +191,34 @@ func clusterDeleteHandler(w http.ResponseWriter, r *http.Request) {
 func clusterListHandler(w http.ResponseWriter, r *http.Request) {
 	session, err := getCloudSessions(r)
 	if err != nil {
-		handleError(w, http.StatusNotFound, "could not get session", err.Error())
+		handleError(w, http.StatusUnauthorized, "could not get session", err.Error())
 		return
 	}
 
 	vars := mux.Vars(r)
 
-	accountID := vars["accountID"]
+	accountID, ok := vars["accountID"]
+
+	if !ok {
+		handleError(w, http.StatusBadRequest, "could not get accountID")
+		return
+	}
 
 	clusters, err := session.GetClusters(accountID, "")
 	if err != nil {
-		handleError(w, http.StatusNotFound, "could not get clusters", err.Error())
+		handleError(w, http.StatusUnauthorized, "could not get clusters", err.Error())
 		return
 	}
 
 	w.WriteHeader(http.StatusOK)
 	e := json.NewEncoder(w)
 	e.Encode(clusters)
-	// w.WriteHeader(http.StatusOK)
-	// fmt.Fprintln(w, statusOkMessage)
 }
 
 func deleteTagHandler(w http.ResponseWriter, r *http.Request) {
 	session, err := getCloudSessions(r)
 	if err != nil {
-		handleError(w, http.StatusNotFound, "could not get session", err.Error())
+		handleError(w, http.StatusUnauthorized, "could not get session", err.Error())
 		return
 	}
 
@@ -230,7 +226,7 @@ func deleteTagHandler(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	err = decoder.Decode(&body)
 	if err != nil {
-		handleError(w, http.StatusInternalServerError, "could not decode", err.Error())
+		handleError(w, http.StatusBadRequest, "could not decode", err.Error())
 		return
 	}
 
@@ -240,13 +236,13 @@ func deleteTagHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, `{"status": "ok, delete %d tags"}`, len(res.Results))
+	fmt.Fprintf(w, `{"status": "ok, deleted %d tags"}`, len(res.Results))
 }
 
 func setTagHandler(w http.ResponseWriter, r *http.Request) {
 	session, err := getCloudSessions(r)
 	if err != nil {
-		handleError(w, http.StatusNotFound, "could not get session", err.Error())
+		handleError(w, http.StatusUnauthorized, "could not get session", err.Error())
 		return
 	}
 
@@ -254,7 +250,7 @@ func setTagHandler(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	err = decoder.Decode(&body)
 	if err != nil {
-		handleError(w, http.StatusInternalServerError, "could not decode", err.Error())
+		handleError(w, http.StatusBadRequest, "could not decode", err.Error())
 		return
 	}
 
@@ -285,7 +281,12 @@ func getCloudSessions(r *http.Request) (*ibmcloud.Session, error) {
 	if err != nil {
 		return nil, err
 	}
-	expirationVal, _ := strconv.Atoi(expirationValStr.Value)
+
+	expirationVal, err := strconv.Atoi(expirationValStr.Value)
+	if err != nil {
+		return nil, err
+	}
+
 	session := &ibmcloud.Session{
 		Token: &ibmcloud.Token{
 			AccessToken:  accessTokenVal.Value,
@@ -294,5 +295,5 @@ func getCloudSessions(r *http.Request) (*ibmcloud.Session, error) {
 		},
 	}
 
-	return session, nil
+	return session.RenewSession()
 }

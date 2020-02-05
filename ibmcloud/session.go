@@ -92,6 +92,18 @@ func (s *Session) BindAccountToToken(accountID string) (*Session, error) {
 	return &Session{Token: token}, nil
 }
 
+func (s *Session) RenewSession() (*Session, error) {
+	err := cacheIdentityEndpoints()
+	if err != nil {
+		return nil, err
+	}
+	token, err := upgradeToken(endpoints.TokenEndpoint, s.Token.RefreshToken, "")
+	if err != nil {
+		return nil, err
+	}
+	return &Session{Token: token}, nil
+}
+
 func (s *Session) DeleteCluster(id, resourceGroup, deleteResources string) error {
 	return deleteCluster(s.Token.AccessToken, id, resourceGroup, deleteResources)
 }
@@ -101,6 +113,5 @@ func (s *Session) SetTag(updateTag UpdateTag) (*TagResult, error) {
 }
 
 func (s *Session) DeleteTag(updateTag UpdateTag) (*TagResult, error) {
-
 	return deleteTags(s.Token.AccessToken, updateTag)
 }
