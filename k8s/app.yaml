@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: admin-deploy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: admin
+  template:
+    metadata:
+      labels:
+        name: admin
+    spec:
+      containers:
+      - name: admin
+        image: moficodes/k8s-admin:latest
+        ports:
+        - containerPort: 9000

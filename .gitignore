@@ -5,6 +5,8 @@
 
 !*/
 
+!Tiltfile
+
 # dependencies
 /node_modules
 /.pnp
