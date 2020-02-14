@@ -224,11 +224,6 @@ type Tag struct {
 	Name string `json:"name"`
 }
 
-type Zone struct {
-	ID    string `json:"id"`
-	Metro string `json:"metro"`
-}
-
 type Location struct {
 	ID             string `json:"id"`
 	Name           string `json:"name"`
@@ -238,6 +233,47 @@ type Location struct {
 	Country        string `json:"country,omitempty"`
 	Geography      string `json:"geography,omitempty"`
 	DisplayName    string `json:"display_name"`
+}
+
+type Zone struct {
+	ID      string    `json:"id"`
+	Metro   string    `json:"metro"`
+	Flavors []Flavors `json:"flavors"`
+}
+type Flavors struct {
+	Name                      string `json:"name"`
+	Provider                  string `json:"provider"`
+	Memory                    string `json:"memory"`
+	NetworkSpeed              string `json:"networkSpeed"`
+	Cores                     string `json:"cores"`
+	Os                        string `json:"os"`
+	ServerType                string `json:"serverType"`
+	Storage                   string `json:"storage"`
+	SecondaryStorage          string `json:"secondaryStorage"`
+	SecondaryStorageEncrypted bool   `json:"secondaryStorageEncrypted"`
+	Deprecated                bool   `json:"deprecated"`
+	CorrespondingMachineType  string `json:"correspondingMachineType"`
+	IsTrusted                 bool   `json:"isTrusted"`
+	Gpus                      string `json:"gpus"`
+}
+
+type ClusterType struct {
+	Kubernetes []Kubernetes `json:"kubernetes"`
+	Openshift  []Openshift  `json:"openshift"`
+}
+type Kubernetes struct {
+	Major        int    `json:"major"`
+	Minor        int    `json:"minor"`
+	Patch        int    `json:"patch"`
+	Default      bool   `json:"default"`
+	EndOfService string `json:"end_of_service"`
+}
+type Openshift struct {
+	Major        int    `json:"major"`
+	Minor        int    `json:"minor"`
+	Patch        int    `json:"patch"`
+	Default      bool   `json:"default"`
+	EndOfService string `json:"end_of_service"`
 }
 
 type ResourceGroups struct {

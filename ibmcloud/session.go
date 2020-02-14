@@ -26,6 +26,18 @@ func GetIdentityEndpoints() (*IdentityEndpoints, error) {
 	return endpoints, nil
 }
 
+func GetZones(showFlavors, location string) ([]Zone, error) {
+	return getZones(showFlavors, location)
+}
+
+func GetLocations() ([]Location, error) {
+	return getLocations()
+}
+
+func GetMachineType(datacenter string)([]Flavors, error){
+	return getMachineTypes(datacenter)
+}
+
 func Authenticate(otp string) (*Session, error) {
 	err := cacheIdentityEndpoints()
 	if err != nil {
@@ -79,6 +91,8 @@ func (s *Session) getAccountsWithEndpoint(nextURL *string) (*Accounts, error) {
 func (s *Session) GetClusters(accountID, location string) ([]*Cluster, error) {
 	return getClusters(s.Token.AccessToken, accountID, location)
 }
+
+
 
 func (s *Session) BindAccountToToken(accountID string) (*Session, error) {
 	err := cacheIdentityEndpoints()

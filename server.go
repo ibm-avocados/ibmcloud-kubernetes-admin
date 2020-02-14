@@ -22,6 +22,14 @@ func main() {
 	api.HandleFunc("/clusters/settag", setTagHandler).Methods(http.MethodPost)
 	api.HandleFunc("/clusters/deletetag", deleteTagHandler).Methods(http.MethodPost)
 
+	api.HandleFunc("/clusters/locations", locationEndpointHandler).Methods(http.MethodGet)
+	api.HandleFunc("/clusters/zones", zonesEndpointHandler).
+		Queries("showFlavors", "{showFlavors}", "location", "{location}").
+		Methods(http.MethodGet)
+
+	api.HandleFunc("/cluster/machineType", machineTypeHandler).
+		Queries("machineType", "{machineType}").Methods(http.MethodGet)
+
 	r.PathPrefix("/").Handler(http.FileServer(http.Dir("client/build/"))).Methods("GET")
 	r.HandleFunc("/", notFoundHandler)
 

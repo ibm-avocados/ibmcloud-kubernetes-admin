@@ -39,9 +39,16 @@ const (
 	resourceKeysEndpoint = protocol + subdomainResourceController + api + "/v2/resource_keys"
 	containersEndpoint   = protocol + subdomainClusters + api + "/global/v1"
 	usersEndpoint        = protocol + subdomainUsers + api + "/v2"
-	clusterEndpoint      = protocol + subdomainClusters + api + "/global/v1/clusters"
 	tagEndpoint          = protocol + subdomainTags + api + "/v3/tags"
 	billingEndpoint      = protocol + subdomainBilling + api + "/v4/accounts"
+)
+
+const (
+	clusterEndpoint     = containersEndpoint + "/clusters"
+	versionEndpount     = containersEndpoint + "/versions"
+	locationEndpoint    = containersEndpoint + "/locations"
+	zonesEndpoint       = containersEndpoint + "/zones"
+	datacentersEndpoint = containersEndpoint + "/datacenters"
 )
 
 // grant types
@@ -178,10 +185,15 @@ func getAccounts(endpoint *string, token string) (*Accounts, error) {
 	return &result, nil
 }
 
-func getZones() ([]Zone, error) {
+func getZones(showFlavors, location string) ([]Zone, error) {
 	var result []Zone
-	header := map[string]string{}
-	err := fetch(containersEndpoint+"/zones", header, nil, &result)
+	query := map[string]string{
+		"showFlavors": showFlavors,
+	}
+	if len(location) > 0 {
+		query["location"] = location
+	}
+	err := fetch(containersEndpoint+"/zones", nil, query, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -190,7 +202,17 @@ func getZones() ([]Zone, error) {
 
 func getLocations() ([]Location, error) {
 	var result []Location
-	err := fetch(containersEndpoint+"/zones", nil, nil, &result)
+	err := fetch(locationEndpoint, nil, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+func getMachineTypes(datacenter string) ([]Flavors, error) {
+	var result []Flavors
+	machineTypeEndpoint := fmt.Sprintf("%s/%s/machine-types", datacentersEndpoint, datacenter)
+	err := fetch(machineTypeEndpoint, nil, nil, &result)
 	if err != nil {
 		return nil, err
 	}

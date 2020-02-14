@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/gob"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -23,10 +22,6 @@ const (
 	cookiePath         = "/api/v1"
 )
 
-func init() {
-	gob.Register(&ibmcloud.Session{})
-}
-
 func notFoundHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "application/json")
 	handleError(w, http.StatusNotFound, "not found")
@@ -42,6 +37,42 @@ func tokenEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	e := json.NewEncoder(w)
 	e.Encode(endpoints)
+}
+
+func locationEndpointHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Content-Type", "application/json")
+	locations, err := ibmcloud.GetLocations()
+	if err != nil {
+		handleError(w, http.StatusNotFound, "could not get locations")
+	}
+	w.WriteHeader(http.StatusOK)
+	e := json.NewEncoder(w)
+	e.Encode(locations)
+}
+
+func zonesEndpointHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Content-Type", "application/json")
+	showFlavors := r.FormValue("showFlavors")
+	location := r.FormValue("location")
+	zones, err := ibmcloud.GetZones(showFlavors, location)
+	if err != nil {
+		handleError(w, http.StatusNotFound, "could not load zones")
+	}
+	w.WriteHeader(http.StatusOK)
+	e := json.NewEncoder(w)
+	e.Encode(zones)
+}
+
+func machineTypeHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Content-Type", "application/json")
+	datacenter := r.FormValue("datacenter")
+	flavors, err := ibmcloud.GetMachineType(datacenter)
+	if err != nil {
+		handleError(w, http.StatusNotFound, "could not load flavor")
+	}
+	w.WriteHeader(http.StatusOK)
+	e := json.NewEncoder(w)
+	e.Encode(flavors)
 }
 
 func authenticationWithAccountHandler(w http.ResponseWriter, r *http.Request) {
