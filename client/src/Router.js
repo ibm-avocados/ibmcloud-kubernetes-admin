@@ -1,13 +1,10 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Router, Switch, Route } from "react-router-dom";
 import AppPage from "./components/AppPage";
+import CreatePage from './components/CreatePage';
 import Login from "./components/Login";
 import Navbar from "./components/common/Navbar";
 import history from "./globalHistory";
-
-const DumPage = () => {
-  return <div>Hello</div>;
-};
 
 const AppRouter = () => {
   const [isLoadingAccounts, setLoadingAccounts] = useState(true);
@@ -69,7 +66,7 @@ const AppRouter = () => {
             items={accounts}
             accountSelected={handleAccountChosen}
           />
-          <DumPage />
+          <CreatePage />
         </Route>
       </Switch>
     </Router>
