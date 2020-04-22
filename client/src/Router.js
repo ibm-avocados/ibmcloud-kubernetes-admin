@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Router, Switch, Route } from "react-router-dom";
 import AppPage from "./components/AppPage";
-import CreatePage from './components/CreatePage';
+import CreatePage from "./components/CreatePage";
 import Login from "./components/Login";
 import Navbar from "./components/common/Navbar";
 import history from "./globalHistory";
@@ -14,36 +14,49 @@ const AppRouter = () => {
   const [hasChosenAccount, setHasChosenAccount] = useState(false);
   const [tokenUpgraded, setTokenUpgraded] = useState(false);
 
-  const loadAccounts = async () => {
-    setLoadingAccounts(true);
-    const response = await fetch("/api/v1/accounts");
-    if (response.status !== 200) {
-      // Somehow did not get any account back.  
-    }
-    const accounts = await response.json();
-    setAccounts(accounts.resources);
-    setLoadingAccounts(false);
-  };
-
-  useEffect(() => {
-    // You can't have an async function as an effect argument.
-    loadAccounts();
-  }, []);
-
-  const handleAccountChosen = useCallback(async ({ selectedItem }) => {
-    setSelectedAccountID(selectedItem.metadata.guid);
+  const setAccountStuff = useCallback(async (guid) => {
+    localStorage.setItem("accountID", guid);
+    setSelectedAccountID(guid);
     setTokenUpgraded(false);
     setHasChosenAccount(true);
     const { status } = await fetch("/api/v1/authenticate/account", {
       method: "POST",
       body: JSON.stringify({
-        id: selectedItem.metadata.guid
-      })
+        id: guid,
+      }),
     });
     if (status === 200) {
       setTokenUpgraded(true);
     }
   }, []);
+
+  const handleAccountChosen = useCallback(
+    async ({ selectedItem }) => {
+      setAccountStuff(selectedItem.metadata.guid);
+    },
+    [setAccountStuff]
+  );
+
+  useEffect(() => {
+    const loadAccounts = async () => {
+      setLoadingAccounts(true);
+      const response = await fetch("/api/v1/accounts");
+      if (response.status !== 200) {
+        // Somehow did not get any account back.
+      }
+      const accounts = await response.json();
+      setAccounts(accounts.resources);
+      setLoadingAccounts(false);
+
+      // const selectedAccount =
+      //   localStorage.getItem("accountID") ||
+      //   accounts.resources[0].metadata.guid;
+
+      // setAccountStuff(selectedAccount);
+    };
+    loadAccounts();
+  }, [handleAccountChosen, setAccountStuff]);
+
   return (
     <Router history={history}>
       <Switch>
