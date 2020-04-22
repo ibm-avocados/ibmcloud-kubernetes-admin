@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useReducer } from "react";
+import React, { useCallback } from "react";
 import {
   DataTable,
   DataTableSkeleton,
@@ -25,7 +25,7 @@ import {
 import headers from "../data/headers";
 
 import "./Cluster.css";
-import { useEffect } from "react";
+import useClusters from "./useClusters";
 
 const {
   TableContainer,
@@ -45,54 +45,6 @@ const {
   TableBatchActions,
   TableBatchAction,
 } = DataTable;
-
-// Takes an array of objects and tranforms it into a map of objects, with ID
-// being the key and the object being the value.
-// e.g.
-// [{ id: 'a1', x: 'hello' }, { id: 'b2', x: 'world' }] =>
-// {
-//   a1: { id: 'a1', x: 'hello' },
-//   b2: { id: 'b2', x: 'world' }
-// }
-const arrayToMap = (arr) =>
-  arr.reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {});
-
-// const mapToArray = data =>
-//   Object.keys(data).map(val => data[val]);
-
-const deleteCluster = (cluster) =>
-  fetch("/api/v1/clusters", {
-    method: "DELETE",
-    body: JSON.stringify({
-      id: cluster.id,
-      resourceGroup: cluster.resourceGroup,
-      deleteResources: true,
-    }),
-  });
-
-const getTag = (cluster) => {
-  return fetch(`/api/v1/clusters/gettag`, {
-    method: "POST",
-    body: JSON.stringify({
-      crn: cluster.crn,
-    }),
-  }).then((r) => r.json());
-};
-
-const getCost = (cluster, accountID) => {
-  return fetch(`/api/v1/billing`, {
-    method: "POST",
-    body: JSON.stringify({
-      crn: cluster.crn,
-      accountID: accountID,
-      clusterID: cluster.id,
-    }),
-  }).then((r) => r.json());
-};
-
-const getWorkers = (cluster) => {
-  return fetch(`/api/v1/clusters/${cluster.id}/workers`).then((r) => r.json());
-};
 
 const CustomExpandedRow = ({ name, dateCreated, workers }) => {
   return (
@@ -148,136 +100,11 @@ const WorkerDetails = ({ workers }) => {
   );
 };
 
-function reducer(state, action) {
-  let { clusters } = state;
-  switch (action.type) {
-    case "setClusters":
-      return { ...state, clusters: action.data, isLoadingClusters: false };
-    case "isLoading":
-      return { ...state, isLoadingClusters: true };
-    case "tagsPulled":
-      console.log(Object.keys(state));
-      for (var i = 0; i < clusters.length; i++) {
-        clusters[i].tags = action.tags[i];
-        // clusters[i].name = "mofi";
-      }
-      return { clusters: clusters, isLoadingClusters: false };
-    case "billingPulled":
-      console.log(Object.keys(state));
-      for (var i = 0; i < clusters.length; i++) {
-        clusters[i].cost = action.bill[i];
-      }
-      return { clusters: clusters, isLoadingClusters: false };
-    case "workersPulled":
-      return { ...state };
-    default:
-      throw new Error();
-  }
-}
-
-const initialState = {
-  isLoadingClusters: true,
-  showLoading: true,
-  clusters: [],
-  tagText: "",
-};
-
 const Clusters = ({ accountID }) => {
-  const [showLoading, setShowLoading] = useState(false);
-  // const [clusters, setClusters] = useState([]);
-  const [tagText, setTagText] = useState("");
-  const [clusterState, dispatch] = useReducer(reducer, initialState);
-  const { clusters, isLoadingClusters } = clusterState;
-  // const [accountIDData, setAccountID] = useState(accountID);
-
-  const loadClusters = useCallback(async () => {
-    dispatch({ type: "isLoading" });
-    const response = await fetch(`/api/v1/clusters`);
-    if (response.status !== 200) {
-    }
-    const clusters = await response.json();
-    console.log(clusters);
-    dispatch({ type: "setClusters", data: clusters });
-
-    const billingPromises = clusters.map((cluster) =>
-      getCost(cluster, accountID)
-    );
-    const billing = await Promise.all(billingPromises);
-    const arrbills = billing.map((bill) => bill.bill);
-    dispatch({ type: "billingPulled", bill: arrbills });
-
-    const tagPromises = clusters.map((cluster) => getTag(cluster));
-    const tags = await Promise.all(tagPromises);
-    const arrtags = tags.map((tag) => tag.items.map((item) => item.name));
-
-    dispatch({ type: "tagsPulled", tags: arrtags });
-    console.log("in load cluster", clusters);
-  }, [accountID]);
-
-  useEffect(() => {
-    loadClusters();
-  }, [loadClusters]);
-
-  const deleteClusters = useCallback(
-    (clusters) => async () => {
-      setShowLoading(true);
-      const promises = clusters.map((cluster) => deleteCluster(cluster));
-      await Promise.all(promises);
-      setShowLoading(false);
-      loadClusters();
-    },
-    [loadClusters]
+  const [clusters, { deleteClusters, deleteTag, setTag }] = useClusters(
+    accountID
   );
-
-  // const buttonClicked = rows => () => {
-  //   console.log("slected rows", rows);
-  // };
-
-  const deleteTag = useCallback(
-    (tagName, crn) => async () => {
-      let body = {
-        tag_name: tagName,
-        resources: [{ resource_id: crn }],
-      };
-      const response = await fetch("/api/v1/clusters/deletetag", {
-        method: "POST",
-        body: JSON.stringify(body),
-      });
-
-      if (response.status !== 200) {
-      }
-      const result = await response.json();
-      loadClusters();
-    },
-    [loadClusters]
-  );
-
-  const setTag = useCallback(
-    (clusters) => async () => {
-      if (tagText === "") {
-        return;
-      }
-      let resources = clusters.map((cluster) => {
-        return { resource_id: cluster.crn };
-      });
-      let body = {
-        tag_name: tagText,
-        resources: resources,
-      };
-      setShowLoading(true);
-      const response = await fetch("/api/v1/clusters/settag", {
-        method: "POST",
-        body: JSON.stringify(body),
-      });
-      if (response.status !== 200) {
-      }
-
-      setShowLoading(false);
-      loadClusters();
-      setTagText("");
-    },
-    [loadClusters, tagText]
-  );
+  console.log(clusters);
 
   const CustomCell = ({ cell, crn }) => {
     const { info, value } = cell;
@@ -339,7 +166,6 @@ const Clusters = ({ accountID }) => {
       onInputChange,
       getExpandHeaderProps,
     }) => {
-      const clusterMap = arrayToMap(clusters);
       return (
         <TableContainer title="Clusters">
           <TableToolbar>
@@ -349,7 +175,7 @@ const Clusters = ({ accountID }) => {
                 tabIndex={getBatchActionProps().shouldShowBatchActions ? 0 : -1}
                 renderIcon={Delete}
                 onClick={deleteClusters(
-                  selectedRows.map((r) => clusterMap[r.id])
+                  selectedRows.map((r) => clusters.data[r.id])
                 )}
               >
                 Delete
@@ -358,7 +184,7 @@ const Clusters = ({ accountID }) => {
                 <TextInput
                   id="tag-input"
                   hideLabel
-                  onChange={(e) => setTagText(e.target.value.trim())}
+                  // onChange={(e) => setTagText(e.target.value.trim())}
                   labelText="tag"
                   placeholder="Tag"
                 />
@@ -371,7 +197,7 @@ const Clusters = ({ accountID }) => {
                 size="default"
                 type="button"
                 tooltipPosition="bottom"
-                onClick={setTag(selectedRows.map((r) => clusterMap[r.id]))}
+                onClick={setTag(selectedRows.map((r) => clusters.data[r.id]))}
               />
             </TableBatchActions>
             <TableToolbarContent>
@@ -379,9 +205,9 @@ const Clusters = ({ accountID }) => {
                 tabIndex={getBatchActionProps().shouldShowBatchActions ? -1 : 0}
                 onChange={onInputChange}
               />
-              <Button onClick={loadClusters} renderIcon={Reset}>
+              {/* <Button onClick={loadClusters} renderIcon={Reset}>
                 Reload
-              </Button>
+              </Button> */}
             </TableToolbarContent>
             {/* <TableToolbarContent>
             <Button onClick={() => buttonClicked(selectedRows)}  kind="primary">
@@ -411,15 +237,18 @@ const Clusters = ({ accountID }) => {
                     <TableSelectRow {...getSelectionProps({ row })} />
                     {row.cells.map((cell) => (
                       <TableCell key={cell.id}>
-                        <CustomCell cell={cell} crn={clusterMap[row.id].crn} />
+                        <CustomCell
+                          cell={cell}
+                          crn={clusters.data[row.id].crn}
+                        />
                       </TableCell>
                     ))}
                   </TableExpandRow>
                   <TableExpandedRow colSpan={headers.length + 2}>
                     <CustomExpandedRow
-                      name={clusterMap[row.id].name}
-                      dateCreated={clusterMap[row.id].createdDate}
-                      workers={clusterMap[row.id].workers}
+                      name={clusters.data[row.id].name}
+                      dateCreated={clusters.data[row.id].createdDate}
+                      workers={clusters.data[row.id].workers}
                     />
                   </TableExpandedRow>
                 </React.Fragment>
@@ -429,10 +258,10 @@ const Clusters = ({ accountID }) => {
         </TableContainer>
       );
     },
-    [clusters, deleteClusters, loadClusters, setTag]
+    [clusters, deleteClusters, setTag]
   );
 
-  if (isLoadingClusters) {
+  if (clusters.isLoading) {
     return (
       <>
         <div className="bx--data-table-header">
@@ -449,15 +278,12 @@ const Clusters = ({ accountID }) => {
   }
 
   return (
-    <>
-      <DataTable
-        rows={clusters}
-        headers={headers}
-        render={render}
-        isSortable //={true}
-      />
-      <Loading active={showLoading} />)
-    </>
+    <DataTable
+      rows={Object.keys(clusters.data).map((id) => clusters.data[id])}
+      headers={headers}
+      render={render}
+      isSortable
+    />
   );
 };
 
