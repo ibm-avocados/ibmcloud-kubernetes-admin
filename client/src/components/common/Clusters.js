@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState, useReducer } from "react";
 import {
   DataTable,
   DataTableSkeleton,
@@ -11,12 +11,15 @@ import {
   StructuredListBody,
   StructuredListRow,
   StructuredListCell,
-  TextInput
+  TextInput,
+  SkeletonText,
+  TagSkeleton,
+  StructuredListSkeleton,
 } from "carbon-components-react";
 import {
   Delete16 as Delete,
   TagGroup16 as TagGroup,
-  Reset16 as Reset
+  Reset16 as Reset,
 } from "@carbon/icons-react";
 
 import headers from "../data/headers";
@@ -40,7 +43,7 @@ const {
   TableToolbarSearch,
   TableToolbarContent,
   TableBatchActions,
-  TableBatchAction
+  TableBatchAction,
 } = DataTable;
 
 // Takes an array of objects and tranforms it into a map of objects, with ID
@@ -51,22 +54,30 @@ const {
 //   a1: { id: 'a1', x: 'hello' },
 //   b2: { id: 'b2', x: 'world' }
 // }
-const arrayToMap = arr =>
+const arrayToMap = (arr) =>
   arr.reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {});
 
 // const mapToArray = data =>
 //   Object.keys(data).map(val => data[val]);
 
-
-const deleteCluster = cluster =>
+const deleteCluster = (cluster) =>
   fetch("/api/v1/clusters", {
     method: "DELETE",
     body: JSON.stringify({
       id: cluster.id,
       resourceGroup: cluster.resourceGroup,
-      deleteResources: true
-    })
+      deleteResources: true,
+    }),
   });
+
+const getTag = (cluster) => {
+  return fetch(`/api/v1/clusters/gettag`, {
+    method: "POST",
+    body: JSON.stringify({
+      crn: cluster.crn,
+    }),
+  }).then((r) => r.json());
+};
 
 const CustomExpandedRow = ({ name, dateCreated, workers }) => {
   return (
@@ -74,10 +85,16 @@ const CustomExpandedRow = ({ name, dateCreated, workers }) => {
       <h1>Cluster Name: {name}</h1>
       <h5>Date Created: {dateCreated}</h5>
       {workers ? <h3>Workers</h3> : <></>}
-      {workers ? <WorkerDetails workers={workers} /> : <></>}
+      {workers ? (
+        <WorkerDetails workers={workers} />
+      ) : (
+        <div style={{ width: "500px" }}>
+          <StructuredListSkeleton rowCount={3} />
+        </div>
+      )}
     </>
-  )
-}
+  );
+};
 
 const WorkerDetails = ({ workers }) => {
   return (
@@ -92,8 +109,15 @@ const WorkerDetails = ({ workers }) => {
         </StructuredListRow>
       </StructuredListHead>
       <StructuredListBody>
-        {workers.map(worker => {
-          const { id, state, machineType, privateVlan, publicVlan, status } = worker;
+        {workers.map((worker) => {
+          const {
+            id,
+            state,
+            machineType,
+            privateVlan,
+            publicVlan,
+            status,
+          } = worker;
           return (
             <StructuredListRow key={id}>
               <StructuredListCell noWrap>{state}</StructuredListCell>
@@ -102,45 +126,72 @@ const WorkerDetails = ({ workers }) => {
               <StructuredListCell>{privateVlan}</StructuredListCell>
               <StructuredListCell>{machineType}</StructuredListCell>
             </StructuredListRow>
-          )
+          );
         })}
       </StructuredListBody>
     </StructuredListWrapper>
-  )
+  );
+};
+
+function reducer(state, action) {
+  switch (action.type) {
+    case "setClusters":
+      return { ...state, clusters: action.data, isLoadingClusters: false };
+    case "isLoading":
+      return { ...state, isLoadingClusters: true };
+    case "tagsPulled":
+      let { clusters } = state;
+      for (var i = 0; i < clusters.length; i++) {
+        console.log("doing ", i)
+        clusters[i].tags = action.tags[i];
+      }
+      console.log("AFTER REDUCER",clusters);
+      return { ...state, clusters: clusters, tagsLoading: false };
+    default:
+      throw new Error();
+  }
 }
 
-const Clusters = ({ accountID }) => {
-  const [isLoadingClusters, setLoadingClusters] = useState(true);
+const initialState = {
+  isLoadingClusters: true,
+  showLoading: true,
+  clusters: [],
+  tagsLoading: true,
+  tagText: "",
+};
+
+const Clusters = () => {
   const [showLoading, setShowLoading] = useState(false);
-  const [clusters, setClusters] = useState([]);
+  // const [clusters, setClusters] = useState([]);
   const [tagText, setTagText] = useState("");
+  const [clusterState, dispatch] = useReducer(reducer, initialState);
+  const { clusters, isLoadingClusters, tagsLoading } = clusterState;
   // const [accountIDData, setAccountID] = useState(accountID);
 
   const loadClusters = useCallback(async () => {
-    setLoadingClusters(true);
-    const response = await fetch(`/api/v1/clusters/${accountID}`);
+    dispatch({ type: "isLoading" });
+    const response = await fetch(`/api/v1/clusters`);
     if (response.status !== 200) {
-
     }
     const clusters = await response.json();
     console.log(clusters);
-    setClusters(clusters);
-    setLoadingClusters(false);
-  }, [accountID]);
+    dispatch({ type: "setClusters", data: clusters });
+    const promises = clusters.map((cluster) => getTag(cluster));
+    const tags = await Promise.all(promises);
+    console.log(tags)
+    const arrtags = tags.map((tag) => tag.items.map((item) => item.name));
+
+    dispatch({ type: "tagsPulled", tags: arrtags });
+  }, []);
 
   useEffect(() => {
     loadClusters();
   }, [loadClusters]);
 
-
-
-
-
-
   const deleteClusters = useCallback(
-    clusters => async () => {
+    (clusters) => async () => {
       setShowLoading(true);
-      const promises = clusters.map(cluster => deleteCluster(cluster));
+      const promises = clusters.map((cluster) => deleteCluster(cluster));
       await Promise.all(promises);
       setShowLoading(false);
       loadClusters();
@@ -152,46 +203,51 @@ const Clusters = ({ accountID }) => {
   //   console.log("slected rows", rows);
   // };
 
-  const deleteTag = useCallback((tagName, crn) => async () => {
-    let body = {
-      tag_name: tagName,
-      resources: [{ resource_id: crn }]
-    };
-    const response = await fetch("/api/v1/clusters/deletetag", {
-      method: "POST",
-      body: JSON.stringify(body)
-    });
+  const deleteTag = useCallback(
+    (tagName, crn) => async () => {
+      let body = {
+        tag_name: tagName,
+        resources: [{ resource_id: crn }],
+      };
+      const response = await fetch("/api/v1/clusters/deletetag", {
+        method: "POST",
+        body: JSON.stringify(body),
+      });
 
-    if (response.status !== 200) {
+      if (response.status !== 200) {
+      }
+      const result = await response.json();
+      loadClusters();
+    },
+    [loadClusters]
+  );
 
-    }  
-    const result = await response.json();
-    console.log(result);
-    loadClusters();
-  }, [loadClusters]);
+  const setTag = useCallback(
+    (clusters) => async () => {
+      if (tagText === "") {
+        return;
+      }
+      let resources = clusters.map((cluster) => {
+        return { resource_id: cluster.crn };
+      });
+      let body = {
+        tag_name: tagText,
+        resources: resources,
+      };
+      setShowLoading(true);
+      const response = await fetch("/api/v1/clusters/settag", {
+        method: "POST",
+        body: JSON.stringify(body),
+      });
+      if (response.status !== 200) {
+      }
 
-  const setTag = useCallback(clusters => async () => {
-    if (tagText === "") {
-      return;
-    }
-    let resources = clusters.map(cluster => { return ({ resource_id: cluster.crn }) });
-    let body = {
-      tag_name: tagText,
-      resources: resources
-    };
-    setShowLoading(true);
-    const response = await fetch("/api/v1/clusters/settag", {
-      method: "POST",
-      body: JSON.stringify(body)
-    });
-    if (response.status !== 200) {
-
-    }
-
-    setShowLoading(false);
-    loadClusters();
-    setTagText("");
-  }, [loadClusters, tagText]);
+      setShowLoading(false);
+      loadClusters();
+      setTagText("");
+    },
+    [loadClusters, tagText]
+  );
 
   const CustomCell = ({ cell, crn }) => {
     const { info, value } = cell;
@@ -219,9 +275,27 @@ const Clusters = ({ accountID }) => {
           </span>
         );
       case "tags":
-        return (<>{value.map(tag => <Tag onClick={deleteTag(tag, crn)} filter key={tag} type='blue'>{tag}</Tag>)}</>)
+        console.log(tagsLoading);
+        if (tagsLoading) {
+          return (
+            <div>
+              <TagSkeleton />
+            </div>
+          );
+        }
+
+        return (
+          <>
+            {value.map((tag) => (
+              <Tag onClick={deleteTag(tag, crn)} filter key={tag} type="blue">
+                {tag}
+              </Tag>
+            ))}
+          </>
+        );
       case "cost":
-        return (<>${value}</>)
+        // return (<>${value}</>)
+        return <>$$$</>;
       default:
         return <>{value}</>;
     }
@@ -237,7 +311,7 @@ const Clusters = ({ accountID }) => {
       getSelectionProps,
       selectedRows,
       onInputChange,
-      getExpandHeaderProps
+      getExpandHeaderProps,
     }) => {
       const clusterMap = arrayToMap(clusters);
       return (
@@ -249,7 +323,7 @@ const Clusters = ({ accountID }) => {
                 tabIndex={getBatchActionProps().shouldShowBatchActions ? 0 : -1}
                 renderIcon={Delete}
                 onClick={deleteClusters(
-                  selectedRows.map(r => clusterMap[r.id])
+                  selectedRows.map((r) => clusterMap[r.id])
                 )}
               >
                 Delete
@@ -258,20 +332,21 @@ const Clusters = ({ accountID }) => {
                 <TextInput
                   id="tag-input"
                   hideLabel
-                  onChange={e => setTagText(e.target.value.trim())}
+                  onChange={(e) => setTagText(e.target.value.trim())}
                   labelText="tag"
-                  placeholder="Tag" />
+                  placeholder="Tag"
+                />
               </div>
               <Button
                 renderIcon={TagGroup}
                 iconDescription="Group Tag"
-                hasIconOnly kind="primary"
+                hasIconOnly
+                kind="primary"
                 size="default"
                 type="button"
                 tooltipPosition="bottom"
-                onClick={setTag(
-                  selectedRows.map(r => clusterMap[r.id])
-                )} />
+                onClick={setTag(selectedRows.map((r) => clusterMap[r.id]))}
+              />
             </TableBatchActions>
             <TableToolbarContent>
               <TableToolbarSearch
@@ -296,7 +371,7 @@ const Clusters = ({ accountID }) => {
                   {...getExpandHeaderProps()}
                 />
                 <TableSelectAll {...getSelectionProps()} />
-                {headers.map(header => (
+                {headers.map((header) => (
                   <TableHeader {...getHeaderProps({ header })}>
                     {header.header}
                   </TableHeader>
@@ -304,22 +379,22 @@ const Clusters = ({ accountID }) => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {rows.map(row => (
+              {rows.map((row) => (
                 <React.Fragment key={row.id}>
                   <TableExpandRow {...getRowProps({ row })}>
                     <TableSelectRow {...getSelectionProps({ row })} />
-                    {row.cells.map(cell => (
+                    {row.cells.map((cell) => (
                       <TableCell key={cell.id}>
                         <CustomCell cell={cell} crn={clusterMap[row.id].crn} />
                       </TableCell>
                     ))}
                   </TableExpandRow>
                   <TableExpandedRow colSpan={headers.length + 2}>
-                    <CustomExpandedRow name={clusterMap[row.id].name}
+                    <CustomExpandedRow
+                      name={clusterMap[row.id].name}
                       dateCreated={clusterMap[row.id].createdDate}
                       workers={clusterMap[row.id].workers}
                     />
-
                   </TableExpandedRow>
                 </React.Fragment>
               ))}

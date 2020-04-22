@@ -17,10 +17,15 @@ func main() {
 	api.HandleFunc("/authenticate", authenticationHandler).Methods(http.MethodPost)
 	api.HandleFunc("/accounts", accountListHandler).Methods(http.MethodGet)
 	api.HandleFunc("/login", loginHandler).Methods(http.MethodGet)
-	api.HandleFunc("/clusters/{accountID}", clusterListHandler).Methods(http.MethodGet)
+	api.HandleFunc("/clusters", clusterListHandler).Methods(http.MethodGet)
 	api.HandleFunc("/clusters", clusterDeleteHandler).Methods(http.MethodDelete)
+
+	api.HandleFunc("/clusters/{clusterID}/workers", clusterWorkerListHandler).Methods(http.MethodGet)
+
 	api.HandleFunc("/clusters/settag", setTagHandler).Methods(http.MethodPost)
 	api.HandleFunc("/clusters/deletetag", deleteTagHandler).Methods(http.MethodPost)
+	api.HandleFunc("/clusters/gettag", getTagHandler).Methods(http.MethodPost)
+	api.HandleFunc("/billing/{accountID}/{clusterID}/{clusterCRN}", getBillingHandler).Methods(http.MethodGet)
 
 	api.HandleFunc("/clusters/locations", locationEndpointHandler).Methods(http.MethodGet)
 	api.HandleFunc("/clusters/zones", zonesEndpointHandler).

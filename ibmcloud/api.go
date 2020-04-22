@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-	"sync"
 	"time"
 )
 
@@ -219,7 +218,7 @@ func getMachineTypes(datacenter string) ([]Flavors, error) {
 	return result, nil
 }
 
-func getClusters(token, accountID, location string) ([]*Cluster, error) {
+func getClusters(token, location string) ([]*Cluster, error) {
 	defer timeTaken(time.Now(), "GetCluster :")
 	var result []*Cluster
 	header := map[string]string{
@@ -237,48 +236,52 @@ func getClusters(token, accountID, location string) ([]*Cluster, error) {
 		return nil, err
 	}
 
-	wg := &sync.WaitGroup{}
+	// wg := &sync.WaitGroup{}
 
-	for _, cluster := range result {
-		time.Sleep(10 * time.Millisecond)
-		wg.Add(1)
-		go func(cluster *Cluster) {
-			tags, err := getTags(token, cluster.Crn)
-			if err != nil {
-				fmt.Println("error for tag: ", cluster.Name)
-				fmt.Println("error : ", err)
-			} else {
-				cluster.Tags = make([]string, len(tags.Items))
-				for i, val := range tags.Items {
-					cluster.Tags[i] = val.Name
-				}
-			}
-			wg.Done()
-		}(cluster)
-		wg.Add(1)
-		go func(cluster *Cluster) {
-			workers, err := getClusterWorkers(token, cluster.ID)
-			if err != nil {
-				fmt.Println("error for worker: ", cluster.Name)
-				fmt.Println("error : ", err)
-			} else {
-				cluster.Workers = workers
-				cost, err := getBillingData(token, accountID, cluster.Crn, workers)
-				if err != nil {
-					fmt.Println("error for cost: ", cluster.Name)
-				}
-				cluster.Cost = cost
-			}
-			wg.Done()
-		}(cluster)
-	}
+	// for _, cluster := range result {
+	// 	time.Sleep(10 * time.Millisecond)
+	// 	wg.Add(1)
+	// 	go func(cluster *Cluster) {
+	// 		tags, err := getTags(token, cluster.Crn)
+	// 		if err != nil {
+	// 			fmt.Println("error for tag: ", cluster.Name)
+	// 			fmt.Println("error : ", err)
+	// 		} else {
+	// 			cluster.Tags = make([]string, len(tags.Items))
+	// 			for i, val := range tags.Items {
+	// 				cluster.Tags[i] = val.Name
+	// 			}
+	// 		}
+	// 		wg.Done()
+	// 	}(cluster)
+	// 	wg.Add(1)
+	// 	go func(cluster *Cluster) {
+	// 		workers, err := getClusterWorkers(token, cluster.ID)
+	// 		if err != nil {
+	// 			fmt.Println("error for worker: ", cluster.Name)
+	// 			fmt.Println("error : ", err)
+	// 		} else {
+	// 			cluster.Workers = workers
+	// 			cost, err := getBillingData(token, accountID, cluster.Crn, workers)
+	// 			if err != nil {
+	// 				fmt.Println("error for cost: ", cluster.Name)
+	// 			}
+	// 			cluster.Cost = cost
+	// 		}
+	// 		wg.Done()
+	// 	}(cluster)
+	// }
 
-	wg.Wait()
+	// wg.Wait()
 	return result, nil
 }
 
-func getBillingData(token, accountID, resourceInstanceID string, workers []Worker) (string, error) {
+func getBillingData(token, accountID, clusterID, resourceInstanceID string) (string, error) {
 	currentMonth := time.Now().Format("2006-01")
+	workers, err := getClusterWorkers(token, clusterID)
+	if err != nil {
+		return "N/A", err
+	}
 	total := 0.0
 	for _, worker := range workers {
 		usage, err := getResourceUsagePerNode(token, accountID, currentMonth, resourceInstanceID, worker.ID)
@@ -363,7 +366,6 @@ func getResourceUsagePerNode(token, accountID, billingMonth, resourceInstanceID,
 }
 
 func getTags(token string, crn string) (*Tags, error) {
-
 	var result Tags
 	header := map[string]string{
 		"Authorization": "Bearer " + token,
@@ -375,6 +377,7 @@ func getTags(token string, crn string) (*Tags, error) {
 	if err != nil {
 		return nil, err
 	}
+	log.Println("getting tag for", crn)
 	return &result, nil
 }
 

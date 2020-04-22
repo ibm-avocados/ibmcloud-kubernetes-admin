@@ -34,7 +34,7 @@ func GetLocations() ([]Location, error) {
 	return getLocations()
 }
 
-func GetMachineType(datacenter string)([]Flavors, error){
+func GetMachineType(datacenter string) ([]Flavors, error) {
 	return getMachineTypes(datacenter)
 }
 
@@ -88,11 +88,13 @@ func (s *Session) getAccountsWithEndpoint(nextURL *string) (*Accounts, error) {
 	return accounts, nil
 }
 
-func (s *Session) GetClusters(accountID, location string) ([]*Cluster, error) {
-	return getClusters(s.Token.AccessToken, accountID, location)
+func (s *Session) GetClusters(location string) ([]*Cluster, error) {
+	return getClusters(s.Token.AccessToken, location)
 }
 
-
+func (s *Session) GetWorkers(clusterID string) ([]Worker, error) {
+	return getClusterWorkers(s.Token.AccessToken, clusterID)
+}
 
 func (s *Session) BindAccountToToken(accountID string) (*Session, error) {
 	err := cacheIdentityEndpoints()
@@ -128,4 +130,12 @@ func (s *Session) SetTag(updateTag UpdateTag) (*TagResult, error) {
 
 func (s *Session) DeleteTag(updateTag UpdateTag) (*TagResult, error) {
 	return deleteTags(s.Token.AccessToken, updateTag)
+}
+
+func (s *Session) GetTags(clusterCRN string) (*Tags, error) {
+	return getTags(s.Token.AccessToken, clusterCRN)
+}
+
+func (s *Session) GetBillingData(accountID, clusterID, clusterCRN string) (string, error) {
+	return getBillingData(s.Token.AccessToken, accountID, clusterID, clusterCRN)
 }

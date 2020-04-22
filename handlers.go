@@ -226,6 +226,24 @@ func clusterListHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	clusters, err := session.GetClusters("")
+	if err != nil {
+		handleError(w, http.StatusUnauthorized, "could not get clusters", err.Error())
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	e := json.NewEncoder(w)
+	e.Encode(clusters)
+}
+
+func getBillingHandler(w http.ResponseWriter, r *http.Request) {
+	session, err := getCloudSessions(r)
+	if err != nil {
+		handleError(w, http.StatusUnauthorized, "could not get session", err.Error())
+		return
+	}
+
 	vars := mux.Vars(r)
 
 	accountID, ok := vars["accountID"]
@@ -235,15 +253,55 @@ func clusterListHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	clusters, err := session.GetClusters(accountID, "")
+	clusterID, ok := vars["clusterID"]
+
+	if !ok {
+		handleError(w, http.StatusBadRequest, "could not get clusterID")
+		return
+	}
+
+	clusterCRN, ok := vars["clusterCRN"]
+
+	if !ok {
+		handleError(w, http.StatusBadRequest, "could not get clusterCRN")
+		return
+	}
+
+	billing, err := session.GetBillingData(accountID, clusterID, clusterCRN)
 	if err != nil {
-		handleError(w, http.StatusUnauthorized, "could not get clusters", err.Error())
+		handleError(w, http.StatusUnauthorized, "could not get billing info", err.Error())
+	}
+
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, "{'bill': '%s'}", billing)
+}
+
+func clusterWorkerListHandler(w http.ResponseWriter, r *http.Request) {
+	session, err := getCloudSessions(r)
+	if err != nil {
+		handleError(w, http.StatusUnauthorized, "could not get session", err.Error())
+		return
+	}
+
+	vars := mux.Vars(r)
+
+	clusterID, ok := vars["clusterID"]
+
+	if !ok {
+		handleError(w, http.StatusBadRequest, "could not get clusterID")
+		return
+	}
+
+	workers, err := session.GetWorkers(clusterID)
+
+	if err != nil {
+		handleError(w, http.StatusUnauthorized, "could not get workers for cluster : ", clusterID, err.Error())
 		return
 	}
 
 	w.WriteHeader(http.StatusOK)
 	e := json.NewEncoder(w)
-	e.Encode(clusters)
+	e.Encode(workers)
 }
 
 func deleteTagHandler(w http.ResponseWriter, r *http.Request) {
@@ -268,6 +326,40 @@ func deleteTagHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, `{"status": "ok, deleted %d tags"}`, len(res.Results))
+}
+
+func getTagHandler(w http.ResponseWriter, r *http.Request) {
+	session, err := getCloudSessions(r)
+	if err != nil {
+		handleError(w, http.StatusUnauthorized, "could not get session", err.Error())
+		return
+	}
+
+	var body map[string]interface{}
+	decoder := json.NewDecoder(r.Body)
+	err = decoder.Decode(&body)
+	if err != nil {
+		handleError(w, http.StatusBadRequest, "could not decode", err.Error())
+		return
+	}
+
+	crn, ok := body["crn"]
+	if !ok {
+		handleError(w, http.StatusBadRequest, "no crn attached to body", err.Error())
+		return
+	}
+
+	clusterCRN := fmt.Sprintf("%v", crn)
+
+	tags, err := session.GetTags(clusterCRN)
+	if err != nil {
+		handleError(w, http.StatusUnauthorized, "could not get tags", err.Error())
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	e := json.NewEncoder(w)
+	e.Encode(tags)
 }
 
 func setTagHandler(w http.ResponseWriter, r *http.Request) {
