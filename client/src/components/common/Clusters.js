@@ -79,6 +79,21 @@ const getTag = (cluster) => {
   }).then((r) => r.json());
 };
 
+const getCost = (cluster, accountID) => {
+  return fetch(`/api/v1/billing`, {
+    method: "POST",
+    body: JSON.stringify({
+      crn: cluster.crn,
+      accountID: accountID,
+      clusterID: cluster.id,
+    }),
+  }).then((r) => r.json());
+};
+
+const getWorkers = (cluster) => {
+  return fetch(`/api/v1/clusters/${cluster.id}/workers`).then((r) => r.json());
+};
+
 const CustomExpandedRow = ({ name, dateCreated, workers }) => {
   return (
     <>
@@ -134,19 +149,27 @@ const WorkerDetails = ({ workers }) => {
 };
 
 function reducer(state, action) {
+  let { clusters } = state;
   switch (action.type) {
     case "setClusters":
       return { ...state, clusters: action.data, isLoadingClusters: false };
     case "isLoading":
       return { ...state, isLoadingClusters: true };
     case "tagsPulled":
-      let { clusters } = state;
+      console.log(Object.keys(state));
       for (var i = 0; i < clusters.length; i++) {
-        console.log("doing ", i)
         clusters[i].tags = action.tags[i];
+        // clusters[i].name = "mofi";
       }
-      console.log("AFTER REDUCER",clusters);
-      return { ...state, clusters: clusters, tagsLoading: false };
+      return { clusters: clusters, isLoadingClusters: false };
+    case "billingPulled":
+      console.log(Object.keys(state));
+      for (var i = 0; i < clusters.length; i++) {
+        clusters[i].cost = action.bill[i];
+      }
+      return { clusters: clusters, isLoadingClusters: false };
+    case "workersPulled":
+      return { ...state };
     default:
       throw new Error();
   }
@@ -156,16 +179,15 @@ const initialState = {
   isLoadingClusters: true,
   showLoading: true,
   clusters: [],
-  tagsLoading: true,
   tagText: "",
 };
 
-const Clusters = () => {
+const Clusters = ({ accountID }) => {
   const [showLoading, setShowLoading] = useState(false);
   // const [clusters, setClusters] = useState([]);
   const [tagText, setTagText] = useState("");
   const [clusterState, dispatch] = useReducer(reducer, initialState);
-  const { clusters, isLoadingClusters, tagsLoading } = clusterState;
+  const { clusters, isLoadingClusters } = clusterState;
   // const [accountIDData, setAccountID] = useState(accountID);
 
   const loadClusters = useCallback(async () => {
@@ -176,13 +198,21 @@ const Clusters = () => {
     const clusters = await response.json();
     console.log(clusters);
     dispatch({ type: "setClusters", data: clusters });
-    const promises = clusters.map((cluster) => getTag(cluster));
-    const tags = await Promise.all(promises);
-    console.log(tags)
+
+    const billingPromises = clusters.map((cluster) =>
+      getCost(cluster, accountID)
+    );
+    const billing = await Promise.all(billingPromises);
+    const arrbills = billing.map((bill) => bill.bill);
+    dispatch({ type: "billingPulled", bill: arrbills });
+
+    const tagPromises = clusters.map((cluster) => getTag(cluster));
+    const tags = await Promise.all(tagPromises);
     const arrtags = tags.map((tag) => tag.items.map((item) => item.name));
 
     dispatch({ type: "tagsPulled", tags: arrtags });
-  }, []);
+    console.log("in load cluster", clusters);
+  }, [accountID]);
 
   useEffect(() => {
     loadClusters();
@@ -275,27 +305,23 @@ const Clusters = () => {
           </span>
         );
       case "tags":
-        console.log(tagsLoading);
-        if (tagsLoading) {
-          return (
-            <div>
-              <TagSkeleton />
-            </div>
-          );
-        }
-
         return (
           <>
-            {value.map((tag) => (
-              <Tag onClick={deleteTag(tag, crn)} filter key={tag} type="blue">
-                {tag}
-              </Tag>
-            ))}
+            {value ? (
+              value.map((tag) => (
+                <Tag onClick={deleteTag(tag, crn)} filter key={tag} type="blue">
+                  {tag}
+                </Tag>
+              ))
+            ) : (
+              <div>
+                <TagSkeleton />
+              </div>
+            )}
           </>
         );
       case "cost":
-        // return (<>${value}</>)
-        return <>$$$</>;
+        return <>{value ? value : "$$$"}</>;
       default:
         return <>{value}</>;
     }

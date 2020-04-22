@@ -8,6 +8,7 @@ import (
 )
 
 func main() {
+	go timed()
 	r := mux.NewRouter()
 
 	api := r.PathPrefix("/api/v1").Subrouter()
@@ -25,7 +26,7 @@ func main() {
 	api.HandleFunc("/clusters/settag", setTagHandler).Methods(http.MethodPost)
 	api.HandleFunc("/clusters/deletetag", deleteTagHandler).Methods(http.MethodPost)
 	api.HandleFunc("/clusters/gettag", getTagHandler).Methods(http.MethodPost)
-	api.HandleFunc("/billing/{accountID}/{clusterID}/{clusterCRN}", getBillingHandler).Methods(http.MethodGet)
+	api.HandleFunc("/billing", getBillingHandler).Methods(http.MethodPost)
 
 	api.HandleFunc("/clusters/locations", locationEndpointHandler).Methods(http.MethodGet)
 	api.HandleFunc("/clusters/zones", zonesEndpointHandler).

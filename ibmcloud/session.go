@@ -38,6 +38,21 @@ func GetMachineType(datacenter string) ([]Flavors, error) {
 	return getMachineTypes(datacenter)
 }
 
+func IAMAuthenticate(apikey string) (*Session, error) {
+	err := cacheIdentityEndpoints()
+	if err != nil {
+		log.Println("error with cached data")
+		return nil, err
+	}
+	token, err := getTokenFromIAM(endpoints.TokenEndpoint, apikey)
+
+	if err != nil {
+		log.Println("error with token data")
+		return nil, err
+	}
+	return &Session{Token: token}, nil
+}
+
 func Authenticate(otp string) (*Session, error) {
 	err := cacheIdentityEndpoints()
 	if err != nil {

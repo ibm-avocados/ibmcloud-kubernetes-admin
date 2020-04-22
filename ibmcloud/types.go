@@ -387,3 +387,9 @@ type URL struct {
 	Href   string `json:"href"`
 	Offset string `json:"offset"`
 }
+
+type ApiKey struct {
+	ID     string `json:"_id"`
+	Rev    string `json:"_rev"`
+	APIKey string `json:"apiKey"`
+}

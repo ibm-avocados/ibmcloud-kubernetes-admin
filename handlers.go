@@ -244,28 +244,37 @@ func getBillingHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	vars := mux.Vars(r)
-
-	accountID, ok := vars["accountID"]
-
-	if !ok {
-		handleError(w, http.StatusBadRequest, "could not get accountID")
+	var body map[string]interface{}
+	decoder := json.NewDecoder(r.Body)
+	err = decoder.Decode(&body)
+	if err != nil {
+		handleError(w, http.StatusBadRequest, "could not decode", err.Error())
 		return
 	}
 
-	clusterID, ok := vars["clusterID"]
-
+	crn, ok := body["crn"]
 	if !ok {
-		handleError(w, http.StatusBadRequest, "could not get clusterID")
+		handleError(w, http.StatusBadRequest, "no crn attached to body", err.Error())
 		return
 	}
 
-	clusterCRN, ok := vars["clusterCRN"]
+	clusterCRN := fmt.Sprintf("%v", crn)
 
+	accnt, ok := body["accountID"]
 	if !ok {
-		handleError(w, http.StatusBadRequest, "could not get clusterCRN")
+		handleError(w, http.StatusBadRequest, "no account id attached to body", err.Error())
 		return
 	}
+
+	accountID := fmt.Sprintf("%v", accnt)
+
+	clustr, ok := body["clusterID"]
+	if !ok {
+		handleError(w, http.StatusBadRequest, "no cluster id attached to body", err.Error())
+		return
+	}
+
+	clusterID := fmt.Sprintf("%v", clustr)
 
 	billing, err := session.GetBillingData(accountID, clusterID, clusterCRN)
 	if err != nil {
@@ -273,7 +282,8 @@ func getBillingHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "{'bill': '%s'}", billing)
+
+	fmt.Fprintf(w, `{"bill": "%s"}`, billing)
 }
 
 func clusterWorkerListHandler(w http.ResponseWriter, r *http.Request) {

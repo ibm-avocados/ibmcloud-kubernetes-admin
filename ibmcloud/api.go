@@ -294,6 +294,7 @@ func getBillingData(token, accountID, clusterID, resourceInstanceID string) (str
 	}
 
 	s := fmt.Sprintf("%.2f", total)
+
 	return s, nil
 }
 
@@ -377,7 +378,6 @@ func getTags(token string, crn string) (*Tags, error) {
 	if err != nil {
 		return nil, err
 	}
-	log.Println("getting tag for", crn)
 	return &result, nil
 }
 
