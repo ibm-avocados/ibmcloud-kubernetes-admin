@@ -26,8 +26,11 @@ const Navbar = props => {
     return "Unknown";
   };
 
-  const handleClick = () => {
+  const handleCreateClick = () => {
     history.push("/create");
+  };
+  const handleScheduleClick = () => {
+    history.push("/schedule");
   };
 
   const homeClick = () => {
@@ -41,7 +44,8 @@ const Navbar = props => {
         <div className={styles.title} onClick={homeClick} >
           <span className={styles.bold}>IBM</span> Cloud
         </div>
-        <MenuItem label="Create" onClickHandler={handleClick}/>
+        <MenuItem label="Create" onClickHandler={handleCreateClick}/>
+        <MenuItem label="Schedule" onClickHandler={handleScheduleClick}/>
         <Dropdown
           disabled={props.accountsLoaded}
           className={styles.dropdown}

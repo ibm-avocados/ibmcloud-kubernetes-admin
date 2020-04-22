@@ -63,7 +63,7 @@ func setAPIKey(apiKey, dbName string) error {
 	}
 
 	type apiDoc struct {
-		ID     string `json:"id"`
+		ID     string `json:"_id"`
 		APIKey string `json:"apikey"`
 	}
 	api := &apiDoc{
@@ -118,4 +118,33 @@ func getAllDbs() ([]string, error) {
 	}
 
 	return result, nil
+}
+
+// func ThrowAway() {
+// 	db := cclient.DB("test")
+// 	type data struct {
+// 		ID   string `json:"_id"`
+// 		Name string `json:"name"`
+// 	}
+// 	testData := &data{
+// 		ID:   "some_id_as_id",
+// 		Name: randomString(),
+// 	}
+// 	id, rev, _ := db.CreateDocument(testData)
+// 	log.Println(id, rev)
+// 	time.Sleep(2 * time.Second)
+// 	testData.Name = randomString()
+// 	rev, _ = db.UpdateDocument(id, rev, testData)
+// }
+// func randomString() string {
+// 	return fmt.Sprintf("%v", time.Now())
+// }
+
+func AddSchedule() error {
+	return addSchedule("")
+}
+
+func addSchedule(dbName string) error {
+	_ = cclient.DB(dbName)
+	return nil
 }

@@ -3,8 +3,6 @@ package main
 import (
 	"log"
 	"time"
-
-	"github.com/moficodes/ibmcloud-kubernetes-admin/ibmcloud"
 )
 
 var ticker *time.Ticker
@@ -12,7 +10,7 @@ var quit chan struct{}
 var count int
 
 func init() {
-	ticker = time.NewTicker(5 * time.Second)
+	ticker = time.NewTicker(600 * time.Second)
 	quit = make(chan struct{})
 	count = 0
 }
@@ -33,11 +31,5 @@ func timed() {
 }
 
 func doStuff() {
-	err := ibmcloud.SetupAccount("test")
-	log.Println(err)
-	dbs, _ := ibmcloud.GetAllDbs()
-	for _, db := range dbs {
-		key, _ := ibmcloud.GetAPIKey(db)
-		log.Printf("DB : %s, Key : %s", db, key)
-	}
+
 }
