@@ -57,6 +57,30 @@ function clusterReducer(state, action) {
       };
     }
 
+    case "UPDATE_WORKERS": {
+      const nextState = produce(state.data, (draftState) => {
+        draftState[action.id].workers = action.workers;
+      });
+      return {
+        ...state,
+        data: nextState,
+      };
+    }
+
+    case "UPDATE_ALL_WORKERS": {
+      const nextState = produce(state.data, (draftState) => {
+        action.tags.forEach((t) => {
+          if (t) {
+            draftState[t.id].workers = t.workers;
+          }
+        });
+      });
+      return {
+        ...state,
+        data: nextState,
+      };
+    }
+
     case "UPDATE_ALL_TAGS": {
       const nextState = produce(state.data, (draftState) => {
         action.tags.forEach((t) => {
@@ -186,6 +210,32 @@ const useClusters = (accountID) => {
                   type: "UPDATE_ALL_COSTS",
                   cost: cost,
                 });
+              }
+            });
+          }
+
+          const workerPromises = Object.keys(clusters).map(async (id) => {
+            try {
+              const workers = await grab(`/api/v1/clusters/${id}/workers`, {
+                signal,
+                method: "GET",
+              });
+              if (!WAIT_FOR_ALL && !cancelled) {
+                dispatch({
+                  type: "UPDATE_WORKERS",
+                  id: id,
+                  workers: workers,
+                });
+              }
+              return { id: id, workers: workers };
+            } catch {
+              return undefined;
+            }
+          });
+          if (WAIT_FOR_ALL) {
+            Promise.all(workerPromises).then((workers) => {
+              if (!cancelled) {
+                dispatch({ type: "UPDATE_ALL_WORKERS", workers: workers });
               }
             });
           }

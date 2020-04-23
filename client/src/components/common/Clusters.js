@@ -148,7 +148,17 @@ const Clusters = ({ accountID }) => {
           </>
         );
       case "cost":
-        return <>{value ? value : "$$$"}</>;
+        return (
+          <>
+            {value ? (
+              `$${value}`
+            ) : (
+              <div style={{ width: "50px" }}>
+                <SkeletonText />
+              </div>
+            )}
+          </>
+        );
       default:
         return <>{value}</>;
     }
