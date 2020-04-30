@@ -209,9 +209,9 @@ type TagResult struct {
 	Results []Results `json:"results"`
 }
 type Results struct {
-	ResourceID string `json:"resource_id"`
-	IsError    string `json:"isError"`
-	ISError    string `json:"is_error"`
+	ResourceID string      `json:"resource_id"`
+	IsError    string      `json:"isError"`
+	ISError    interface{} `json:"is_error"`
 }
 
 type Tags struct {

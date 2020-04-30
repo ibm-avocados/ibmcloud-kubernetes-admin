@@ -193,6 +193,7 @@ func accountListHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func clusterDeleteHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Content-Type", "application/json")
 	session, err := getCloudSessions(r)
 	if err != nil {
 		handleError(w, http.StatusUnauthorized, "could not get session", err.Error())
@@ -323,6 +324,7 @@ func deleteTagHandler(w http.ResponseWriter, r *http.Request) {
 
 	var body ibmcloud.UpdateTag
 	decoder := json.NewDecoder(r.Body)
+
 	err = decoder.Decode(&body)
 	if err != nil {
 		handleError(w, http.StatusBadRequest, "could not decode", err.Error())

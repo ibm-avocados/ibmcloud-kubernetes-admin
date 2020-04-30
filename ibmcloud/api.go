@@ -408,9 +408,11 @@ func updateTags(endpoint, token string, updateTag UpdateTag) (*TagResult, error)
 	if err != nil {
 		return nil, err
 	}
+
 	err = postBody(endpoint, header, query, body, &result)
 	if err != nil {
 		return nil, err
 	}
+
 	return &result, nil
 }

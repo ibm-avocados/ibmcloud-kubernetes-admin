@@ -39,9 +39,9 @@ func main() {
 	r.PathPrefix("/").Handler(http.FileServer(http.Dir("client/build/"))).Methods("GET")
 	r.HandleFunc("/", notFoundHandler)
 
-	port := "9000"
+	port := ":9000"
 
 	log.Println("starting server on port ", port)
 
-	log.Fatalln(http.ListenAndServe(":"+port, r))
+	log.Fatalln(http.ListenAndServe(port, r))
 }

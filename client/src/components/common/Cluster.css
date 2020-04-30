@@ -18,6 +18,10 @@
   background-color: var(--support-01);
 }
 
+.deleting {
+  background-color: var(--text-02);
+}
+
 .oneline {
   overflow: hidden;
   white-space: nowrap;

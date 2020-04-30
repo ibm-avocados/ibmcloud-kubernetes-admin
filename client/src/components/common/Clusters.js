@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import {
   DataTable,
   DataTableSkeleton,
@@ -101,12 +101,15 @@ const WorkerDetails = ({ workers }) => {
 };
 
 const Clusters = ({ accountID }) => {
-  const [clusters, { deleteClusters, deleteTag, setTag }] = useClusters(
+  const [clusters, { deleteClusters, deleteTag, setTag, reload }] = useClusters(
     accountID
   );
-  console.log(clusters);
 
-  const CustomCell = ({ cell, crn }) => {
+  // console.log(clusters);
+
+  const [tagText, setTagText] = useState("");
+
+  const CustomCell = ({ cell, crn, id }) => {
     const { info, value } = cell;
     switch (info.header) {
       case "state":
@@ -136,7 +139,12 @@ const Clusters = ({ accountID }) => {
           <>
             {value ? (
               value.map((tag) => (
-                <Tag onClick={deleteTag(tag, crn)} filter key={tag} type="blue">
+                <Tag
+                  onClick={() => deleteTag(id, tag, crn)}
+                  filter
+                  key={tag}
+                  type="blue"
+                >
                   {tag}
                 </Tag>
               ))
@@ -184,9 +192,7 @@ const Clusters = ({ accountID }) => {
               <TableBatchAction
                 tabIndex={getBatchActionProps().shouldShowBatchActions ? 0 : -1}
                 renderIcon={Delete}
-                onClick={deleteClusters(
-                  selectedRows.map((r) => clusters.data[r.id])
-                )}
+                onClick={() => deleteClusters(selectedRows.map((r) => clusters.data[r.id]))}
               >
                 Delete
               </TableBatchAction>
@@ -194,7 +200,7 @@ const Clusters = ({ accountID }) => {
                 <TextInput
                   id="tag-input"
                   hideLabel
-                  // onChange={(e) => setTagText(e.target.value.trim())}
+                  onChange={(e) => setTagText(e.target.value.trim())}
                   labelText="tag"
                   placeholder="Tag"
                 />
@@ -207,7 +213,12 @@ const Clusters = ({ accountID }) => {
                 size="default"
                 type="button"
                 tooltipPosition="bottom"
-                onClick={setTag(selectedRows.map((r) => clusters.data[r.id]))}
+                onClick={() =>
+                  setTag(
+                    selectedRows.map((r) => clusters.data[r.id]),
+                    tagText
+                  )
+                }
               />
             </TableBatchActions>
             <TableToolbarContent>
@@ -215,9 +226,9 @@ const Clusters = ({ accountID }) => {
                 tabIndex={getBatchActionProps().shouldShowBatchActions ? -1 : 0}
                 onChange={onInputChange}
               />
-              {/* <Button onClick={loadClusters} renderIcon={Reset}>
+              <Button onClick={reload} renderIcon={Reset}>
                 Reload
-              </Button> */}
+              </Button>
             </TableToolbarContent>
             {/* <TableToolbarContent>
             <Button onClick={() => buttonClicked(selectedRows)}  kind="primary">
@@ -250,6 +261,7 @@ const Clusters = ({ accountID }) => {
                         <CustomCell
                           cell={cell}
                           crn={clusters.data[row.id].crn}
+                          id={row.id}
                         />
                       </TableCell>
                     ))}

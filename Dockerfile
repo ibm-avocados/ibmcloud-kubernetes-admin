@@ -23,7 +23,7 @@ RUN go mod download
 
 # Import the code from the context.
 COPY ibmcloud/ ibmcloud/
-COPY server.go handlers.go ./
+COPY server.go handlers.go cron.go ./
 
 # Build the executable to `/app`. Mark the build as statically linked.
 RUN CGO_ENABLED=0 go build \
