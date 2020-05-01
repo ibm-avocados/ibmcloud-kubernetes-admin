@@ -68,6 +68,18 @@ function clusterReducer(state, action) {
       };
     }
 
+    case "FAILED_DELETE_TAG": {
+      const nextState = produce(state.data, (draftState) => {
+        let arr = draftState[action.id].tags;
+        arr.push(action.tag);
+        draftState[action.id].tags =  arr;
+      });
+      return {
+        ...state,
+        data: nextState,
+      };
+    }
+
     case "DELETE_CLUSTER": {
       const nextState = produce(state.data, (draftState) => {
         // console.log(draftState);
@@ -103,6 +115,19 @@ function clusterReducer(state, action) {
         ...state,
         data: nextState,
       };
+    }
+
+    case "FAILED_ADD_TAG": {
+      const nextState = produce(state.data, draftState => {
+        action.clusters.forEach((cluster) => {
+          let arr = draftState[cluster.id].tags;
+          draftState[cluster.id].tags = removeTagFromArray(arr, action.tag);
+        });
+      });
+      return {
+        ...state,
+        nextState,
+      }
     }
 
     case "UPDATE_TAG": {
@@ -313,9 +338,9 @@ const useClusters = (accountID) => {
     }
   };
 
-  const deleteTag = async (id, tag, crn) => {
+  const deleteTag = (id, tag, crn) => {
     try {
-      const data = await grab("/api/v1/clusters/deletetag", {
+      grab("/api/v1/clusters/deletetag", {
         method: "POST",
         body: JSON.stringify({
           tag_name: tag,
@@ -325,6 +350,11 @@ const useClusters = (accountID) => {
 
       dispatch({ type: "DELETE_TAG", id: id, tag: tag });
     } catch {
+      /*
+      dispatch 1 put it back
+      distapch 2 add an error
+      */
+      dispatch({ type: "FAILED_DELETE_TAG", id: id, tag: tag });
       return undefined;
     }
   };
@@ -332,9 +362,11 @@ const useClusters = (accountID) => {
   const setTag = async (clusters, tag) => {
     if (tag === "") {
       return;
-    } 
+    }
     try {
-      let resources = clusters.map(cluster => { return ({ resource_id: cluster.crn }) });
+      let resources = clusters.map((cluster) => {
+        return { resource_id: cluster.crn };
+      });
 
       const data = await grab("/api/v1/clusters/settag", {
         method: "POST",
