@@ -216,6 +216,15 @@ func getDatacenterVlan(token, refreshToken, datacenter string) ([]Vlan, error) {
 	return result, nil
 }
 
+func getVersions() (*ClusterVersion, error) {
+	var result ClusterVersion
+	err := fetch(versionEndpount, nil, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 func getLocations() ([]Location, error) {
 	var result []Location
 	err := fetch(locationEndpoint, nil, nil, &result)

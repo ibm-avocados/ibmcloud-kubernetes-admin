@@ -64,6 +64,17 @@ func vlanEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	e.Encode(vlans)
 }
 
+func versionEndpointHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Content-Type", "application/json")
+	versions, err := ibmcloud.GetVersions()
+	if err != nil {
+		handleError(w, http.StatusNotFound, "could not get locations")
+	}
+	w.WriteHeader(http.StatusOK)
+	e := json.NewEncoder(w)
+	e.Encode(versions)
+}
+
 func locationEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "application/json")
 	locations, err := ibmcloud.GetLocations()

@@ -152,8 +152,7 @@
   color: var(--text-01);
 }
 
-.create-page-dropdown .bx--list-box--disabled .bx--list-box__label,
-.bx--list-box--disabled .bx--list-box--inline .bx--list-box__label {
+.create-page-dropdown.bx--list-box--disabled .bx--list-box__label {
   color: var(--text-03);
 }
 

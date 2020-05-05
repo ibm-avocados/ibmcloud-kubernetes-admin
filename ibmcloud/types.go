@@ -257,7 +257,7 @@ type Flavors struct {
 	Gpus                      string `json:"gpus"`
 }
 
-type ClusterType struct {
+type ClusterVersion struct {
 	Kubernetes []Kubernetes `json:"kubernetes"`
 	Openshift  []Openshift  `json:"openshift"`
 }

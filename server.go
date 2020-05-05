@@ -21,6 +21,7 @@ func main() {
 	api.HandleFunc("/clusters", clusterListHandler).Methods(http.MethodGet)
 	api.HandleFunc("/clusters", clusterDeleteHandler).Methods(http.MethodDelete)
 
+	api.HandleFunc("/clusters/{datacenter}/vlans", vlanEndpointHandler).Methods(http.MethodGet)
 	api.HandleFunc("/clusters/{clusterID}/workers", clusterWorkerListHandler).Methods(http.MethodGet)
 
 	api.HandleFunc("/clusters/settag", setTagHandler).Methods(http.MethodPost)
@@ -28,7 +29,9 @@ func main() {
 	api.HandleFunc("/clusters/gettag", getTagHandler).Methods(http.MethodPost)
 	api.HandleFunc("/billing", getBillingHandler).Methods(http.MethodPost)
 
-	api.HandleFunc("/clusters/{datacenter}/vlans", vlanEndpointHandler).Methods(http.MethodGet)
+	// public endpoints
+
+	api.HandleFunc("/clusters/versions", versionEndpointHandler).Methods(http.MethodGet)
 	api.HandleFunc("/clusters/locations", locationEndpointHandler).Methods(http.MethodGet)
 	api.HandleFunc("/clusters/{geo}/locations", locationGeoEndpointHandler).Methods(http.MethodGet)
 	api.HandleFunc("/clusters/zones", zonesEndpointHandler).

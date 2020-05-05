@@ -30,6 +30,10 @@ func GetZones(showFlavors, location string) ([]Zone, error) {
 	return getZones(showFlavors, location)
 }
 
+func GetVersions() (*ClusterVersion, error) {
+	return getVersions()
+}
+
 func GetLocations() ([]Location, error) {
 	return getLocations()
 }
