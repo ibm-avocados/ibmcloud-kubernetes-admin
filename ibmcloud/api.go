@@ -208,6 +208,22 @@ func getLocations() ([]Location, error) {
 	return result, nil
 }
 
+func getGeoLocations(geo string) ([]Location, error) {
+	locations, err := getLocations()
+	if err != nil {
+		return nil, err
+	}
+
+	geoLocations := make([]Location, 0, 10)
+
+	for _, location := range locations {
+		if location.Kind == "dc" && location.Geography == geo {
+			geoLocations = append(geoLocations, location)
+		}
+	}
+	return geoLocations, nil
+}
+
 func getMachineTypes(datacenter string) ([]Flavors, error) {
 	var result []Flavors
 	machineTypeEndpoint := fmt.Sprintf("%s/%s/machine-types", datacentersEndpoint, datacenter)

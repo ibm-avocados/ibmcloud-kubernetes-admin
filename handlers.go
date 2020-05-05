@@ -50,6 +50,26 @@ func locationEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	e.Encode(locations)
 }
 
+func locationGeoEndpointHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Content-Type", "application/json")
+	vars := mux.Vars(r)
+
+	geo, ok := vars["geo"]
+
+	if !ok {
+		handleError(w, http.StatusBadRequest, "could not get clusterID")
+		return
+	}
+
+	locations, err := ibmcloud.GetGeoLocations(geo)
+	if err != nil {
+		handleError(w, http.StatusNotFound, "could not get locations")
+	}
+	w.WriteHeader(http.StatusOK)
+	e := json.NewEncoder(w)
+	e.Encode(locations)
+}
+
 func zonesEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "application/json")
 	showFlavors := r.FormValue("showFlavors")

@@ -34,6 +34,10 @@ func GetLocations() ([]Location, error) {
 	return getLocations()
 }
 
+func GetGeoLocations(geo string) ([]Location, error) {
+	return getGeoLocations(geo)
+}
+
 func GetMachineType(datacenter string) ([]Flavors, error) {
 	return getMachineTypes(datacenter)
 }

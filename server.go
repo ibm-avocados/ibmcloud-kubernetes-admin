@@ -29,6 +29,7 @@ func main() {
 	api.HandleFunc("/billing", getBillingHandler).Methods(http.MethodPost)
 
 	api.HandleFunc("/clusters/locations", locationEndpointHandler).Methods(http.MethodGet)
+	api.HandleFunc("/clusters/{geo}/locations", locationGeoEndpointHandler).Methods(http.MethodGet)
 	api.HandleFunc("/clusters/zones", zonesEndpointHandler).
 		Queries("showFlavors", "{showFlavors}", "location", "{location}").
 		Methods(http.MethodGet)
