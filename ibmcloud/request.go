@@ -32,6 +32,8 @@ func handleRequest(request *http.Request, header map[string]string, query map[st
 		return getError(resp)
 	}
 
+	// b, _ := ioutil.ReadAll(resp.Body)
+	// log.Println(string(b))
 	// This was a delete request and was successful.
 	// no need to try decode the body.
 	if resp.StatusCode == 204 {

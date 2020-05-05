@@ -39,6 +39,31 @@ func tokenEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	e.Encode(endpoints)
 }
 
+func vlanEndpointHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Content-Type", "application/json")
+	session, err := getCloudSessions(r)
+	if err != nil {
+		handleError(w, http.StatusUnauthorized, "could not get session", err.Error())
+		return
+	}
+	vars := mux.Vars(r)
+
+	datacenters, ok := vars["datacenter"]
+
+	if !ok {
+		handleError(w, http.StatusBadRequest, "could not get clusterID")
+		return
+	}
+
+	vlans, err := session.GetDatacenterVlan(datacenters)
+	if err != nil {
+		handleError(w, http.StatusNotFound, "could not get vlans")
+	}
+	w.WriteHeader(http.StatusOK)
+	e := json.NewEncoder(w)
+	e.Encode(vlans)
+}
+
 func locationEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "application/json")
 	locations, err := ibmcloud.GetLocations()

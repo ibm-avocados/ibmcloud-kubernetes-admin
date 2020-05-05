@@ -111,6 +111,10 @@ func (s *Session) GetClusters(location string) ([]*Cluster, error) {
 	return getClusters(s.Token.AccessToken, location)
 }
 
+func (s *Session) GetDatacenterVlan(datacenter string) ([]Vlan, error) {
+	return getDatacenterVlan(s.Token.AccessToken, s.Token.RefreshToken, datacenter)
+}
+
 func (s *Session) GetWorkers(clusterID string) ([]Worker, error) {
 	return getClusterWorkers(s.Token.AccessToken, clusterID)
 }

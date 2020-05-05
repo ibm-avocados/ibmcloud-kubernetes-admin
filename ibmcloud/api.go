@@ -199,6 +199,23 @@ func getZones(showFlavors, location string) ([]Zone, error) {
 	return result, nil
 }
 
+func getDatacenterVlan(token, refreshToken, datacenter string) ([]Vlan, error) {
+	var result []Vlan
+	header := map[string]string{
+		"Authorization":        "Bearer " + token,
+		"X-Auth-Refresh-Token": refreshToken,
+	}
+
+	url := datacentersEndpoint + "/" + datacenter + "/vlans"
+
+	err := fetch(url, header, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 func getLocations() ([]Location, error) {
 	var result []Location
 	err := fetch(locationEndpoint, nil, nil, &result)

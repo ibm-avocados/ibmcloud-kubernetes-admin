@@ -14,6 +14,8 @@ import {
   Tooltip,
 } from "carbon-components-react";
 
+import geos from "../data/geo";
+
 import styles from "./CreateForm.module.css";
 
 import "./CreateForm.css";
@@ -22,13 +24,51 @@ const Spacer = ({ height }) => {
   return <div style={{ marginTop: height }} />;
 };
 
+const grab = async (url, options) => {
+  const response = await fetch(url, options);
+  if (response.status !== 200) {
+    throw Error();
+  }
+  const data = await response.json();
+  return data;
+};
+
 const CreateForm = () => {
   const [kubernetesSelected, setKubernetesSelected] = React.useState(true);
   const [openshiftSelected, setOpenshiftSelected] = React.useState(false);
+  const [workerZones, setWorkerZones] = React.useState([]);
+  const [privateVlans, setPrivateVlans] = React.useState([]);
+  const [publicVlans, setPublicVlans] = React.useState([]);
 
   const toggleRadio = () => {
     setKubernetesSelected(!kubernetesSelected);
     setOpenshiftSelected(!openshiftSelected);
+  };
+
+  const getWorkerZones = async (geo) => {
+    console.log(geo);
+    try {
+      const locations = await grab(`/api/v1/clusters/${geo}/locations`, {
+        Method: "GET",
+      });
+      setWorkerZones(locations);
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  const getVlans = async (datacenter) => {
+    try {
+      const vlans = await grab(`/api/v1/clusters/${datacenter}/vlans`);
+      setPrivateVlans(vlans.filter((vlan) => vlan.type === "private"));
+      setPublicVlans(vlans.filter((vlan) => vlan.type === "public"));
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  const getVlanString = (vlan) => {
+    return `${vlan.id}-${vlan.properties.vlan_number}-${vlan.properties.primary_router}`;
   };
 
   return (
@@ -62,6 +102,7 @@ const CreateForm = () => {
                 disabled={!kubernetesSelected}
                 label="Select Version"
                 items={["1", "2", "3"]}
+                selectedItem={null}
               />
             </RadioTile>
           </Column>
@@ -107,7 +148,9 @@ const CreateForm = () => {
             <Dropdown
               className="create-page-dropdown"
               label="Select geo"
-              items={["1", "2", "3"]}
+              items={geos}
+              itemToString={(geo) => (geo ? geo.display_name : "")}
+              onChange={({ selectedItem }) => getWorkerZones(selectedItem.id)}
             />
           </Column>
         </Row>
@@ -123,7 +166,10 @@ const CreateForm = () => {
             <Dropdown
               className="create-page-dropdown"
               label="Select worker zone"
-              items={["1", "2", "3"]}
+              itemToString={(zone) => (zone ? zone.id : "")}
+              items={workerZones}
+              disabled={workerZones.length <= 0}
+              onChange={({ selectedItem }) => getVlans(selectedItem.id)}
             />
           </Column>
 
@@ -138,7 +184,8 @@ const CreateForm = () => {
             <Dropdown
               className="create-page-dropdown"
               label="Select public vlan"
-              items={["1", "2", "3"]}
+              items={publicVlans}
+              itemToString={(vlan) => getVlanString(vlan)}
             />
           </Column>
 
@@ -152,7 +199,8 @@ const CreateForm = () => {
             <Dropdown
               className="create-page-dropdown"
               label="Select private vlan"
-              items={["1", "2", "3"]}
+              items={privateVlans}
+              itemToString={(vlan) => getVlanString(vlan)}
             />
           </Column>
         </Row>

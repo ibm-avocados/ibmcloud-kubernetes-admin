@@ -428,3 +428,19 @@ type ClusterConfig struct {
 	SkipPermPrecheck             bool   `json:"skipPermPrecheck"`
 	WorkerNum                    int    `json:"workerNum"`
 }
+
+type Vlan struct {
+	ID         string         `json:"id"`
+	Type       string         `json:"type"`
+	Properties VlanProperties `json:"properties"`
+}
+type VlanProperties struct {
+	Name                       string `json:"name"`
+	Note                       string `json:"note"`
+	PrimaryRouter              string `json:"primary_router"`
+	VlanNumber                 string `json:"vlan_number"`
+	VlanType                   string `json:"vlan_type"`
+	Location                   string `json:"location"`
+	LocalDiskStorageCapability string `json:"local_disk_storage_capability"`
+	SanStorageCapability       string `json:"san_storage_capability"`
+}
