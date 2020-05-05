@@ -58,6 +58,7 @@ const CreateForm = () => {
                 <p>Kubernetes</p>
               </div>
               <Dropdown
+                className="create-page-dropdown"
                 disabled={!kubernetesSelected}
                 label="Select Version"
                 items={["1", "2", "3"]}
@@ -80,6 +81,7 @@ const CreateForm = () => {
                 <p>OpenShift</p>
               </div>
               <Dropdown
+                className="create-page-dropdown"
                 disabled={!openshiftSelected}
                 label="Select Version"
                 className={styles.dropdown}
@@ -102,7 +104,11 @@ const CreateForm = () => {
 
         <Row>
           <Column lg={6}>
-            <Dropdown label="Select geo" items={["1", "2", "3"]} />
+            <Dropdown
+              className="create-page-dropdown"
+              label="Select geo"
+              items={["1", "2", "3"]}
+            />
           </Column>
         </Row>
         <Spacer height="16px" />
@@ -114,7 +120,11 @@ const CreateForm = () => {
                 The data center where your worker pool will be located.
               </Tooltip>
             </FormLabel>
-            <Dropdown label="Select worker zone" items={["1", "2", "3"]} />
+            <Dropdown
+              className="create-page-dropdown"
+              label="Select worker zone"
+              items={["1", "2", "3"]}
+            />
           </Column>
 
           <Column md={4} lg={3}>
@@ -125,7 +135,11 @@ const CreateForm = () => {
                 apps to the public, configure external networking.
               </Tooltip>
             </FormLabel>
-            <Dropdown label="Select public vlan" items={["1", "2", "3"]} />
+            <Dropdown
+              className="create-page-dropdown"
+              label="Select public vlan"
+              items={["1", "2", "3"]}
+            />
           </Column>
 
           <Column md={4} lg={3}>
@@ -135,7 +149,11 @@ const CreateForm = () => {
                 nodes in this cluster.
               </Tooltip>
             </FormLabel>
-            <Dropdown label="Select private vlan" items={["1", "2", "3"]} />
+            <Dropdown
+              className="create-page-dropdown"
+              label="Select private vlan"
+              items={["1", "2", "3"]}
+            />
           </Column>
         </Row>
         <Spacer height="16px" />
@@ -165,7 +183,11 @@ const CreateForm = () => {
 
           <Column lg={3}>
             <FormLabel>Resouce group</FormLabel>
-            <Dropdown label="Select resource group" items={["1", "2", "3"]} />
+            <Dropdown
+              className="create-page-dropdown"
+              label="Select resource group"
+              items={["1", "2", "3"]}
+            />
           </Column>
         </Row>
         <Spacer height="16px" />
@@ -209,7 +231,11 @@ const CreateForm = () => {
                 worker node.
               </Tooltip>
             </FormLabel>
-            <Dropdown label="Select Flavor" items={["1", "2", "3"]} />
+            <Dropdown
+              className="create-page-dropdown machine-flavor"
+              label="Select Flavor"
+              items={["1", "2", "3"]}
+            />
           </Column>
         </Row>
         <Spacer height="16px" />

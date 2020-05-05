@@ -89,59 +89,70 @@
   padding: 0;
 }
 
-.bx--row .bx--dropdown__wrapper {
-  margin-left: auto;
-}
-
-.bx--row .bx--tile--selectable .bx--dropdown--disabled {
-  border: transparent;
-}
-
-.bx--row .bx--dropdown {
-  max-height: none;
-  height: 2rem;
-  background-color: var(--ui-01);
-}
-
 .bx--row .bx--tile--is-selected .bx--dropdown {
   border: 1px solid var(--ui-05);
   border-top: 1px solid var(--ui-03);
 }
 
-.bx--row .bx--dropdown:hover {
+.bx--row .bx--dropdown__wrapper {
+  margin-left: auto;
+}
+
+.create-page-dropdown .bx--tile--selectable .bx--dropdown--disabled {
+  border: transparent;
+}
+
+.create-page-dropdown.bx--dropdown {
+  max-height: none;
+  height: 2rem;
   background-color: var(--ui-01);
 }
 
-/* .bx--list-box__menu{
-  
-} */
+.machine-flavor.create-page-dropdown.bx--dropdown {
+  max-height: none;
+  height: 4rem;
+  background-color: var(--ui-01);
+}
 
-.bx--row .bx--list-box__menu-icon > svg {
+.create-page-dropdown .bx--dropdown:hover {
+  background-color: var(--ui-03);
+  color: var(--ui-05);
+}
+
+.create-page-dropdown .bx--list-box__menu-icon > svg {
   fill: var(--ui-05);
 }
 
-.bx--row .bx--list-box__menu-item {
+.create-page-dropdown .bx--list-box__menu-item {
   display: flex;
   align-items: center;
-  background-color: var(--ui-04);
+  background-color: var(--ui-02);
   height: 2rem;
+  border-bottom: 1px solid var(--ui-01);
 }
 
-.bx--row .bx--list-box__menu-item__option {
+.machine-flavor .bx--list-box__menu-item {
+  display: flex;
+  align-items: center;
+  background-color: var(--ui-02);
+  height: 4rem;
+}
+
+.create-page-dropdown .bx--list-box__menu-item__option {
   color: var(--text-02);
   border-top: 0;
 }
 
-.bx--row .bx--list-box__menu-item--highlighted {
+.create-page-dropdown .bx--list-box__menu-item--highlighted {
   color: var(--text-02);
   background-color: var(--ui-03);
 }
 
-.bx--row .bx--list-box__label {
+.create-page-dropdown .bx--list-box__label {
   color: var(--text-01);
 }
 
-.bx--row .bx--list-box--disabled .bx--list-box__label,
+.create-page-dropdown .bx--list-box--disabled .bx--list-box__label,
 .bx--list-box--disabled .bx--list-box--inline .bx--list-box__label {
   color: var(--text-03);
 }
