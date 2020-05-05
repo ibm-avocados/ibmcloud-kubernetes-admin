@@ -177,7 +177,10 @@ const CreateForm = () => {
                 Use tags that would uniquely identify this set of clusters.
               </Tooltip>
             </FormLabel>
-            <TextInput className="tag-text-input" placeholder="tag1, tag2, tag3"/>
+            <TextInput
+              className="tag-text-input"
+              placeholder="tag1, tag2, tag3"
+            />
           </Column>
         </Row>
         <Spacer height="16px" />
@@ -192,14 +195,24 @@ const CreateForm = () => {
 
         <Row>
           <Column md={4} lg={3}>
-            <FormLabel>
-              Worker nodes
-            </FormLabel>
-            <TextInput placeholder="1"/>
+            <FormLabel>Worker nodes</FormLabel>
+            <TextInput placeholder="1" />
           </Column>
         </Row>
         <Spacer height="16px" />
 
+        <Row>
+          <Column lg={6}>
+            <FormLabel>
+              <Tooltip triggerText="Flavor">
+                The amount of memory, cpu, and disk space allocated to each
+                worker node.
+              </Tooltip>
+            </FormLabel>
+            <Dropdown label="Select Flavor" items={["1", "2", "3"]} />
+          </Column>
+        </Row>
+        <Spacer height="16px" />
       </Grid>
     </Form>
   );

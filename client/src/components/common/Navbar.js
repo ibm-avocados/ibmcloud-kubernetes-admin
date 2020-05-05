@@ -59,13 +59,13 @@ const Navbar = (props) => {
         <MenuItem label="Schedule" onClickHandler={handleScheduleClick} />
         <Dropdown
           disabled={props.accountsLoaded}
-          className={styles.dropdown}
+          className="navbar-dropdown"
           ariaLabel="Dropdown"
           label="Select Account"
           items={props.items || []}
           onChange={props.accountSelected}
           itemToString={itemToString}
-          // id="account-dropdown"
+          id="account-dropdown"
           light={false}
         />
       </div>

@@ -1,0 +1,689 @@
+[
+  {
+    "id": "seo",
+    "name": "seo",
+    "kind": "metro",
+    "geography": "ap"
+  },
+  {
+    "id": "tok04",
+    "name": "tok04",
+    "kind": "dc",
+    "metro": "tok",
+    "multizone_metro": "Tokyo",
+    "country": "jp",
+    "geography": "ap"
+  },
+  {
+    "id": "br",
+    "name": "br",
+    "kind": "country",
+    "geography": "sa"
+  },
+  {
+    "id": "au-syd-2",
+    "name": "au-syd-2",
+    "kind": "zone",
+    "metro": "syd",
+    "country": "au",
+    "geography": "ap"
+  },
+  {
+    "id": "in",
+    "name": "in",
+    "kind": "country",
+    "geography": "ap"
+  },
+  {
+    "id": "au-syd-3",
+    "name": "au-syd-3",
+    "kind": "zone",
+    "metro": "syd",
+    "country": "au",
+    "geography": "ap"
+  },
+  {
+    "id": "jp",
+    "name": "jp",
+    "kind": "country",
+    "geography": "ap"
+  },
+  {
+    "id": "fra05",
+    "name": "fra05",
+    "kind": "dc",
+    "metro": "fra",
+    "multizone_metro": "Frankfurt",
+    "country": "de",
+    "geography": "eu"
+  },
+  {
+    "id": "che01",
+    "name": "che01",
+    "kind": "dc",
+    "metro": "che",
+    "country": "in",
+    "geography": "ap"
+  },
+  {
+    "id": "tor01",
+    "name": "tor01",
+    "kind": "dc",
+    "metro": "tor",
+    "country": "ca",
+    "geography": "na"
+  },
+  {
+    "id": "fra",
+    "name": "fra",
+    "kind": "metro",
+    "geography": "eu"
+  },
+  {
+    "id": "lon02",
+    "name": "lon02",
+    "kind": "dc",
+    "metro": "lon",
+    "multizone_metro": "London",
+    "country": "uk",
+    "geography": "eu"
+  },
+  {
+    "id": "ap",
+    "name": "ap",
+    "kind": "geography"
+  },
+  {
+    "id": "tok05",
+    "name": "tok05",
+    "kind": "dc",
+    "metro": "tok",
+    "multizone_metro": "Tokyo",
+    "country": "jp",
+    "geography": "ap"
+  },
+  {
+    "id": "eu-de-3",
+    "name": "eu-de-3",
+    "kind": "zone",
+    "metro": "fra",
+    "country": "de",
+    "geography": "eu"
+  },
+  {
+    "id": "mel01",
+    "name": "mel01",
+    "kind": "dc",
+    "metro": "mel",
+    "country": "au",
+    "geography": "ap"
+  },
+  {
+    "id": "wdc04",
+    "name": "wdc04",
+    "kind": "dc",
+    "metro": "wdc",
+    "multizone_metro": "Washington D.C.",
+    "country": "us",
+    "geography": "na"
+  },
+  {
+    "id": "mex",
+    "name": "mex",
+    "kind": "country",
+    "geography": "na"
+  },
+  {
+    "id": "kr",
+    "name": "kr",
+    "kind": "country",
+    "geography": "ap"
+  },
+  {
+    "id": "us-south-1",
+    "name": "us-south-1",
+    "kind": "zone",
+    "metro": "dal",
+    "country": "us",
+    "geography": "na"
+  },
+  {
+    "id": "nl",
+    "name": "nl",
+    "kind": "country",
+    "geography": "eu"
+  },
+  {
+    "id": "mon",
+    "name": "mon",
+    "kind": "metro",
+    "geography": "na"
+  },
+  {
+    "id": "sa",
+    "name": "sa",
+    "kind": "geography"
+  },
+  {
+    "id": "mon01",
+    "name": "mon01",
+    "kind": "dc",
+    "metro": "mon",
+    "country": "ca",
+    "geography": "na"
+  },
+  {
+    "id": "hkg-mtr",
+    "name": "hkg-mtr",
+    "kind": "metro",
+    "geography": "ap"
+  },
+  {
+    "id": "par01",
+    "name": "par01",
+    "kind": "dc",
+    "metro": "par",
+    "country": "fr",
+    "geography": "eu"
+  },
+  {
+    "id": "sjc",
+    "name": "sjc",
+    "kind": "metro",
+    "geography": "na"
+  },
+  {
+    "id": "us",
+    "name": "us",
+    "kind": "country",
+    "geography": "na"
+  },
+  {
+    "id": "mex01",
+    "name": "mex01",
+    "kind": "dc",
+    "metro": "mex-cty",
+    "country": "mex",
+    "geography": "na"
+  },
+  {
+    "id": "par",
+    "name": "par",
+    "kind": "metro",
+    "geography": "eu"
+  },
+  {
+    "id": "lon05",
+    "name": "lon05",
+    "kind": "dc",
+    "metro": "lon",
+    "multizone_metro": "London",
+    "country": "uk",
+    "geography": "eu"
+  },
+  {
+    "id": "dal",
+    "name": "dal",
+    "kind": "metro",
+    "geography": "na"
+  },
+  {
+    "id": "tor",
+    "name": "tor",
+    "kind": "metro",
+    "geography": "na"
+  },
+  {
+    "id": "che",
+    "name": "che",
+    "kind": "metro",
+    "geography": "ap"
+  },
+  {
+    "id": "eu-gb-1",
+    "name": "eu-gb-1",
+    "kind": "zone",
+    "metro": "lon",
+    "country": "uk",
+    "geography": "eu"
+  },
+  {
+    "id": "ca",
+    "name": "ca",
+    "kind": "country",
+    "geography": "na"
+  },
+  {
+    "id": "syd05",
+    "name": "syd05",
+    "kind": "dc",
+    "metro": "syd",
+    "multizone_metro": "Sydney",
+    "country": "au",
+    "geography": "ap"
+  },
+  {
+    "id": "na",
+    "name": "na",
+    "kind": "geography"
+  },
+  {
+    "id": "sng01",
+    "name": "sng01",
+    "kind": "dc",
+    "metro": "sng-mtr",
+    "country": "sng",
+    "geography": "ap"
+  },
+  {
+    "id": "tok",
+    "name": "tok",
+    "kind": "metro",
+    "geography": "ap"
+  },
+  {
+    "id": "us-east-1",
+    "name": "us-east-1",
+    "kind": "zone",
+    "metro": "wdc",
+    "country": "us",
+    "geography": "na"
+  },
+  {
+    "id": "eu-de-1",
+    "name": "eu-de-1",
+    "kind": "zone",
+    "metro": "fra",
+    "country": "de",
+    "geography": "eu"
+  },
+  {
+    "id": "no",
+    "name": "no",
+    "kind": "country",
+    "geography": "eu"
+  },
+  {
+    "id": "us-south-3",
+    "name": "us-south-3",
+    "kind": "zone",
+    "metro": "dal",
+    "country": "us",
+    "geography": "na"
+  },
+  {
+    "id": "syd",
+    "name": "syd",
+    "kind": "metro",
+    "geography": "ap"
+  },
+  {
+    "id": "eu-de-2",
+    "name": "eu-de-2",
+    "kind": "zone",
+    "metro": "fra",
+    "country": "de",
+    "geography": "eu"
+  },
+  {
+    "id": "hou",
+    "name": "hou",
+    "kind": "metro",
+    "geography": "na"
+  },
+  {
+    "id": "us-east-2",
+    "name": "us-east-2",
+    "kind": "zone",
+    "metro": "wdc",
+    "country": "us",
+    "geography": "na"
+  },
+  {
+    "id": "sng-mtr",
+    "name": "sng-mtr",
+    "kind": "metro",
+    "geography": "ap"
+  },
+  {
+    "id": "mil01",
+    "name": "mil01",
+    "kind": "dc",
+    "metro": "mil",
+    "country": "it",
+    "geography": "eu",
+    "supportsFree": true
+  },
+  {
+    "id": "fra04",
+    "name": "fra04",
+    "kind": "dc",
+    "metro": "fra",
+    "multizone_metro": "Frankfurt",
+    "country": "de",
+    "geography": "eu"
+  },
+  {
+    "id": "jp-tok-3",
+    "name": "jp-tok-3",
+    "kind": "zone",
+    "metro": "tok",
+    "country": "jp",
+    "geography": "ap"
+  },
+  {
+    "id": "tok02",
+    "name": "tok02",
+    "kind": "dc",
+    "metro": "tok",
+    "multizone_metro": "Tokyo",
+    "country": "jp",
+    "geography": "ap"
+  },
+  {
+    "id": "sng",
+    "name": "sng",
+    "kind": "country",
+    "geography": "ap"
+  },
+  {
+    "id": "osl",
+    "name": "osl",
+    "kind": "metro",
+    "geography": "eu"
+  },
+  {
+    "id": "us-east-3",
+    "name": "us-east-3",
+    "kind": "zone",
+    "metro": "wdc",
+    "country": "us",
+    "geography": "na"
+  },
+  {
+    "id": "hou02",
+    "name": "hou02",
+    "kind": "dc",
+    "metro": "hou",
+    "country": "us",
+    "geography": "na",
+    "supportsFree": true
+  },
+  {
+    "id": "uk",
+    "name": "uk",
+    "kind": "country",
+    "geography": "eu"
+  },
+  {
+    "id": "jp-tok-2",
+    "name": "jp-tok-2",
+    "kind": "zone",
+    "metro": "tok",
+    "country": "jp",
+    "geography": "ap"
+  },
+  {
+    "id": "hkg02",
+    "name": "hkg02",
+    "kind": "dc",
+    "metro": "hkg-mtr",
+    "country": "hkg",
+    "geography": "ap"
+  },
+  {
+    "id": "sao",
+    "name": "sao",
+    "kind": "metro",
+    "geography": "sa"
+  },
+  {
+    "id": "eu-gb-2",
+    "name": "eu-gb-2",
+    "kind": "zone",
+    "metro": "lon",
+    "country": "uk",
+    "geography": "eu"
+  },
+  {
+    "id": "ams",
+    "name": "ams",
+    "kind": "metro",
+    "geography": "eu"
+  },
+  {
+    "id": "seo01",
+    "name": "seo01",
+    "kind": "dc",
+    "metro": "seo",
+    "country": "kr",
+    "geography": "ap"
+  },
+  {
+    "id": "syd01",
+    "name": "syd01",
+    "kind": "dc",
+    "metro": "syd",
+    "multizone_metro": "Sydney",
+    "country": "au",
+    "geography": "ap"
+  },
+  {
+    "id": "au",
+    "name": "au",
+    "kind": "country",
+    "geography": "ap"
+  },
+  {
+    "id": "hkg",
+    "name": "hkg",
+    "kind": "country",
+    "geography": "ap"
+  },
+  {
+    "id": "jp-tok-1",
+    "name": "jp-tok-1",
+    "kind": "zone",
+    "metro": "tok",
+    "country": "jp",
+    "geography": "ap"
+  },
+  {
+    "id": "sao01",
+    "name": "sao01",
+    "kind": "dc",
+    "metro": "sao",
+    "country": "br",
+    "geography": "sa"
+  },
+  {
+    "id": "osl01",
+    "name": "osl01",
+    "kind": "dc",
+    "metro": "osl",
+    "country": "no",
+    "geography": "eu"
+  },
+  {
+    "id": "sjc03",
+    "name": "sjc03",
+    "kind": "dc",
+    "metro": "sjc",
+    "country": "us",
+    "geography": "na"
+  },
+  {
+    "id": "de",
+    "name": "de",
+    "kind": "country",
+    "geography": "eu"
+  },
+  {
+    "id": "syd04",
+    "name": "syd04",
+    "kind": "dc",
+    "metro": "syd",
+    "multizone_metro": "Sydney",
+    "country": "au",
+    "geography": "ap"
+  },
+  {
+    "id": "wdc06",
+    "name": "wdc06",
+    "kind": "dc",
+    "metro": "wdc",
+    "multizone_metro": "Washington D.C.",
+    "country": "us",
+    "geography": "na"
+  },
+  {
+    "id": "us-south-2",
+    "name": "us-south-2",
+    "kind": "zone",
+    "metro": "dal",
+    "country": "us",
+    "geography": "na"
+  },
+  {
+    "id": "ams03",
+    "name": "ams03",
+    "kind": "dc",
+    "metro": "ams",
+    "country": "nl",
+    "geography": "eu"
+  },
+  {
+    "id": "dal13",
+    "name": "dal13",
+    "kind": "dc",
+    "metro": "dal",
+    "multizone_metro": "Dallas",
+    "country": "us",
+    "geography": "na"
+  },
+  {
+    "id": "wdc",
+    "name": "wdc",
+    "kind": "metro",
+    "geography": "na"
+  },
+  {
+    "id": "mex-cty",
+    "name": "mex-cty",
+    "kind": "metro",
+    "geography": "na"
+  },
+  {
+    "id": "eu",
+    "name": "eu",
+    "kind": "geography"
+  },
+  {
+    "id": "mil",
+    "name": "mil",
+    "kind": "metro",
+    "geography": "eu"
+  },
+  {
+    "id": "wdc07",
+    "name": "wdc07",
+    "kind": "dc",
+    "metro": "wdc",
+    "multizone_metro": "Washington D.C.",
+    "country": "us",
+    "geography": "na"
+  },
+  {
+    "id": "au-syd-1",
+    "name": "au-syd-1",
+    "kind": "zone",
+    "metro": "syd",
+    "country": "au",
+    "geography": "ap"
+  },
+  {
+    "id": "mel",
+    "name": "mel",
+    "kind": "metro",
+    "geography": "ap"
+  },
+  {
+    "id": "fr",
+    "name": "fr",
+    "kind": "country",
+    "geography": "eu"
+  },
+  {
+    "id": "sjc04",
+    "name": "sjc04",
+    "kind": "dc",
+    "metro": "sjc",
+    "country": "us",
+    "geography": "na"
+  },
+  {
+    "id": "lon",
+    "name": "lon",
+    "kind": "metro",
+    "geography": "eu"
+  },
+  {
+    "id": "fra02",
+    "name": "fra02",
+    "kind": "dc",
+    "metro": "fra",
+    "multizone_metro": "Frankfurt",
+    "country": "de",
+    "geography": "eu"
+  },
+  {
+    "id": "lon06",
+    "name": "lon06",
+    "kind": "dc",
+    "metro": "lon",
+    "multizone_metro": "London",
+    "country": "uk",
+    "geography": "eu"
+  },
+  {
+    "id": "it",
+    "name": "it",
+    "kind": "country",
+    "geography": "eu"
+  },
+  {
+    "id": "dal12",
+    "name": "dal12",
+    "kind": "dc",
+    "metro": "dal",
+    "multizone_metro": "Dallas",
+    "country": "us",
+    "geography": "na"
+  },
+  {
+    "id": "eu-gb-3",
+    "name": "eu-gb-3",
+    "kind": "zone",
+    "metro": "lon",
+    "country": "uk",
+    "geography": "eu"
+  },
+  {
+    "id": "lon04",
+    "name": "lon04",
+    "kind": "dc",
+    "metro": "lon",
+    "multizone_metro": "London",
+    "country": "uk",
+    "geography": "eu"
+  },
+  {
+    "id": "dal10",
+    "name": "dal10",
+    "kind": "dc",
+    "metro": "dal",
+    "multizone_metro": "Dallas",
+    "country": "us",
+    "geography": "na"
+  }
+]
