@@ -62,19 +62,19 @@ const AppRouter = () => {
       <Switch>
         <Route path="/login" exact component={Login} />
         <Route path="/create" exact>
-        <Navbar
+          <Navbar
             isLoaded={!isLoadingAccounts}
             items={accounts}
             accountSelected={handleAccountChosen}
           />
-          <CreatePage />
+          <CreatePage hasChosenAccount={hasChosenAccount} accountID={accountID}/>
         </Route>
         <Route path="/schedule" exact>
           <Navbar
-              isLoaded={!isLoadingAccounts}
-              items={accounts}
-              accountSelected={handleAccountChosen}
-            />
+            isLoaded={!isLoadingAccounts}
+            items={accounts}
+            accountSelected={handleAccountChosen}
+          />
         </Route>
         <Route path="/" exact>
           <Navbar

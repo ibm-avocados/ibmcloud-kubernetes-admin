@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -40,6 +41,7 @@ const (
 	usersEndpoint        = protocol + subdomainUsers + api + "/v2"
 	tagEndpoint          = protocol + subdomainTags + api + "/v3/tags"
 	billingEndpoint      = protocol + subdomainBilling + api + "/v4/accounts"
+	resourceEndoint      = protocol + subdomainResourceController + api + "/v1/resource_groups"
 )
 
 const (
@@ -72,7 +74,7 @@ func init() {
 // 	panic(err)
 // }
 // bodyString := string(bodyBytes)
-// fmt.Println(bodyString)
+// log.Println(bodyString)
 ////
 
 func timeTaken(t time.Time, name string) {
@@ -199,6 +201,24 @@ func getZones(showFlavors, location string) ([]Zone, error) {
 	return result, nil
 }
 
+func getAccountResources(token, accountID string) (*AccountResources, error) {
+	var result AccountResources
+	header := map[string]string{
+		"Authorization": "Bearer " + token,
+	}
+
+	query := map[string]string{
+		"account_id": accountID,
+	}
+
+	err := fetch(resourceEndoint, header, query, &result)
+	if err != nil {
+		return nil, err
+	}
+	//"/v1/resource_groups?account_id=9b13b857a32341b7167255de717172f5"
+	return &result, nil
+}
+
 func getDatacenterVlan(token, refreshToken, datacenter string) ([]Vlan, error) {
 	var result []Vlan
 	header := map[string]string{
@@ -250,12 +270,28 @@ func getGeoLocations(geo string) ([]Location, error) {
 	return geoLocations, nil
 }
 
-func getMachineTypes(datacenter string) ([]Flavors, error) {
-	var result []Flavors
+func getMachineTypes(datacenter, serverType, os string, cpuLimit, memoryLimit int) ([]MachineFlavor, error) {
+	var result []MachineFlavor
 	machineTypeEndpoint := fmt.Sprintf("%s/%s/machine-types", datacentersEndpoint, datacenter)
 	err := fetch(machineTypeEndpoint, nil, nil, &result)
 	if err != nil {
 		return nil, err
+	}
+	if serverType != "" && os != "" {
+		filtered := make([]MachineFlavor, 0)
+		toLower := strings.ToLower
+		atoi := strconv.Atoi
+		for _, machine := range result {
+			cpu, _ := atoi(machine.Cores)
+			memory, _ := atoi(strings.ReplaceAll(machine.Memory, "GB", ""))
+			if toLower(machine.ServerType) == toLower(serverType) &&
+				toLower(machine.Os) == toLower(os) &&
+				cpu <= cpuLimit &&
+				memory <= memoryLimit {
+				filtered = append(filtered, machine)
+			}
+		}
+		return filtered, nil
 	}
 	return result, nil
 }
@@ -286,8 +322,8 @@ func getClusters(token, location string) ([]*Cluster, error) {
 	// 	go func(cluster *Cluster) {
 	// 		tags, err := getTags(token, cluster.Crn)
 	// 		if err != nil {
-	// 			fmt.Println("error for tag: ", cluster.Name)
-	// 			fmt.Println("error : ", err)
+	// 			log.Println("error for tag: ", cluster.Name)
+	// 			log.Println("error : ", err)
 	// 		} else {
 	// 			cluster.Tags = make([]string, len(tags.Items))
 	// 			for i, val := range tags.Items {
@@ -300,13 +336,13 @@ func getClusters(token, location string) ([]*Cluster, error) {
 	// 	go func(cluster *Cluster) {
 	// 		workers, err := getClusterWorkers(token, cluster.ID)
 	// 		if err != nil {
-	// 			fmt.Println("error for worker: ", cluster.Name)
-	// 			fmt.Println("error : ", err)
+	// 			log.Println("error for worker: ", cluster.Name)
+	// 			log.Println("error : ", err)
 	// 		} else {
 	// 			cluster.Workers = workers
 	// 			cost, err := getBillingData(token, accountID, cluster.Crn, workers)
 	// 			if err != nil {
-	// 				fmt.Println("error for cost: ", cluster.Name)
+	// 				log.Println("error for cost: ", cluster.Name)
 	// 			}
 	// 			cluster.Cost = cost
 	// 		}

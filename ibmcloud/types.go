@@ -444,3 +444,41 @@ type VlanProperties struct {
 	LocalDiskStorageCapability string `json:"local_disk_storage_capability"`
 	SanStorageCapability       string `json:"san_storage_capability"`
 }
+
+type MachineFlavor struct {
+	Name                      string `json:"name"`
+	Provider                  string `json:"provider"`
+	Memory                    string `json:"memory"`
+	NetworkSpeed              string `json:"networkSpeed"`
+	Cores                     string `json:"cores"`
+	Os                        string `json:"os"`
+	ServerType                string `json:"serverType"`
+	Storage                   string `json:"storage"`
+	SecondaryStorage          string `json:"secondaryStorage"`
+	SecondaryStorageEncrypted bool   `json:"secondaryStorageEncrypted"`
+	Deprecated                bool   `json:"deprecated"`
+	CorrespondingMachineType  string `json:"correspondingMachineType"`
+	IsTrusted                 bool   `json:"isTrusted"`
+	Gpus                      string `json:"gpus"`
+	OcpUnsupported            bool   `json:"ocp_unsupported"`
+}
+
+type AccountResources struct {
+	Resources []AccountResource `json:"resources"`
+}
+type AccountResource struct {
+	ID                string        `json:"id"`
+	Crn               string        `json:"crn"`
+	AccountID         string        `json:"account_id"`
+	Name              string        `json:"name"`
+	State             string        `json:"state"`
+	Default           bool          `json:"default"`
+	EnableReclamation bool          `json:"enable_reclamation"`
+	QuotaID           string        `json:"quota_id"`
+	QuotaURL          string        `json:"quota_url"`
+	PaymentMethodsURL string        `json:"payment_methods_url"`
+	ResourceLinkages  []interface{} `json:"resource_linkages"`
+	TeamsURL          string        `json:"teams_url"`
+	CreatedAt         time.Time     `json:"created_at"`
+	UpdatedAt         time.Time     `json:"updated_at"`
+}

@@ -39,6 +39,32 @@ func tokenEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	e.Encode(endpoints)
 }
 
+func resourceGroupHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Content-Type", "application/json")
+	session, err := getCloudSessions(r)
+	if err != nil {
+		handleError(w, http.StatusUnauthorized, "could not get session", err.Error())
+		return
+	}
+	vars := mux.Vars(r)
+
+	accountID, ok := vars["accountID"]
+
+	if !ok {
+		handleError(w, http.StatusBadRequest, "could not get clusterID")
+		return
+	}
+
+	accountResources, err := session.GetAccountResources(accountID)
+	if err != nil {
+		handleError(w, http.StatusUnauthorized, "could not account resources", err.Error())
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	e := json.NewEncoder(w)
+	e.Encode(accountResources)
+}
+
 func vlanEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "application/json")
 	session, err := getCloudSessions(r)
@@ -121,8 +147,31 @@ func zonesEndpointHandler(w http.ResponseWriter, r *http.Request) {
 
 func machineTypeHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "application/json")
-	datacenter := r.FormValue("datacenter")
-	flavors, err := ibmcloud.GetMachineType(datacenter)
+
+	serverType := r.FormValue("type")
+	os := r.FormValue("os")
+	cpuLimitStr := r.FormValue("cpuLimit")
+	cpuLimit, err := strconv.Atoi(cpuLimitStr)
+	if err != nil {
+		handleError(w, http.StatusBadRequest, "cpuLimit should be a number")
+		return
+	}
+	memoryLimitStr := r.FormValue("memoryLimit")
+	memoryLimit, err := strconv.Atoi(memoryLimitStr)
+	if err != nil {
+		handleError(w, http.StatusBadRequest, "memoryLimit should be a number")
+		return
+	}
+
+	vars := mux.Vars(r)
+
+	datacenter, ok := vars["datacenter"]
+
+	if !ok {
+		handleError(w, http.StatusBadRequest, "could not get clusterID")
+		return
+	}
+	flavors, err := ibmcloud.GetMachineType(datacenter, serverType, os, cpuLimit, memoryLimit)
 	if err != nil {
 		handleError(w, http.StatusNotFound, "could not load flavor")
 	}
@@ -155,7 +204,7 @@ func authenticationWithAccountHandler(w http.ResponseWriter, r *http.Request) {
 
 	accountID := fmt.Sprintf("%v", body["id"])
 
-	fmt.Println("Account id", accountID)
+	log.Println("Account id", accountID)
 
 	accountSession, err := session.BindAccountToToken(accountID)
 	if err != nil {
@@ -181,7 +230,7 @@ func authenticationHandler(w http.ResponseWriter, r *http.Request) {
 
 	otp := fmt.Sprintf("%v", body["otp"])
 
-	fmt.Println(otp)
+	log.Println(otp)
 	session, err := ibmcloud.Authenticate(otp)
 	if err != nil {
 		log.Println("could not authenticate with the otp provided")
@@ -190,7 +239,7 @@ func authenticationHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println(session.Token.Expiration)
+	log.Println(session.Token.Expiration)
 
 	setCookie(w, session)
 	w.WriteHeader(http.StatusOK)
@@ -218,7 +267,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		handleError(w, http.StatusUnauthorized, "could not get session", err.Error())
 		return
 	}
-	fmt.Println(session.Token.Expiration)
+	log.Println(session.Token.Expiration)
 
 	if !session.IsValid() {
 		handleError(w, http.StatusUnauthorized, "session expired")
@@ -266,7 +315,7 @@ func clusterDeleteHandler(w http.ResponseWriter, r *http.Request) {
 	id := fmt.Sprintf("%v", body["id"])
 	resoueceGroup := fmt.Sprintf("%v", body["resourceGroup"])
 	deleteResources := fmt.Sprintf("%v", body["deleteResources"])
-	fmt.Println(id, resoueceGroup, deleteResources)
+	log.Println(id, resoueceGroup, deleteResources)
 	err = session.DeleteCluster(id, resoueceGroup, deleteResources)
 	if err != nil {
 		handleError(w, http.StatusInternalServerError, "could not delete", err.Error())

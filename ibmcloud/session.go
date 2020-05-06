@@ -42,8 +42,8 @@ func GetGeoLocations(geo string) ([]Location, error) {
 	return getGeoLocations(geo)
 }
 
-func GetMachineType(datacenter string) ([]Flavors, error) {
-	return getMachineTypes(datacenter)
+func GetMachineType(datacenter, serverType, os string, cpuLimit, memoryLimit int) ([]MachineFlavor, error) {
+	return getMachineTypes(datacenter, serverType, os, cpuLimit, memoryLimit)
 }
 
 func IAMAuthenticate(apikey string) (*Session, error) {
@@ -117,6 +117,10 @@ func (s *Session) GetClusters(location string) ([]*Cluster, error) {
 
 func (s *Session) GetDatacenterVlan(datacenter string) ([]Vlan, error) {
 	return getDatacenterVlan(s.Token.AccessToken, s.Token.RefreshToken, datacenter)
+}
+
+func (s *Session) GetAccountResources(accountID string) (*AccountResources, error) {
+	return getAccountResources(s.Token.AccessToken, accountID)
 }
 
 func (s *Session) GetWorkers(clusterID string) ([]Worker, error) {

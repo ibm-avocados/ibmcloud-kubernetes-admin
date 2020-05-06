@@ -5,7 +5,6 @@ import {
   TextInput,
   Button,
   Dropdown,
-  TileGroup,
   RadioTile,
   Row,
   Grid,
@@ -33,7 +32,7 @@ const grab = async (url, options) => {
   return data;
 };
 
-const CreateForm = () => {
+const CreateForm = ({ accountID }) => {
   const [kubernetesSelected, setKubernetesSelected] = React.useState(true);
   const [openshiftSelected, setOpenshiftSelected] = React.useState(false);
   const [kuberntesVersions, setKubernetesVersions] = React.useState([]);
@@ -41,16 +40,20 @@ const CreateForm = () => {
   const [workerZones, setWorkerZones] = React.useState([]);
   const [privateVlans, setPrivateVlans] = React.useState([]);
   const [publicVlans, setPublicVlans] = React.useState([]);
+  const [flavors, setFlavors] = React.useState([]);
+  const [resourceGroups, setResourceGroups] = React.useState([]);
   const [selectedKubernetes, setSelectedKuberetes] = React.useState(null);
   const [selectedOpenshift, setSelectedOpenshift] = React.useState(null);
   const [selectedRegion, setSelectedRegion] = React.useState(null);
   const [selectedWorkerZone, setSelectedWorkerZone] = React.useState(null);
   const [selectedPrivateVlan, setSelecetedPrivateVlan] = React.useState(null);
   const [selectedPublicVlan, setSelecetedPublicVlan] = React.useState(null);
+  const [selectedFlavor, setSelectedFlavor] = React.useState(null);
+  const [selectedGroup, setSelectedGroup] = React.useState(null);
 
   React.useEffect(() => {
-    const loadVersions = async() => {
-      try{
+    const loadVersions = async () => {
+      try {
         const versions = await grab("/api/v1/clusters/versions");
         if (versions) {
           setKubernetesVersions(versions.kubernetes);
@@ -59,13 +62,30 @@ const CreateForm = () => {
       } catch (e) {
         console.log(e);
       }
-    }
+    };
     loadVersions();
-  }, []);
+
+    const loadResourceGroups = async () => {
+      try {
+        const resourceGroups = await grab(
+          `/api/v1/resourcegroups/${accountID}`
+        );
+        console.log(resourceGroups);
+        if (resourceGroups) {
+          setResourceGroups(resourceGroups.resources);
+        }
+      } catch (e) {
+        console.log(e);
+      }
+    };
+
+    loadResourceGroups();
+  }, [accountID]);
 
   const toggleRadio = () => {
     setKubernetesSelected(!kubernetesSelected);
     setOpenshiftSelected(!openshiftSelected);
+    setFlavorOnClusterType(flavors, kubernetesSelected);
   };
 
   const getWorkerZones = async (geo) => {
@@ -100,7 +120,26 @@ const CreateForm = () => {
     }
   };
 
+  const getFlavors = async (datacenter) => {
+    try {
+      const flav = await grab(
+        `/api/v1/clusters/${datacenter}/machine-types?type=virtual&os=UBUNTU_18_64&cpuLimit=8&memoryLimit=32`
+      );
+      if (flav) {
+        setFlavorOnClusterType(flav, openshiftSelected);
+      } 
+    } catch (e) {
+      console.log(e);
+    }
+  };
 
+  const setFlavorOnClusterType = (flav, isOpenshift) => {
+    if(!isOpenshift){
+      setFlavors(flav);
+    } else {
+      setFlavors(flav.filter(flavor => Number(flavor.cores) > 2));
+    }
+  }
 
   const getVersionString = (versions, version) => {
     const index = versions.indexOf(version);
@@ -108,19 +147,19 @@ const CreateForm = () => {
     if (index === versions.length - 1) {
       substring = "latest";
     } else if (version.default) {
-      substring = "stable, default"
+      substring = "stable, default";
     }
 
-    return `${version.major}.${version.minor}.${version.patch} (${substring})`
-  }
+    return `${version.major}.${version.minor}.${version.patch} (${substring})`;
+  };
 
   const getKuberntesVersionString = (version) => {
     return getVersionString(kuberntesVersions, version);
-  }
+  };
 
   const getOpenshiftVersionString = (version) => {
     return getVersionString(openshiftVersions, version);
-  }
+  };
 
   const getVlanString = (vlan) => {
     return `${vlan.id}-${vlan.properties.vlan_number}-${vlan.properties.primary_router}`;
@@ -136,9 +175,28 @@ const CreateForm = () => {
     setSelecetedPublicVlan(null);
   };
 
-  const onWorkerZoneSelected = (worker) => {
-    setSelectedWorkerZone(worker);
-    getVlans(worker.id);
+  const onWorkerZoneSelected = (zone) => {
+    setSelectedWorkerZone(zone);
+    setPrivateVlans([]);
+    setSelecetedPrivateVlan(null);
+    setPublicVlans([]);
+    setSelecetedPublicVlan(null);
+    getVlans(zone.id);
+    getFlavors(zone.id);
+  };
+
+  const renderFlavors = (item) => {
+    if (item) {
+      return (
+        <div style={{position: "absolute"}}>
+          <p>
+            {item.cores} vCPUs {item.memory} RAM
+          </p>
+          <p>{item.name}</p>
+        </div>
+      );
+    }
+    return null;
   };
 
   return (
@@ -174,9 +232,11 @@ const CreateForm = () => {
                 disabled={!kubernetesSelected}
                 label="Select Version"
                 items={kuberntesVersions}
-                onChange={({selectedItem}) => setSelectedKuberetes(selectedItem)}
+                onChange={({ selectedItem }) =>
+                  setSelectedKuberetes(selectedItem)
+                }
                 selectedItem={selectedKubernetes}
-                itemToString={version => getKuberntesVersionString(version)}
+                itemToString={(version) => getKuberntesVersionString(version)}
               />
             </RadioTile>
           </Column>
@@ -201,11 +261,12 @@ const CreateForm = () => {
                 className="create-page-dropdown"
                 disabled={!openshiftSelected}
                 label="Select Version"
-                className={styles.dropdown}
                 items={openshiftVersions}
-                onChange={({selectedItem}) => setSelectedOpenshift(selectedItem)}
+                onChange={({ selectedItem }) =>
+                  setSelectedOpenshift(selectedItem)
+                }
                 selectedItem={selectedOpenshift}
-                itemToString={version => getOpenshiftVersionString(version)}
+                itemToString={(version) => getOpenshiftVersionString(version)}
               />
             </RadioTile>
           </Column>
@@ -332,7 +393,12 @@ const CreateForm = () => {
               id="resource_group"
               className="create-page-dropdown"
               label="Select resource group"
-              items={["1", "2", "3"]}
+              items={resourceGroups}
+              itemToString={(item) => (item ? item.name : "")}
+              selectedItem={selectedGroup}
+              onChange={({ selectedItem }) => {
+                setSelectedGroup(selectedItem);
+              }}
             />
           </Column>
         </Row>
@@ -383,7 +449,11 @@ const CreateForm = () => {
               id="machine_flavor"
               className="create-page-dropdown machine-flavor"
               label="Select Flavor"
-              items={["1", "2", "3"]}
+              items={flavors}
+              selectedItem={selectedFlavor}
+              onChange={({ selectedItem }) => setSelectedFlavor(selectedItem)}
+              itemToString={(item) => (item ? item.name : "")}
+              itemToElement={(item) => renderFlavors(item)}
             />
           </Column>
         </Row>
