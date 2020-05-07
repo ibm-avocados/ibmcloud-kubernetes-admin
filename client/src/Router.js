@@ -6,7 +6,7 @@ import Login from "./components/Login";
 import Navbar from "./components/common/Navbar";
 import history from "./globalHistory";
 
-const AppRouter = () => {
+const HolderThing = () => {
   const [isLoadingAccounts, setLoadingAccounts] = useState(true);
   const [accounts, setAccounts] = useState([]);
   const [accountID, setSelectedAccountID] = useState();
@@ -43,50 +43,52 @@ const AppRouter = () => {
       const response = await fetch("/api/v1/accounts");
       if (response.status !== 200) {
         // Somehow did not get any account back.
+        return;
       }
       const accounts = await response.json();
       setAccounts(accounts.resources);
       setLoadingAccounts(false);
-
-      // const selectedAccount =
-      //   localStorage.getItem("accountID") ||
-      //   accounts.resources[0].metadata.guid;
-
-      // setAccountStuff(selectedAccount);
     };
     loadAccounts();
-  }, [handleAccountChosen, setAccountStuff]);
+  }, []);
+
+  return (
+    <>
+      <Navbar
+        isLoaded={!isLoadingAccounts}
+        items={accounts}
+        accountSelected={handleAccountChosen}
+      />
+      <Route path="/create" exact>
+        <CreatePage hasChosenAccount={hasChosenAccount} accountID={accountID} />
+      </Route>
+      <Route path="/schedule" exact></Route>
+      <Route path="/" exact>
+        <AppPage
+          hasChosenAccount={hasChosenAccount}
+          tokenUpgraded={tokenUpgraded}
+          accountID={accountID}
+        />
+      </Route>
+    </>
+  );
+};
+
+const AppRouter = () => {
+  useEffect(() => {
+    fetch("/api/v1/login").then(({ status }) => {
+      if (status !== 200) {
+        history.push("/login");
+      }
+    });
+  }, []);
 
   return (
     <Router history={history}>
       <Switch>
         <Route path="/login" exact component={Login} />
-        <Route path="/create" exact>
-          <Navbar
-            isLoaded={!isLoadingAccounts}
-            items={accounts}
-            accountSelected={handleAccountChosen}
-          />
-          <CreatePage hasChosenAccount={hasChosenAccount} accountID={accountID}/>
-        </Route>
-        <Route path="/schedule" exact>
-          <Navbar
-            isLoaded={!isLoadingAccounts}
-            items={accounts}
-            accountSelected={handleAccountChosen}
-          />
-        </Route>
-        <Route path="/" exact>
-          <Navbar
-            isLoaded={!isLoadingAccounts}
-            items={accounts}
-            accountSelected={handleAccountChosen}
-          />
-          <AppPage
-            hasChosenAccount={hasChosenAccount}
-            tokenUpgraded={tokenUpgraded}
-            accountID={accountID}
-          />
+        <Route path="/">
+          <HolderThing />
         </Route>
       </Switch>
     </Router>

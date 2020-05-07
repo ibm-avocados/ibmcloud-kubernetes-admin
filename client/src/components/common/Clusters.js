@@ -112,15 +112,21 @@ const Clusters = ({ accountID }) => {
   const [tagText, setTagText] = useState("");
   const [billingLoading, setBittlingLoading] = useState(false);
 
-  const onBillingClicked = (data) => {
-    setBittlingLoading(true);
-    getBilling(data);
-  };
+  const onBillingClicked = useCallback(
+    (data) => {
+      setBittlingLoading(true);
+      getBilling(data);
+    },
+    [getBilling]
+  );
 
-  const onSetTagClicked = (clusters, tagText) => {
-    setTagText("");
-    setTag(clusters, tagText);
-  }
+  const onSetTagClicked = useCallback(
+    (clusters, tagText) => {
+      setTagText("");
+      setTag(clusters, tagText);
+    },
+    [setTag]
+  );
 
   const CustomCell = ({ cell, crn, id }) => {
     const { info, value } = cell;
@@ -233,7 +239,10 @@ const Clusters = ({ accountID }) => {
                 type="button"
                 tooltipPosition="right"
                 onClick={() =>
-                  onSetTagClicked(selectedRows.map((r) => clusters.data[r.id]), tagText)
+                  onSetTagClicked(
+                    selectedRows.map((r) => clusters.data[r.id]),
+                    tagText
+                  )
                 }
               />
             </TableBatchActions>
@@ -306,7 +315,14 @@ const Clusters = ({ accountID }) => {
         </TableContainer>
       );
     },
-    [clusters, deleteClusters, setTag]
+    [
+      clusters.data,
+      deleteClusters,
+      onBillingClicked,
+      onSetTagClicked,
+      reload,
+      tagText,
+    ]
   );
 
   if (clusters.isLoading) {
