@@ -20,6 +20,7 @@ import {
   Delete16 as Delete,
   TagGroup16 as TagGroup,
   Reset16 as Reset,
+  Money16 as Money,
 } from "@carbon/icons-react";
 
 import headers from "../data/headers";
@@ -101,13 +102,25 @@ const WorkerDetails = ({ workers }) => {
 };
 
 const Clusters = ({ accountID }) => {
-  const [clusters, { deleteClusters, deleteTag, setTag, reload }] = useClusters(
-    accountID
-  );
+  const [
+    clusters,
+    { deleteClusters, deleteTag, setTag, reload, getBilling },
+  ] = useClusters(accountID);
 
   // console.log(clusters);
 
   const [tagText, setTagText] = useState("");
+  const [billingLoading, setBittlingLoading] = useState(false);
+
+  const onBillingClicked = (data) => {
+    setBittlingLoading(true);
+    getBilling(data);
+  };
+
+  const onSetTagClicked = (clusters, tagText) => {
+    setTagText("");
+    setTag(clusters, tagText);
+  }
 
   const CustomCell = ({ cell, crn, id }) => {
     const { info, value } = cell;
@@ -156,14 +169,17 @@ const Clusters = ({ accountID }) => {
           </>
         );
       case "cost":
+        if (value) {
+          return <>${value}</>;
+        }
         return (
           <>
-            {value ? (
-              `$${value}`
-            ) : (
+            {billingLoading ? (
               <div style={{ width: "50px" }}>
                 <SkeletonText />
               </div>
+            ) : (
+              `$`
             )}
           </>
         );
@@ -192,7 +208,9 @@ const Clusters = ({ accountID }) => {
               <TableBatchAction
                 tabIndex={getBatchActionProps().shouldShowBatchActions ? 0 : -1}
                 renderIcon={Delete}
-                onClick={() => deleteClusters(selectedRows.map((r) => clusters.data[r.id]))}
+                onClick={() =>
+                  deleteClusters(selectedRows.map((r) => clusters.data[r.id]))
+                }
               >
                 Delete
               </TableBatchAction>
@@ -200,6 +218,7 @@ const Clusters = ({ accountID }) => {
                 <TextInput
                   id="tag-input"
                   hideLabel
+                  value={tagText}
                   onChange={(e) => setTagText(e.target.value.trim())}
                   labelText="tag"
                   placeholder="Tag"
@@ -212,12 +231,9 @@ const Clusters = ({ accountID }) => {
                 kind="primary"
                 size="default"
                 type="button"
-                tooltipPosition="bottom"
+                tooltipPosition="right"
                 onClick={() =>
-                  setTag(
-                    selectedRows.map((r) => clusters.data[r.id]),
-                    tagText
-                  )
+                  onSetTagClicked(selectedRows.map((r) => clusters.data[r.id]), tagText)
                 }
               />
             </TableBatchActions>
@@ -225,6 +241,16 @@ const Clusters = ({ accountID }) => {
               <TableToolbarSearch
                 tabIndex={getBatchActionProps().shouldShowBatchActions ? -1 : 0}
                 onChange={onInputChange}
+              />
+              <Button
+                renderIcon={Money}
+                iconDescription="Get Billing for Clusters"
+                hasIconOnly
+                kind="tertiary"
+                size="field"
+                type="button"
+                tooltipPosition="right"
+                onClick={() => onBillingClicked(clusters.data)}
               />
               <Button onClick={reload} renderIcon={Reset}>
                 Reload

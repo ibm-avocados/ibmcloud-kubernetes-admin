@@ -270,40 +270,40 @@ const useClusters = (accountID) => {
           });
         }
 
-        const costPromises = Object.keys(clusters).map(async (id) => {
-          try {
-            const cost = await grab("/api/v1/billing", {
-              signal,
-              method: "POST",
-              body: JSON.stringify({
-                crn: clusters[id].crn,
-                accountID: accountID,
-                clusterID: id,
-              }),
-            });
+        // const costPromises = Object.keys(clusters).map(async (id) => {
+        //   try {
+        //     const cost = await grab("/api/v1/billing", {
+        //       signal,
+        //       method: "POST",
+        //       body: JSON.stringify({
+        //         crn: clusters[id].crn,
+        //         accountID: accountID,
+        //         clusterID: id,
+        //       }),
+        //     });
 
-            if (!WAIT_FOR_ALL && !cancelled) {
-              dispatch({
-                type: "UPDATE_COST",
-                id: id,
-                cost: cost,
-              });
-            }
-            return { id: id, cost: cost };
-          } catch {
-            return undefined;
-          }
-        });
-        if (WAIT_FOR_ALL) {
-          Promise.all(costPromises).then((cost) => {
-            if (!cancelled) {
-              dispatch({
-                type: "UPDATE_ALL_COSTS",
-                cost: cost,
-              });
-            }
-          });
-        }
+        //     if (!WAIT_FOR_ALL && !cancelled) {
+        //       dispatch({
+        //         type: "UPDATE_COST",
+        //         id: id,
+        //         cost: cost,
+        //       });
+        //     }
+        //     return { id: id, cost: cost };
+        //   } catch {
+        //     return undefined;
+        //   }
+        // });
+        // if (WAIT_FOR_ALL) {
+        //   Promise.all(costPromises).then((cost) => {
+        //     if (!cancelled) {
+        //       dispatch({
+        //         type: "UPDATE_ALL_COSTS",
+        //         cost: cost,
+        //       });
+        //     }
+        //   });
+        // }
 
         const workerPromises = Object.keys(clusters).map(async (id) => {
           try {
@@ -337,6 +337,44 @@ const useClusters = (accountID) => {
       }
     }
   };
+
+  const getBilling = (clusters) => {
+
+    const costPromises = Object.keys(clusters).map(async (id) => {
+      try {
+        const cost = await grab("/api/v1/billing", {
+          signal,
+          method: "POST",
+          body: JSON.stringify({
+            crn: clusters[id].crn,
+            accountID: accountID,
+            clusterID: id,
+          }),
+        });
+
+        if (!WAIT_FOR_ALL && !cancelled) {
+          dispatch({
+            type: "UPDATE_COST",
+            id: id,
+            cost: cost,
+          });
+        }
+        return { id: id, cost: cost };
+      } catch {
+        return undefined;
+      }
+    });
+    if (WAIT_FOR_ALL) {
+      Promise.all(costPromises).then((cost) => {
+        if (!cancelled) {
+          dispatch({
+            type: "UPDATE_ALL_COSTS",
+            cost: cost,
+          });
+        }
+      });
+    }
+  }
 
   const deleteTag = (id, tag, crn) => {
     try {
@@ -412,27 +450,6 @@ const useClusters = (accountID) => {
     }
   };
 
-  /*
-  const workerPromises = Object.keys(clusters).map(async (id) => {
-            try {
-              const workers = await grab(`/api/v1/clusters/${id}/workers`, {
-                signal,
-                method: "GET",
-              });
-              if (!WAIT_FOR_ALL && !cancelled) {
-                dispatch({
-                  type: "UPDATE_WORKERS",
-                  id: id,
-                  workers: workers,
-                });
-              }
-              return { id: id, workers: workers };
-            } catch {
-              return undefined;
-            }
-          });
-  */
-
   const reload = () => {
     loadData();
   };
@@ -444,6 +461,7 @@ const useClusters = (accountID) => {
       deleteTag: deleteTag,
       setTag: setTag,
       reload: reload,
+      getBilling: getBilling,
     },
   ];
 };

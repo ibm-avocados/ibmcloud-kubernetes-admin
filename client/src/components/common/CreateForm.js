@@ -23,6 +23,10 @@ const Spacer = ({ height }) => {
   return <div style={{ marginTop: height }} />;
 };
 
+const Divider = ({ width }) => {
+  return <div style={{ marginRight: width }} />;
+};
+
 const grab = async (url, options) => {
   const response = await fetch(url, options);
   if (response.status !== 200) {
@@ -40,6 +44,10 @@ const CreateForm = ({ accountID }) => {
   const [workerZones, setWorkerZones] = React.useState([]);
   const [privateVlans, setPrivateVlans] = React.useState([]);
   const [publicVlans, setPublicVlans] = React.useState([]);
+  const [clusterNamePrefix, setClusterNamePrefix] = React.useState("");
+  const [clusterCount, setClusterCount] = React.useState("");
+  const [workerCount, setWorkerCount] = React.useState("");
+  const [tags, setTags] = React.useState("");
   const [flavors, setFlavors] = React.useState([]);
   const [resourceGroups, setResourceGroups] = React.useState([]);
   const [selectedKubernetes, setSelectedKuberetes] = React.useState(null);
@@ -127,19 +135,19 @@ const CreateForm = ({ accountID }) => {
       );
       if (flav) {
         setFlavorOnClusterType(flav, openshiftSelected);
-      } 
+      }
     } catch (e) {
       console.log(e);
     }
   };
 
   const setFlavorOnClusterType = (flav, isOpenshift) => {
-    if(!isOpenshift){
+    if (!isOpenshift) {
       setFlavors(flav);
     } else {
-      setFlavors(flav.filter(flavor => Number(flavor.cores) > 2));
+      setFlavors(flav.filter((flavor) => Number(flavor.cores) > 2));
     }
-  }
+  };
 
   const getVersionString = (versions, version) => {
     const index = versions.indexOf(version);
@@ -185,10 +193,59 @@ const CreateForm = ({ accountID }) => {
     getFlavors(zone.id);
   };
 
+  const onCreateClicked = () => {
+    // console.log(selectedKubernetes);
+    // console.log(selectedOpenshift);
+    // console.log(selectedGroup);
+    // console.log(selectedFlavor);
+    // console.log(selectedPublicVlan);
+    // console.log(selectedPrivateVlan);
+    // console.log(selectedWorkerZone);
+    // console.log(selectedRegion);
+    console.log("creating clusters");
+  };
+
+  const shouldCreateBeDisabled = () => {
+    let versionSelected = false;
+    if (kubernetesSelected) {
+      versionSelected = selectedKubernetes ? true : false;
+    } else {
+      versionSelected = selectedOpenshift ? true : false;
+    }
+
+    const groupSelected = selectedGroup ? true : false;
+    const geoSelected = selectedRegion ? true : false;
+    const zoneSelected = selectedWorkerZone ? true : false;
+    const flavorSelected = selectedFlavor ? true : false;
+
+    const hasClusterCount = clusterCount && clusterCount !== "";
+    const hasWorkerCount = workerCount && workerCount !== "";
+    const hasNamePrefix = clusterNamePrefix && clusterNamePrefix !== "";
+    const hasTags = tags && tags !== "";
+
+    return !(
+      versionSelected &&
+      groupSelected &&
+      geoSelected &&
+      zoneSelected &&
+      flavorSelected &&
+      hasClusterCount &&
+      hasWorkerCount &&
+      hasNamePrefix &&
+      hasTags
+    );
+  };
+
+  const onScheduleClick = () => {};
+
+  const shouldSchedulingBeDisabled = () => {
+    return shouldCreateBeDisabled();
+  };
+
   const renderFlavors = (item) => {
     if (item) {
       return (
-        <div style={{position: "absolute"}}>
+        <div style={{ position: "absolute" }}>
           <p>
             {item.cores} vCPUs {item.memory} RAM
           </p>
@@ -225,6 +282,7 @@ const CreateForm = ({ accountID }) => {
                   width={100}
                 />
                 <p>Kubernetes</p>
+                <Spacer height="16px" />
               </div>
               <Dropdown
                 id="kubernetes_version"
@@ -236,7 +294,9 @@ const CreateForm = ({ accountID }) => {
                   setSelectedKuberetes(selectedItem)
                 }
                 selectedItem={selectedKubernetes}
-                itemToString={(version) => getKuberntesVersionString(version)}
+                itemToString={(version) =>
+                  version ? getKuberntesVersionString(version) : ""
+                }
               />
             </RadioTile>
           </Column>
@@ -255,6 +315,7 @@ const CreateForm = ({ accountID }) => {
                   width={100}
                 />
                 <p>OpenShift</p>
+                <Spacer height="16px" />
               </div>
               <Dropdown
                 id="openshift_version"
@@ -266,7 +327,9 @@ const CreateForm = ({ accountID }) => {
                   setSelectedOpenshift(selectedItem)
                 }
                 selectedItem={selectedOpenshift}
-                itemToString={(version) => getOpenshiftVersionString(version)}
+                itemToString={(version) =>
+                  version ? getOpenshiftVersionString(version) : ""
+                }
               />
             </RadioTile>
           </Column>
@@ -379,12 +442,24 @@ const CreateForm = ({ accountID }) => {
                 Cluster name will be generated as prefix-001
               </Tooltip>
             </FormLabel>
-            <TextInput labelText="" id="cluster_name" placeholder="mycluster" />
+            <TextInput
+              value={clusterNamePrefix}
+              onChange={(e) => setClusterNamePrefix(e.target.value.trim())}
+              labelText=""
+              id="cluster_name"
+              placeholder="mycluster"
+            />
           </Column>
 
           <Column md={4} lg={3}>
             <FormLabel>Cluster count</FormLabel>
-            <TextInput labelText="" id="cluster_count" placeholder="20" />
+            <TextInput
+              value={clusterCount}
+              onChange={(e) => setClusterCount(e.target.value.trim())}
+              labelText=""
+              id="cluster_count"
+              placeholder="20"
+            />
           </Column>
 
           <Column lg={3}>
@@ -416,6 +491,8 @@ const CreateForm = ({ accountID }) => {
               id="tag_text"
               className="tag-text-input"
               placeholder="tag1, tag2, tag3"
+              value={tags}
+              onChange={(e) => setTags(e.target.value.trim())}
             />
           </Column>
         </Row>
@@ -432,7 +509,13 @@ const CreateForm = ({ accountID }) => {
         <Row>
           <Column md={4} lg={3}>
             <FormLabel>Worker nodes</FormLabel>
-            <TextInput labelText="" id="worker_nodes" placeholder="1" />
+            <TextInput
+              value={workerCount}
+              onChange={(e) => setWorkerCount(e.target.value.trim())}
+              labelText=""
+              id="worker_nodes"
+              placeholder="1"
+            />
           </Column>
         </Row>
         <Spacer height="16px" />
@@ -450,6 +533,7 @@ const CreateForm = ({ accountID }) => {
               className="create-page-dropdown machine-flavor"
               label="Select Flavor"
               items={flavors}
+              disabled={flavors.length <= 0}
               selectedItem={selectedFlavor}
               onChange={({ selectedItem }) => setSelectedFlavor(selectedItem)}
               itemToString={(item) => (item ? item.name : "")}
@@ -458,6 +542,30 @@ const CreateForm = ({ accountID }) => {
           </Column>
         </Row>
         <Spacer height="16px" />
+
+        <Spacer height="16px" />
+        <Row>
+          <Column >
+            <Button
+              style={{marginRight: "8px"}}
+              size="field"
+              onClick={onCreateClicked}
+              disabled={shouldCreateBeDisabled()}
+              kind="primary"
+            >
+              Create
+            </Button>
+            <Button
+              size="field"
+              onCLick={onScheduleClick}
+              disabled={shouldSchedulingBeDisabled()}
+              kind="tertiary"
+            >
+              Schedule
+            </Button>
+            <Spacer height="16px" />
+          </Column>
+        </Row>
       </Grid>
     </Form>
   );
