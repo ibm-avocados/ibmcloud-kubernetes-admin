@@ -325,6 +325,36 @@ func clusterDeleteHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, statusOkMessage)
 }
 
+func clusterCreateHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Content-Type", "application/json")
+	session, err := getCloudSessions(r)
+	if err != nil {
+		handleError(w, http.StatusUnauthorized, "could not get session", err.Error())
+		return
+	}
+
+	var body ibmcloud.CreateClusterRequest
+
+	decoder := json.NewDecoder(r.Body)
+
+	err = decoder.Decode(&body)
+	if err != nil {
+		handleError(w, http.StatusBadRequest, "could not decode ", err.Error())
+		return
+	}
+
+	createResponse, err := session.CreateCluster(body)
+
+	if err != nil {
+		handleError(w, http.StatusUnauthorized, "could not create cluster", err.Error())
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	e := json.NewEncoder(w)
+	e.Encode(createResponse)
+}
+
 func clusterListHandler(w http.ResponseWriter, r *http.Request) {
 	session, err := getCloudSessions(r)
 	if err != nil {

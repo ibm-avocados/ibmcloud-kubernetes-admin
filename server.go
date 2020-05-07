@@ -19,6 +19,7 @@ func main() {
 	api.HandleFunc("/accounts", accountListHandler).Methods(http.MethodGet)
 	api.HandleFunc("/login", loginHandler).Methods(http.MethodGet)
 	api.HandleFunc("/clusters", clusterListHandler).Methods(http.MethodGet)
+	api.HandleFunc("/clusters", clusterCreateHandler).Methods(http.MethodPost)
 	api.HandleFunc("/clusters", clusterDeleteHandler).Methods(http.MethodDelete)
 	api.HandleFunc("/resourcegroups/{accountID}", resourceGroupHandler).Methods(http.MethodGet)
 

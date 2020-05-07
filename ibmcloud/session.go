@@ -155,6 +155,10 @@ func (s *Session) DeleteCluster(id, resourceGroup, deleteResources string) error
 	return deleteCluster(s.Token.AccessToken, id, resourceGroup, deleteResources)
 }
 
+func (s *Session) CreateCluster(request CreateClusterRequest) (*CreateClusterResponse, error) {
+	return createCluster(request)
+}
+
 func (s *Session) SetTag(updateTag UpdateTag) (*TagResult, error) {
 	return setTags(s.Token.AccessToken, updateTag)
 }

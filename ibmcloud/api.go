@@ -386,6 +386,10 @@ func calcuateCostFromResourceUsage(usage *ResourceUsage) float64 {
 	return total
 }
 
+func createCluster(request CreateClusterRequest) (*CreateClusterResponse, error) {
+	return nil, nil
+}
+
 func deleteCluster(token, id, resourceGroup, deleteResources string) error {
 	header := map[string]string{
 		"Authorization":         "Bearer " + token,

@@ -482,3 +482,43 @@ type AccountResource struct {
 	CreatedAt         time.Time     `json:"created_at"`
 	UpdatedAt         time.Time     `json:"updated_at"`
 }
+
+type CreateClusterResponse struct {
+	ID                string            `json:"id"`
+	NonCriticalErrors NonCriticalErrors `json:"non_critical_errors"`
+}
+type ErrorItems struct {
+	Code             string `json:"code"`
+	Description      string `json:"description"`
+	RecoveryCLI      string `json:"recoveryCLI"`
+	RecoveryUI       string `json:"recoveryUI"`
+	TerseDescription string `json:"terseDescription"`
+	Type             string `json:"type"`
+}
+type NonCriticalErrors struct {
+	IncidentID string       `json:"incidentID"`
+	Items      []ErrorItems `json:"items"`
+}
+
+type CreateClusterRequest struct {
+	DataCenter                   string `json:"dataCenter"`
+	DefaultWorkerPoolEntitlement string `json:"defaultWorkerPoolEntitlement"`
+	DefaultWorkerPoolName        string `json:"defaultWorkerPoolName"`
+	DisableAutoUpdate            bool   `json:"disableAutoUpdate"`
+	DiskEncryption               bool   `json:"diskEncryption"`
+	GatewayEnabled               bool   `json:"gatewayEnabled"`
+	Isolation                    string `json:"isolation"`
+	MachineType                  string `json:"machineType"`
+	MasterVersion                string `json:"masterVersion"`
+	Name                         string `json:"name"`
+	NoSubnet                     bool   `json:"noSubnet"`
+	PodSubnet                    string `json:"podSubnet"`
+	Prefix                       string `json:"prefix"`
+	PrivateSeviceEndpoint        bool   `json:"privateSeviceEndpoint"`
+	PrivateVlan                  string `json:"privateVlan"`
+	PublicServiceEndpoint        bool   `json:"publicServiceEndpoint"`
+	PublicVlan                   string `json:"publicVlan"`
+	ServiceSubnet                string `json:"serviceSubnet"`
+	SkipPermPrecheck             bool   `json:"skipPermPrecheck"`
+	WorkerNum                    int    `json:"workerNum"`
+}
