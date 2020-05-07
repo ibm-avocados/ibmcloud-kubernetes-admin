@@ -28,12 +28,16 @@ const Divider = ({ width }) => {
   return <div style={{ marginRight: width }} />;
 };
 
-const grab = async (url, options) => {
+const grab = async (url, options, retryCount=0) => {
   const response = await fetch(url, options);
-  if (response.status !== 200) {
-    throw Error();
-  }
   const data = await response.json();
+  if (response.status !== 200) {
+    if (retryCount > 0) {
+      return await grab(url, options, retryCount - 1);
+    }
+    throw Error(data);
+  }
+  
   return data;
 };
 
@@ -292,7 +296,7 @@ const CreateForm = ({ accountID }) => {
                   tag: tag,
                   resourceGroup: selectedGroup.id,
                 }),
-              }
+              }, 3
             );
             return tagRequest;
           } catch (e) {
