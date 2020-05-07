@@ -501,6 +501,11 @@ type NonCriticalErrors struct {
 }
 
 type CreateClusterRequest struct {
+	ClusterRequest ClusterRequest `json:"clusterRequest"`
+	ResourceGroup  string         `json:"resourceGroup"`
+}
+
+type ClusterRequest struct {
 	DataCenter                   string `json:"dataCenter"`
 	DefaultWorkerPoolEntitlement string `json:"defaultWorkerPoolEntitlement"`
 	DefaultWorkerPoolName        string `json:"defaultWorkerPoolName"`

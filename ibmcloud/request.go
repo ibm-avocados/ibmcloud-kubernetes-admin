@@ -70,6 +70,7 @@ func postForm(endpoint string, header, query map[string]string, form url.Values,
 func postBody(endpoint string, header, query map[string]string, jsonValue []byte, res interface{}) error {
 	request, err := http.NewRequest(http.MethodPost, endpoint, bytes.NewBuffer(jsonValue))
 	if err != nil {
+
 		return err
 	}
 

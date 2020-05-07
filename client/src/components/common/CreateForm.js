@@ -11,6 +11,7 @@ import {
   Column,
   FormLabel,
   Tooltip,
+  InlineLoading,
 } from "carbon-components-react";
 
 import geos from "../data/geo";
@@ -37,19 +38,23 @@ const grab = async (url, options) => {
 };
 
 const CreateForm = ({ accountID }) => {
+  // radio tile
   const [kubernetesSelected, setKubernetesSelected] = React.useState(true);
   const [openshiftSelected, setOpenshiftSelected] = React.useState(false);
+
+  // values
   const [kuberntesVersions, setKubernetesVersions] = React.useState([]);
   const [openshiftVersions, setOpenshiftVersions] = React.useState([]);
   const [workerZones, setWorkerZones] = React.useState([]);
   const [privateVlans, setPrivateVlans] = React.useState([]);
   const [publicVlans, setPublicVlans] = React.useState([]);
   const [clusterNamePrefix, setClusterNamePrefix] = React.useState("");
-  const [clusterCount, setClusterCount] = React.useState("");
-  const [workerCount, setWorkerCount] = React.useState("");
+  const [clusterCount, setClusterCount] = React.useState("1");
+  const [workerCount, setWorkerCount] = React.useState("1");
   const [tags, setTags] = React.useState("");
   const [flavors, setFlavors] = React.useState([]);
   const [resourceGroups, setResourceGroups] = React.useState([]);
+  // selected values
   const [selectedKubernetes, setSelectedKuberetes] = React.useState(null);
   const [selectedOpenshift, setSelectedOpenshift] = React.useState(null);
   const [selectedRegion, setSelectedRegion] = React.useState(null);
@@ -58,6 +63,9 @@ const CreateForm = ({ accountID }) => {
   const [selectedPublicVlan, setSelecetedPublicVlan] = React.useState(null);
   const [selectedFlavor, setSelectedFlavor] = React.useState(null);
   const [selectedGroup, setSelectedGroup] = React.useState(null);
+  // ui indicators
+  const [creating, setCreating] = React.useState(false);
+  const [createSuccess, setCreateSuccess] = React.useState(false);
 
   React.useEffect(() => {
     const loadVersions = async () => {
@@ -193,16 +201,114 @@ const CreateForm = ({ accountID }) => {
     getFlavors(zone.id);
   };
 
-  const onCreateClicked = () => {
-    // console.log(selectedKubernetes);
-    // console.log(selectedOpenshift);
-    // console.log(selectedGroup);
-    // console.log(selectedFlavor);
-    // console.log(selectedPublicVlan);
-    // console.log(selectedPrivateVlan);
-    // console.log(selectedWorkerZone);
-    // console.log(selectedRegion);
+  const validTag = (tags) => {
+    const re = /^[A-Za-z,0-9:_ .-]+$/;
+    const valid = re.test(tags);
+    console.log(valid);
+    return !valid;
+  };
+  const numToStr = (num) => {
+    let numstr = num.toString();
+    let pad = "000";
+    return pad.substring(0, pad.length - numstr.length) + numstr;
+  };
+
+  const sleep = (ms) => {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  };
+
+  const onCreateClicked = async () => {
     console.log("creating clusters");
+    setCreating(true);
+
+    let version = "";
+    if (kubernetesSelected) {
+      const { major, minor, patch } = selectedKubernetes;
+      version = `${major}.${minor}.${patch}`;
+    } else {
+      const { major, minor } = selectedOpenshift;
+      version = `${major}.${minor}_openshift`;
+    }
+
+    let defaultWorkerPoolEntitlement = "";
+    if (openshiftSelected) {
+      defaultWorkerPoolEntitlement = "cloud_pak";
+    }
+
+    const range = Number(clusterCount);
+
+    for (var i = 1; i <= range; i++) {
+      console.log("creating cluster ", i);
+      const suffix = numToStr(i);
+      const name = `${clusterNamePrefix}-${suffix}`;
+
+      const ClusterRequest = {
+        name: name,
+        prefix: "",
+        skipPermPrecheck: false,
+        dataCenter: selectedWorkerZone.id,
+        defaultWorkerPoolName: "",
+        defaultWorkerPoolEntitlement: defaultWorkerPoolEntitlement,
+        disableAutoUpdate: true,
+        noSubnnet: false,
+        podSubnet: "",
+        serviceSubnet: "",
+        machineType: selectedFlavor.name,
+        privateVlan: selectedPrivateVlan.id,
+        publicVlan: selectedPublicVlan.id,
+        masterVersion: version,
+        workerNum: Number(workerCount),
+        diskEncryption: true,
+        isolation: "public",
+        GatewayEnabled: false,
+        privateSeviceEndpoint: false,
+        publicServiceEndpoint: false,
+      };
+
+      const CreateClusterRequest = {
+        clusterRequest: ClusterRequest,
+        resourceGroup: selectedGroup.id,
+      };
+
+      try {
+        const clusterResponse = await grab("/api/v1/clusters", {
+          method: "post",
+          body: JSON.stringify(CreateClusterRequest),
+        });
+
+        console.log(clusterResponse);
+
+        console.log("Sleeping 3s before trying to set tags");
+        await sleep(3000);
+
+        //comma separated tags.
+        const tagPromises = tags.split(",").map(async (tag) => {
+          try {
+            const tagRequest = await grab(
+              `/api/v1/clusters/${clusterResponse.id}/settag`,
+              {
+                method: "post",
+                body: JSON.stringify({
+                  tag: tag,
+                  resourceGroup: selectedGroup.id,
+                }),
+              }
+            );
+            return tagRequest;
+          } catch (e) {
+            return undefined;
+          }
+        });
+        const result = await Promise.all(tagPromises)
+        console.log(result);
+      } catch (e) {
+        console.log(e);
+      }
+    }
+
+    setCreateSuccess(true);
+    setCreating(false);
+    // console.log(JSON.stringify(CreateClusterRequest));
   };
 
   const shouldCreateBeDisabled = () => {
@@ -459,6 +565,8 @@ const CreateForm = ({ accountID }) => {
               labelText=""
               id="cluster_count"
               placeholder="20"
+              invalid={isNaN(clusterCount) || clusterCount === ""}
+              invalidText="Should be a positive number"
             />
           </Column>
 
@@ -492,7 +600,9 @@ const CreateForm = ({ accountID }) => {
               className="tag-text-input"
               placeholder="tag1, tag2, tag3"
               value={tags}
-              onChange={(e) => setTags(e.target.value.trim())}
+              onChange={(e) => setTags(e.target.value)}
+              invalid={tags != "" && validTag(tags)}
+              invalidText="valid tag is in the regex form ^[A-Za-z0-9:_ .-]+$"
             />
           </Column>
         </Row>
@@ -515,6 +625,8 @@ const CreateForm = ({ accountID }) => {
               labelText=""
               id="worker_nodes"
               placeholder="1"
+              invalid={isNaN(workerCount) || workerCount === ""}
+              invalidText="Should be a positive number"
             />
           </Column>
         </Row>
@@ -545,25 +657,37 @@ const CreateForm = ({ accountID }) => {
 
         <Spacer height="16px" />
         <Row>
-          <Column >
-            <Button
-              style={{marginRight: "8px"}}
-              size="field"
-              onClick={onCreateClicked}
-              disabled={shouldCreateBeDisabled()}
-              kind="primary"
-            >
-              Create
-            </Button>
-            <Button
-              size="field"
-              onCLick={onScheduleClick}
-              disabled={shouldSchedulingBeDisabled()}
-              kind="tertiary"
-            >
-              Schedule
-            </Button>
-            <Spacer height="16px" />
+          <Column>
+            <div style={{ display: "flex", width: "400px" }}>
+              {creating ? (
+                <InlineLoading
+                  style={{ width: "200px" }}
+                  description="creating clusters"
+                  status={createSuccess ? "finished" : "active"}
+                />
+              ) : (
+                <Button
+                  style={{ width: "200px" }}
+                  size="field"
+                  onClick={onCreateClicked}
+                  disabled={shouldCreateBeDisabled()}
+                  kind="primary"
+                >
+                  Create
+                </Button>
+              )}
+
+              <Button
+                style={{ width: "200px" }}
+                size="field"
+                onClick={onScheduleClick}
+                disabled={shouldSchedulingBeDisabled()}
+                kind="tertiary"
+              >
+                Schedule
+              </Button>
+              <Spacer height="16px" />
+            </div>
           </Column>
         </Row>
       </Grid>

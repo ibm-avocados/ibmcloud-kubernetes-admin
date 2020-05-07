@@ -153,7 +153,7 @@ const Clusters = ({ accountID }) => {
             {value ? (
               value.map((tag) => (
                 <Tag
-                  onClick={() => deleteTag(id, tag, crn)}
+                  onClose={() => deleteTag(id, tag, crn)}
                   filter
                   key={tag}
                   type="blue"

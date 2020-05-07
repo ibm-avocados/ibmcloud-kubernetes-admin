@@ -12,6 +12,7 @@ func main() {
 	r := mux.NewRouter()
 
 	api := r.PathPrefix("/api/v1").Subrouter()
+
 	///v1/resource_groups?account_id=9b13b857a32341b7167255de717172f5
 	api.HandleFunc("/identity-endpoints", tokenEndpointHandler).Methods(http.MethodGet)
 	api.HandleFunc("/authenticate/account", authenticationWithAccountHandler).Methods(http.MethodPost)
@@ -22,14 +23,6 @@ func main() {
 	api.HandleFunc("/clusters", clusterCreateHandler).Methods(http.MethodPost)
 	api.HandleFunc("/clusters", clusterDeleteHandler).Methods(http.MethodDelete)
 	api.HandleFunc("/resourcegroups/{accountID}", resourceGroupHandler).Methods(http.MethodGet)
-
-	api.HandleFunc("/clusters/{datacenter}/vlans", vlanEndpointHandler).Methods(http.MethodGet)
-	api.HandleFunc("/clusters/{clusterID}/workers", clusterWorkerListHandler).Methods(http.MethodGet)
-
-	api.HandleFunc("/clusters/settag", setTagHandler).Methods(http.MethodPost)
-	api.HandleFunc("/clusters/deletetag", deleteTagHandler).Methods(http.MethodPost)
-	api.HandleFunc("/clusters/gettag", getTagHandler).Methods(http.MethodPost)
-	api.HandleFunc("/billing", getBillingHandler).Methods(http.MethodPost)
 
 	// public endpoints
 
@@ -42,6 +35,16 @@ func main() {
 	api.HandleFunc("/clusters/{datacenter}/machine-types", machineTypeHandler).
 		Queries("type", "{type}", "os", "{os}", "cpuLimit", "{cpuLimit}", "memoryLimit", "{memoryLimit}").
 		Methods(http.MethodGet)
+
+	api.HandleFunc("/clusters/{datacenter}/vlans", vlanEndpointHandler).Methods(http.MethodGet)
+	api.HandleFunc("/clusters/{clusterID}", clusterHandler).Methods(http.MethodGet)
+	api.HandleFunc("/clusters/{clusterID}/workers", clusterWorkerListHandler).Methods(http.MethodGet)
+
+	api.HandleFunc("/clusters/settag", setTagHandler).Methods(http.MethodPost)
+	api.HandleFunc("/clusters/{clusterID}/settag", setClusterTagHandler).Methods(http.MethodPost)
+	api.HandleFunc("/clusters/deletetag", deleteTagHandler).Methods(http.MethodPost)
+	api.HandleFunc("/clusters/gettag", getTagHandler).Methods(http.MethodPost)
+	api.HandleFunc("/billing", getBillingHandler).Methods(http.MethodPost)
 
 	r.PathPrefix("/").Handler(http.FileServer(http.Dir("client/build/"))).Methods("GET")
 	r.HandleFunc("/", notFoundHandler)

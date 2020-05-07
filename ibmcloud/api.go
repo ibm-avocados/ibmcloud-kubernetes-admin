@@ -65,7 +65,7 @@ const basicAuth = "Basic Yng6Yng="
 var client *http.Client
 
 func init() {
-	client = &http.Client{Timeout: time.Duration(30 * time.Second)}
+	client = &http.Client{Timeout: time.Duration(150 * time.Second)}
 }
 
 //// useful for loagging
@@ -296,6 +296,19 @@ func getMachineTypes(datacenter, serverType, os string, cpuLimit, memoryLimit in
 	return result, nil
 }
 
+func getCluster(token, clusterID, resourceGroup string) (*Cluster, error) {
+	var result Cluster
+	header := map[string]string{
+		"Authorization":         "Bearer " + token,
+		"X-Auth-Resource-Group": resourceGroup,
+	}
+	err := fetch(clusterEndpoint+"/"+clusterID, header, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, err
+}
+
 func getClusters(token, location string) ([]*Cluster, error) {
 	defer timeTaken(time.Now(), "GetCluster :")
 	var result []*Cluster
@@ -386,8 +399,26 @@ func calcuateCostFromResourceUsage(usage *ResourceUsage) float64 {
 	return total
 }
 
-func createCluster(request CreateClusterRequest) (*CreateClusterResponse, error) {
-	return nil, nil
+func createCluster(token string, request CreateClusterRequest) (*CreateClusterResponse, error) {
+	var result CreateClusterResponse
+	header := map[string]string{
+		"Authorization":         "Bearer " + token,
+		"X-Auth-Resource-Group": request.ResourceGroup,
+	}
+
+	body, err := json.Marshal(request.ClusterRequest)
+	if err != nil {
+		return nil, err
+	}
+
+	err = postBody(clusterEndpoint, header, nil, body, &result)
+
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	return &result, nil
 }
 
 func deleteCluster(token, id, resourceGroup, deleteResources string) error {
@@ -461,6 +492,25 @@ func getTags(token string, crn string) (*Tags, error) {
 		return nil, err
 	}
 	return &result, nil
+}
+
+func setClusterTags(token, tag, clusterID, resourceGroup string) (*TagResult, error) {
+	cluster, err := getCluster(token, clusterID, resourceGroup)
+	if err != nil {
+		log.Println("get cluster : ", err)
+		return nil, err
+	}
+	crn := cluster.Crn
+
+	resources := make([]Resource, 1)
+	resources[0] = Resource{ResourceID: crn}
+	updateTag := UpdateTag{TagName: tag, Resources: resources}
+	tagResult, err := setTags(token, updateTag)
+	if err != nil {
+		log.Println("set tag : ", err)
+		return nil, err
+	}
+	return tagResult, nil
 }
 
 func setTags(token string, updateTag UpdateTag) (*TagResult, error) {

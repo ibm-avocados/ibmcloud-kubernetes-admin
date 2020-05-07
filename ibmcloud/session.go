@@ -111,6 +111,10 @@ func (s *Session) getAccountsWithEndpoint(nextURL *string) (*Accounts, error) {
 	return accounts, nil
 }
 
+func (s *Session) GetCluster(clusterID, resourceGroup string) (*Cluster, error) {
+	return getCluster(s.Token.AccessToken, clusterID, resourceGroup)
+}
+
 func (s *Session) GetClusters(location string) ([]*Cluster, error) {
 	return getClusters(s.Token.AccessToken, location)
 }
@@ -156,11 +160,15 @@ func (s *Session) DeleteCluster(id, resourceGroup, deleteResources string) error
 }
 
 func (s *Session) CreateCluster(request CreateClusterRequest) (*CreateClusterResponse, error) {
-	return createCluster(request)
+	return createCluster(s.Token.AccessToken, request)
 }
 
 func (s *Session) SetTag(updateTag UpdateTag) (*TagResult, error) {
 	return setTags(s.Token.AccessToken, updateTag)
+}
+
+func (s *Session) SetClusterTag(tag, clusterID, resourceID string) (*TagResult, error) {
+	return setClusterTags(s.Token.AccessToken, tag, clusterID, resourceID)
 }
 
 func (s *Session) DeleteTag(updateTag UpdateTag) (*TagResult, error) {

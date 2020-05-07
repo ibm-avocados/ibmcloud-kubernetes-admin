@@ -406,7 +406,7 @@ const useClusters = (accountID) => {
         return { resource_id: cluster.crn };
       });
 
-      const data = await grab("/api/v1/clusters/settag", {
+      await grab("/api/v1/clusters/settag", {
         method: "POST",
         body: JSON.stringify({
           tag_name: tag,
