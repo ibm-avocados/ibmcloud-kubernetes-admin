@@ -278,8 +278,8 @@ const CreateForm = ({ accountID }) => {
 
         console.log(clusterResponse);
 
-        console.log("Sleeping 3s before trying to set tags");
-        await sleep(3000);
+        console.log("Sleeping 5s before trying to set tags");
+        await sleep(5000);
 
         //comma separated tags.
         const tagPromises = tags.split(",").map(async (tag) => {
