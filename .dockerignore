@@ -91,3 +91,5 @@ package-lock.json
 yarn-error.log
 
 .git/
+.idea/
+README.md
