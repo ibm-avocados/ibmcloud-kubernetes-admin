@@ -1,8 +1,8 @@
-import React, {useState, useCallback, useEffect} from 'react';
-import Button from "./common/Button";
-import TextInput from "./common/TextInput";
-import styles from "./pagestyles.module.css";
-import history from "../globalHistory";
+import React, { useState, useCallback, useEffect } from 'react';
+import Button from './common/Button';
+import TextInput from './common/TextInput';
+import styles from './pagestyles.module.css';
+import history from '../globalHistory';
 
 const LoginPage = ({ onLoginClick }) => (
   <div className={styles.wrapper}>
@@ -11,21 +11,21 @@ const LoginPage = ({ onLoginClick }) => (
 );
 
 const OneTimePasscodePage = ({ onSubmit }) => {
-  const [value, setValue] = useState("");
+  const [value, setValue] = useState('');
 
-  const handleChange = useCallback(e => {
+  const handleChange = useCallback((e) => {
     setValue(e.target.value);
   }, []);
 
   const handleKeyDown = useCallback(
-    e => {
-      if (e.key === "Enter") {
+    (e) => {
+      if (e.key === 'Enter') {
         e.preventDefault();
         e.stopPropagation();
         onSubmit(value);
       }
     },
-    [onSubmit, value]
+    [onSubmit, value],
   );
 
   return (
@@ -46,7 +46,7 @@ const Login = () => {
   const [attemtedLogin, setAttemtedLogin] = useState(false);
 
   useEffect(() => {
-    fetch("/api/v1/login").then(({ status }) => {
+    fetch('/api/v1/login').then(({ status }) => {
       if (status === 200) {
         setIsLoggedIn(true);
       }
@@ -55,17 +55,17 @@ const Login = () => {
 
   const handleLoginClick = useCallback(async () => {
     setAttemtedLogin(true);
-    const response = await fetch("/api/v1/identity-endpoints");
+    const response = await fetch('/api/v1/identity-endpoints');
     const endpoints = await response.json();
-    window.open(endpoints.passcode_endpoint, "_blank");
+    window.open(endpoints.passcode_endpoint, '_blank');
   }, []);
 
-  const handleOTPSubmit = useCallback(async otp => {
-    const { status } = await fetch("/api/v1/authenticate", {
-      method: "POST",
+  const handleOTPSubmit = useCallback(async (otp) => {
+    const { status } = await fetch('/api/v1/authenticate', {
+      method: 'POST',
       body: JSON.stringify({
-        otp: otp
-      })
+        otp,
+      }),
     });
 
     if (status === 200) {
@@ -77,15 +77,11 @@ const Login = () => {
   }, []);
 
   if (isLoggedIn) {
-    history.push("/");
+    history.push('/');
   } else if (attemtedLogin) {
-    return (<OneTimePasscodePage onSubmit={handleOTPSubmit}/>)
+    return (<OneTimePasscodePage onSubmit={handleOTPSubmit} />);
   }
-  return (<LoginPage onLoginClick={handleLoginClick}/>)
+  return (<LoginPage onLoginClick={handleLoginClick} />);
 };
 
 export default Login;
-
-
-
-

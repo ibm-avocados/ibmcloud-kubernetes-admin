@@ -1,14 +1,13 @@
-import React from "react";
-import Clusters from "./common/Clusters";
-import {Loading} from 'carbon-components-react';
+import React from 'react';
+import { Loading } from 'carbon-components-react';
+import Clusters from './common/Clusters';
 
 const AppPage = ({ hasChosenAccount, tokenUpgraded, accountID }) => {
   if (!hasChosenAccount) {
     return null;
-  } else if (tokenUpgraded) {
+  } if (tokenUpgraded) {
     return <Clusters accountID={accountID} />;
-  } else {
-    return <Loading />
   }
+  return <Loading />;
 };
 export default AppPage;

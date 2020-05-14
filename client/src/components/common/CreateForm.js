@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 import {
   Form,
@@ -12,23 +12,19 @@ import {
   FormLabel,
   Tooltip,
   InlineLoading,
-} from "carbon-components-react";
+} from 'carbon-components-react';
 
-import geos from "../data/geo";
+import geos from '../data/geo';
 
-import styles from "./CreateForm.module.css";
+import styles from './CreateForm.module.css';
 
-import "./CreateForm.css";
+import './CreateForm.css';
 
-const Spacer = ({ height }) => {
-  return <div style={{ marginTop: height }} />;
-};
+const Spacer = ({ height }) => <div style={{ marginTop: height }} />;
 
-const Divider = ({ width }) => {
-  return <div style={{ marginRight: width }} />;
-};
+const Divider = ({ width }) => <div style={{ marginRight: width }} />;
 
-const grab = async (url, options, retryCount=0) => {
+const grab = async (url, options, retryCount = 0) => {
   const response = await fetch(url, options);
   const data = await response.json();
   if (response.status !== 200) {
@@ -37,7 +33,7 @@ const grab = async (url, options, retryCount=0) => {
     }
     throw Error(data);
   }
-  
+
   return data;
 };
 
@@ -52,10 +48,10 @@ const CreateForm = ({ accountID }) => {
   const [workerZones, setWorkerZones] = React.useState([]);
   const [privateVlans, setPrivateVlans] = React.useState([]);
   const [publicVlans, setPublicVlans] = React.useState([]);
-  const [clusterNamePrefix, setClusterNamePrefix] = React.useState("");
-  const [clusterCount, setClusterCount] = React.useState("1");
-  const [workerCount, setWorkerCount] = React.useState("1");
-  const [tags, setTags] = React.useState("");
+  const [clusterNamePrefix, setClusterNamePrefix] = React.useState('');
+  const [clusterCount, setClusterCount] = React.useState('1');
+  const [workerCount, setWorkerCount] = React.useState('1');
+  const [tags, setTags] = React.useState('');
   const [flavors, setFlavors] = React.useState([]);
   const [resourceGroups, setResourceGroups] = React.useState([]);
   // selected values
@@ -74,7 +70,7 @@ const CreateForm = ({ accountID }) => {
   React.useEffect(() => {
     const loadVersions = async () => {
       try {
-        const versions = await grab("/api/v1/clusters/versions");
+        const versions = await grab('/api/v1/clusters/versions');
         if (versions) {
           setKubernetesVersions(versions.kubernetes);
           setOpenshiftVersions(versions.openshift);
@@ -88,7 +84,7 @@ const CreateForm = ({ accountID }) => {
     const loadResourceGroups = async () => {
       try {
         const resourceGroups = await grab(
-          `/api/v1/resourcegroups/${accountID}`
+          `/api/v1/resourcegroups/${accountID}`,
         );
         console.log(resourceGroups);
         if (resourceGroups) {
@@ -112,7 +108,7 @@ const CreateForm = ({ accountID }) => {
     console.log(geo);
     try {
       const locations = await grab(`/api/v1/clusters/${geo}/locations`, {
-        Method: "GET",
+        Method: 'GET',
       });
       if (locations && locations.length > 0) {
         setWorkerZones(locations);
@@ -125,12 +121,12 @@ const CreateForm = ({ accountID }) => {
   const getVlans = async (datacenter) => {
     try {
       const vlans = await grab(`/api/v1/clusters/${datacenter}/vlans`);
-      const privateVlans = vlans.filter((vlan) => vlan.type === "private");
+      const privateVlans = vlans.filter((vlan) => vlan.type === 'private');
       if (privateVlans && privateVlans.length > 0) {
         setPrivateVlans(privateVlans);
         setSelecetedPrivateVlan(privateVlans[0]);
       }
-      const publicVlans = vlans.filter((vlan) => vlan.type === "public");
+      const publicVlans = vlans.filter((vlan) => vlan.type === 'public');
       if (publicVlans && publicVlans.length > 0) {
         setPublicVlans(publicVlans);
         setSelecetedPublicVlan(publicVlans[0]);
@@ -143,7 +139,7 @@ const CreateForm = ({ accountID }) => {
   const getFlavors = async (datacenter) => {
     try {
       const flav = await grab(
-        `/api/v1/clusters/${datacenter}/machine-types?type=virtual&os=UBUNTU_18_64&cpuLimit=8&memoryLimit=32`
+        `/api/v1/clusters/${datacenter}/machine-types?type=virtual&os=UBUNTU_18_64&cpuLimit=8&memoryLimit=32`,
       );
       if (flav) {
         setFlavorOnClusterType(flav, openshiftSelected);
@@ -163,27 +159,21 @@ const CreateForm = ({ accountID }) => {
 
   const getVersionString = (versions, version) => {
     const index = versions.indexOf(version);
-    let substring = "stable";
+    let substring = 'stable';
     if (index === versions.length - 1) {
-      substring = "latest";
+      substring = 'latest';
     } else if (version.default) {
-      substring = "stable, default";
+      substring = 'stable, default';
     }
 
     return `${version.major}.${version.minor}.${version.patch} (${substring})`;
   };
 
-  const getKuberntesVersionString = (version) => {
-    return getVersionString(kuberntesVersions, version);
-  };
+  const getKuberntesVersionString = (version) => getVersionString(kuberntesVersions, version);
 
-  const getOpenshiftVersionString = (version) => {
-    return getVersionString(openshiftVersions, version);
-  };
+  const getOpenshiftVersionString = (version) => getVersionString(openshiftVersions, version);
 
-  const getVlanString = (vlan) => {
-    return `${vlan.id}-${vlan.properties.vlan_number}-${vlan.properties.primary_router}`;
-  };
+  const getVlanString = (vlan) => `${vlan.id}-${vlan.properties.vlan_number}-${vlan.properties.primary_router}`;
 
   const onGeoSelected = (geo) => {
     getWorkerZones(geo.id);
@@ -212,20 +202,18 @@ const CreateForm = ({ accountID }) => {
     return !valid;
   };
   const numToStr = (num) => {
-    let numstr = num.toString();
-    let pad = "000";
+    const numstr = num.toString();
+    const pad = '000';
     return pad.substring(0, pad.length - numstr.length) + numstr;
   };
 
-  const sleep = (ms) => {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-  };
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
   const onCreateClicked = async () => {
-    console.log("creating clusters");
+    console.log('creating clusters');
     setCreating(true);
 
-    let version = "";
+    let version = '';
     if (kubernetesSelected) {
       const { major, minor, patch } = selectedKubernetes;
       version = `${major}.${minor}.${patch}`;
@@ -234,36 +222,36 @@ const CreateForm = ({ accountID }) => {
       version = `${major}.${minor}_openshift`;
     }
 
-    let defaultWorkerPoolEntitlement = "";
+    let defaultWorkerPoolEntitlement = '';
     if (openshiftSelected) {
-      defaultWorkerPoolEntitlement = "cloud_pak";
+      defaultWorkerPoolEntitlement = 'cloud_pak';
     }
 
     const range = Number(clusterCount);
 
-    for (var i = 1; i <= range; i++) {
-      console.log("creating cluster ", i);
+    for (let i = 1; i <= range; i++) {
+      console.log('creating cluster ', i);
       const suffix = numToStr(i);
       const name = `${clusterNamePrefix}-${suffix}`;
 
       const ClusterRequest = {
-        name: name,
-        prefix: "",
+        name,
+        prefix: '',
         skipPermPrecheck: false,
         dataCenter: selectedWorkerZone.id,
-        defaultWorkerPoolName: "",
-        defaultWorkerPoolEntitlement: defaultWorkerPoolEntitlement,
+        defaultWorkerPoolName: '',
+        defaultWorkerPoolEntitlement,
         disableAutoUpdate: true,
         noSubnnet: false,
-        podSubnet: "",
-        serviceSubnet: "",
+        podSubnet: '',
+        serviceSubnet: '',
         machineType: selectedFlavor.name,
         privateVlan: selectedPrivateVlan.id,
         publicVlan: selectedPublicVlan.id,
         masterVersion: version,
         workerNum: Number(workerCount),
         diskEncryption: true,
-        isolation: "public",
+        isolation: 'public',
         GatewayEnabled: false,
         privateSeviceEndpoint: false,
         publicServiceEndpoint: false,
@@ -275,35 +263,35 @@ const CreateForm = ({ accountID }) => {
       };
 
       try {
-        const clusterResponse = await grab("/api/v1/clusters", {
-          method: "post",
+        const clusterResponse = await grab('/api/v1/clusters', {
+          method: 'post',
           body: JSON.stringify(CreateClusterRequest),
         });
 
         console.log(clusterResponse);
 
-        console.log("Sleeping 5s before trying to set tags");
+        console.log('Sleeping 5s before trying to set tags');
         await sleep(5000);
 
-        //comma separated tags.
-        const tagPromises = tags.split(",").map(async (tag) => {
+        // comma separated tags.
+        const tagPromises = tags.split(',').map(async (tag) => {
           try {
             const tagRequest = await grab(
               `/api/v1/clusters/${clusterResponse.id}/settag`,
               {
-                method: "post",
+                method: 'post',
                 body: JSON.stringify({
-                  tag: tag,
+                  tag,
                   resourceGroup: selectedGroup.id,
                 }),
-              }, 3
+              }, 3,
             );
             return tagRequest;
           } catch (e) {
             return undefined;
           }
         });
-        const result = await Promise.all(tagPromises)
+        const result = await Promise.all(tagPromises);
         console.log(result);
       } catch (e) {
         console.log(e);
@@ -318,46 +306,49 @@ const CreateForm = ({ accountID }) => {
   const shouldCreateBeDisabled = () => {
     let versionSelected = false;
     if (kubernetesSelected) {
-      versionSelected = selectedKubernetes ? true : false;
+      versionSelected = !!selectedKubernetes;
     } else {
-      versionSelected = selectedOpenshift ? true : false;
+      versionSelected = !!selectedOpenshift;
     }
 
-    const groupSelected = selectedGroup ? true : false;
-    const geoSelected = selectedRegion ? true : false;
-    const zoneSelected = selectedWorkerZone ? true : false;
-    const flavorSelected = selectedFlavor ? true : false;
+    const groupSelected = !!selectedGroup;
+    const geoSelected = !!selectedRegion;
+    const zoneSelected = !!selectedWorkerZone;
+    const flavorSelected = !!selectedFlavor;
 
-    const hasClusterCount = clusterCount && clusterCount !== "";
-    const hasWorkerCount = workerCount && workerCount !== "";
-    const hasNamePrefix = clusterNamePrefix && clusterNamePrefix !== "";
-    const hasTags = tags && tags !== "";
+    const hasClusterCount = clusterCount && clusterCount !== '';
+    const hasWorkerCount = workerCount && workerCount !== '';
+    const hasNamePrefix = clusterNamePrefix && clusterNamePrefix !== '';
+    const hasTags = tags && tags !== '';
 
     return !(
-      versionSelected &&
-      groupSelected &&
-      geoSelected &&
-      zoneSelected &&
-      flavorSelected &&
-      hasClusterCount &&
-      hasWorkerCount &&
-      hasNamePrefix &&
-      hasTags
+      versionSelected
+      && groupSelected
+      && geoSelected
+      && zoneSelected
+      && flavorSelected
+      && hasClusterCount
+      && hasWorkerCount
+      && hasNamePrefix
+      && hasTags
     );
   };
 
   const onScheduleClick = () => {};
 
-  const shouldSchedulingBeDisabled = () => {
-    return shouldCreateBeDisabled();
-  };
+  const shouldSchedulingBeDisabled = () => shouldCreateBeDisabled();
 
   const renderFlavors = (item) => {
     if (item) {
       return (
-        <div style={{ position: "absolute" }}>
+        <div style={{ position: 'absolute' }}>
           <p>
-            {item.cores} vCPUs {item.memory} RAM
+            {item.cores}
+            {' '}
+            vCPUs
+            {item.memory}
+            {' '}
+            RAM
           </p>
           <p>{item.name}</p>
         </div>
@@ -400,13 +391,9 @@ const CreateForm = ({ accountID }) => {
                 disabled={!kubernetesSelected}
                 label="Select Version"
                 items={kuberntesVersions}
-                onChange={({ selectedItem }) =>
-                  setSelectedKuberetes(selectedItem)
-                }
+                onChange={({ selectedItem }) => setSelectedKuberetes(selectedItem)}
                 selectedItem={selectedKubernetes}
-                itemToString={(version) =>
-                  version ? getKuberntesVersionString(version) : ""
-                }
+                itemToString={(version) => (version ? getKuberntesVersionString(version) : '')}
               />
             </RadioTile>
           </Column>
@@ -433,13 +420,9 @@ const CreateForm = ({ accountID }) => {
                 disabled={!openshiftSelected}
                 label="Select Version"
                 items={openshiftVersions}
-                onChange={({ selectedItem }) =>
-                  setSelectedOpenshift(selectedItem)
-                }
+                onChange={({ selectedItem }) => setSelectedOpenshift(selectedItem)}
                 selectedItem={selectedOpenshift}
-                itemToString={(version) =>
-                  version ? getOpenshiftVersionString(version) : ""
-                }
+                itemToString={(version) => (version ? getOpenshiftVersionString(version) : '')}
               />
             </RadioTile>
           </Column>
@@ -464,7 +447,7 @@ const CreateForm = ({ accountID }) => {
               label="Select geo"
               items={geos}
               selectedItem={selectedRegion}
-              itemToString={(geo) => (geo ? geo.display_name : "")}
+              itemToString={(geo) => (geo ? geo.display_name : '')}
               onChange={({ selectedItem }) => onGeoSelected(selectedItem)}
             />
           </Column>
@@ -482,13 +465,11 @@ const CreateForm = ({ accountID }) => {
               id="worker_zone_select"
               className="create-page-dropdown"
               label="Select worker zone"
-              itemToString={(zone) => (zone ? zone.id : "")}
+              itemToString={(zone) => (zone ? zone.id : '')}
               items={workerZones}
               selectedItem={selectedWorkerZone}
               disabled={workerZones.length <= 0}
-              onChange={({ selectedItem }) =>
-                onWorkerZoneSelected(selectedItem)
-              }
+              onChange={({ selectedItem }) => onWorkerZoneSelected(selectedItem)}
             />
           </Column>
 
@@ -506,11 +487,9 @@ const CreateForm = ({ accountID }) => {
               label="Select public vlan"
               disabled={publicVlans.length <= 0}
               items={publicVlans}
-              itemToString={(vlan) => (vlan ? getVlanString(vlan) : "")}
+              itemToString={(vlan) => (vlan ? getVlanString(vlan) : '')}
               selectedItem={selectedPublicVlan}
-              onChange={({ selectedItem }) =>
-                setSelecetedPublicVlan(selectedItem)
-              }
+              onChange={({ selectedItem }) => setSelecetedPublicVlan(selectedItem)}
             />
           </Column>
 
@@ -527,11 +506,9 @@ const CreateForm = ({ accountID }) => {
               label="Select private vlan"
               disabled={privateVlans.length <= 0}
               items={privateVlans}
-              itemToString={(vlan) => (vlan ? getVlanString(vlan) : "")}
+              itemToString={(vlan) => (vlan ? getVlanString(vlan) : '')}
               selectedItem={selectedPrivateVlan}
-              onChange={({ selectedItem }) =>
-                setSelecetedPrivateVlan(selectedItem)
-              }
+              onChange={({ selectedItem }) => setSelecetedPrivateVlan(selectedItem)}
             />
           </Column>
         </Row>
@@ -569,7 +546,7 @@ const CreateForm = ({ accountID }) => {
               labelText=""
               id="cluster_count"
               placeholder="20"
-              invalid={isNaN(clusterCount) || clusterCount === ""}
+              invalid={isNaN(clusterCount) || clusterCount === ''}
               invalidText="Should be a positive number"
             />
           </Column>
@@ -581,7 +558,7 @@ const CreateForm = ({ accountID }) => {
               className="create-page-dropdown"
               label="Select resource group"
               items={resourceGroups}
-              itemToString={(item) => (item ? item.name : "")}
+              itemToString={(item) => (item ? item.name : '')}
               selectedItem={selectedGroup}
               onChange={({ selectedItem }) => {
                 setSelectedGroup(selectedItem);
@@ -605,7 +582,7 @@ const CreateForm = ({ accountID }) => {
               placeholder="tag1, tag2, tag3"
               value={tags}
               onChange={(e) => setTags(e.target.value)}
-              invalid={tags != "" && validTag(tags)}
+              invalid={tags !== '' && validTag(tags)}
               invalidText="valid tag is in the regex form ^[A-Za-z0-9:_ .-]+$"
             />
           </Column>
@@ -629,7 +606,7 @@ const CreateForm = ({ accountID }) => {
               labelText=""
               id="worker_nodes"
               placeholder="1"
-              invalid={isNaN(workerCount) || workerCount === ""}
+              invalid={isNaN(workerCount) || workerCount === ''}
               invalidText="Should be a positive number"
             />
           </Column>
@@ -652,7 +629,7 @@ const CreateForm = ({ accountID }) => {
               disabled={flavors.length <= 0}
               selectedItem={selectedFlavor}
               onChange={({ selectedItem }) => setSelectedFlavor(selectedItem)}
-              itemToString={(item) => (item ? item.name : "")}
+              itemToString={(item) => (item ? item.name : '')}
               itemToElement={(item) => renderFlavors(item)}
             />
           </Column>
@@ -662,16 +639,16 @@ const CreateForm = ({ accountID }) => {
         <Spacer height="16px" />
         <Row>
           <Column>
-            <div style={{ display: "flex", width: "400px" }}>
+            <div style={{ display: 'flex', width: '400px' }}>
               {creating ? (
                 <InlineLoading
-                  style={{ width: "200px" }}
+                  style={{ width: '200px' }}
                   description="creating clusters"
-                  status={createSuccess ? "finished" : "active"}
+                  status={createSuccess ? 'finished' : 'active'}
                 />
               ) : (
                 <Button
-                  style={{ width: "200px" }}
+                  style={{ width: '200px' }}
                   size="field"
                   onClick={onCreateClicked}
                   disabled={shouldCreateBeDisabled()}
@@ -682,7 +659,7 @@ const CreateForm = ({ accountID }) => {
               )}
 
               <Button
-                style={{ width: "200px" }}
+                style={{ width: '200px' }}
                 size="field"
                 onClick={onScheduleClick}
                 disabled={shouldSchedulingBeDisabled()}
