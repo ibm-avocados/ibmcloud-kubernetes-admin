@@ -45,7 +45,7 @@ func setAPIKey(apiKey, dbName string) error {
 	// can we get a session?
 	session, err := IAMAuthenticate(apiKey)
 	if err != nil {
-		return fmt.Errorf("not a valid api key ", err)
+		return fmt.Errorf("not a valid api key %v", err)
 	}
 
 	// can we get the account name currently selected?
