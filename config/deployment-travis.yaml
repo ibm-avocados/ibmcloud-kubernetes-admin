@@ -1,0 +1,42 @@
+  
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name:  admin
+  labels:
+    run:  admin
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      run:  admin
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        run:  admin
+    spec:
+      containers:
+      - image:  moficodes/ibmcloud-kubernetes-admin:$TRAVIS_TAG
+        imagePullPolicy: Always
+        name:  destination
+        env:
+          - name: PORT
+            value: "9000"
+          - name: HOST_IP
+            value: destination
+          - name: SCHEME
+            value: http
+        resources:
+          limits:
+            cpu: 500m
+            memory: 1Gi
+          requests:
+            cpu: 500m
+            memory: 1Gi
+      restartPolicy: Always
