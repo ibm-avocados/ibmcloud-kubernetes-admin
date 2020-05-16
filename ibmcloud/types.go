@@ -397,6 +397,8 @@ type ApiKey struct {
 type Schedule struct {
 	CreateAt     string       `json:"create_at"`
 	DestroyAt    string       `json:"destroy_at"`
+	Status       string       `json:"status"`
+	ClusterCount int          `json:"clusterCount"`
 	CreateConfig CreateConfig `json:""`
 }
 
@@ -526,4 +528,32 @@ type ClusterRequest struct {
 	ServiceSubnet                string `json:"serviceSubnet"`
 	SkipPermPrecheck             bool   `json:"skipPermPrecheck"`
 	WorkerNum                    int    `json:"workerNum"`
+}
+
+type ScheduleCloudant struct {
+	ID                           string `json:"_id"`
+	Rev                          string `json:"_rev"`
+	DataCenter                   string `json:"dataCenter"`
+	DefaultWorkerPoolEntitlement string `json:"defaultWorkerPoolEntitlement"`
+	DefaultWorkerPoolName        string `json:"defaultWorkerPoolName"`
+	DisableAutoUpdate            bool   `json:"disableAutoUpdate"`
+	DiskEncryption               bool   `json:"diskEncryption"`
+	GatewayEnabled               bool   `json:"gatewayEnabled"`
+	Isolation                    string `json:"isolation"`
+	MachineType                  string `json:"machineType"`
+	MasterVersion                string `json:"masterVersion"`
+	Name                         string `json:"name"`
+	NoSubnet                     bool   `json:"noSubnet"`
+	PodSubnet                    string `json:"podSubnet"`
+	Prefix                       string `json:"prefix"`
+	PrivateSeviceEndpoint        bool   `json:"privateSeviceEndpoint"`
+	PrivateVlan                  string `json:"privateVlan"`
+	PublicServiceEndpoint        bool   `json:"publicServiceEndpoint"`
+	PublicVlan                   string `json:"publicVlan"`
+	ServiceSubnet                string `json:"serviceSubnet"`
+	SkipPermPrecheck             bool   `json:"skipPermPrecheck"`
+	WorkerNum                    int    `json:"workerNum"`
+	CreateAt                     int    `json:"create_at"`
+	DestroyAt                    int    `json:"destroy_at"`
+	Status                       string `json:"status"`
 }

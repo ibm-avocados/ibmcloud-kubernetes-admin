@@ -5,10 +5,19 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
 )
 
+func init() {
+	loadErr := godotenv.Load()
+	if loadErr != nil {
+		log.Fatal("Error loading .env file")
+	}
+}
+
 func main() {
-	go timed()
+
+	go cron()
 	r := mux.NewRouter()
 
 	api := r.PathPrefix("/api/v1").Subrouter()
@@ -45,6 +54,16 @@ func main() {
 	api.HandleFunc("/clusters/deletetag", deleteTagHandler).Methods(http.MethodPost)
 	api.HandleFunc("/clusters/gettag", getTagHandler).Methods(http.MethodPost)
 	api.HandleFunc("/billing", getBillingHandler).Methods(http.MethodPost)
+
+	// scheduling
+	api.HandleFunc("/schedule/api/create", setAPITokenHandler).Methods(http.MethodPost)
+	api.HandleFunc("/schedule/api", deleteAPITokenHandler).Methods(http.MethodDelete)
+	api.HandleFunc("/schedule/api", updateAPITokenHandler).Methods(http.MethodPut)
+	api.HandleFunc("/schedule/api", checkAPITokenHandler).Methods(http.MethodPost)
+	api.HandleFunc("/schedule/{accountID}/create", setScheduleHandler).Methods(http.MethodPost)
+	api.HandleFunc("/schedule/{accountID}", getScheduleHandler).Methods(http.MethodGet)
+	api.HandleFunc("/schedule/{accountID}", updateScheduleHandler).Methods(http.MethodPut)
+	api.HandleFunc("/schedule/{accountID}", deleteScheduleHandler).Methods(http.MethodDelete)
 
 	r.PathPrefix("/").Handler(http.FileServer(http.Dir("client/build/"))).Methods("GET")
 	r.HandleFunc("/", notFoundHandler)

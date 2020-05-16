@@ -6,6 +6,8 @@ require (
 	github.com/IBM-Cloud/go-cloudant v0.0.0-20161013050022-0ded5c7f524e
 	github.com/elazarl/goproxy v0.0.0-20200426045556-49ad98f6dac1 // indirect
 	github.com/gorilla/mux v1.7.3
+	github.com/joho/godotenv v1.3.0
+	github.com/mitchellh/mapstructure v1.3.0
 	github.com/parnurzeal/gorequest v0.2.16 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/smartystreets/goconvey v1.6.4 // indirect

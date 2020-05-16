@@ -131,16 +131,24 @@ func (s *Session) GetWorkers(clusterID string) ([]Worker, error) {
 	return getClusterWorkers(s.Token.AccessToken, clusterID)
 }
 
-func (s *Session) BindAccountToToken(accountID string) (*Session, error) {
+func bindAccountToToken(refreshToken, accountID string) (*Session, error) {
 	err := cacheIdentityEndpoints()
 	if err != nil {
 		return nil, err
 	}
-	token, err := upgradeToken(endpoints.TokenEndpoint, s.Token.RefreshToken, accountID)
+	token, err := upgradeToken(endpoints.TokenEndpoint, refreshToken, accountID)
 	if err != nil {
 		return nil, err
 	}
 	return &Session{Token: token}, nil
+}
+
+func (s *Session) BindAccountToToken(accountID string) (*Session, error) {
+	session, err := bindAccountToToken(s.Token.RefreshToken, accountID)
+	if err != nil {
+		return nil, err
+	}
+	return session, err
 }
 
 func (s *Session) RenewSession() (*Session, error) {
@@ -181,4 +189,110 @@ func (s *Session) GetTags(clusterCRN string) (*Tags, error) {
 
 func (s *Session) GetBillingData(accountID, clusterID, clusterCRN string) (string, error) {
 	return getBillingData(s.Token.AccessToken, accountID, clusterID, clusterCRN)
+}
+
+// CLOUDANT RELATED METHODS
+func (s *Session) SetAPIKey(apiKey, accountID string) error {
+	if !s.IsValid() {
+		log.Println("Access token expired.")
+		token, err := upgradeToken(endpoints.TokenEndpoint, s.Token.RefreshToken, accountID)
+		if err != nil {
+			return err
+		}
+		log.Println("Token Refreshed.")
+		s.Token = token
+	}
+	return SetAPIKey(apiKey, accountID)
+}
+
+func (s *Session) CheckAPIKey(accountID string) error {
+	if !s.IsValid() {
+		log.Println("Access token expired.")
+		token, err := upgradeToken(endpoints.TokenEndpoint, s.Token.RefreshToken, accountID)
+		if err != nil {
+			return err
+		}
+		log.Println("Token Refreshed.")
+		s.Token = token
+	}
+	return CheckAPIKey(accountID)
+}
+
+func (s *Session) UpdateAPIKey(apiKey, accountID string) error {
+	if !s.IsValid() {
+		log.Println("Access token expired.")
+		token, err := upgradeToken(endpoints.TokenEndpoint, s.Token.RefreshToken, accountID)
+		if err != nil {
+			return err
+		}
+		log.Println("Token Refreshed.")
+		s.Token = token
+	}
+	return UpdateAPIKey(apiKey, accountID)
+}
+
+func (s *Session) DeleteAPIKey(accountID string) error {
+	if !s.IsValid() {
+		log.Println("Access token expired.")
+		token, err := upgradeToken(endpoints.TokenEndpoint, s.Token.RefreshToken, accountID)
+		if err != nil {
+			return err
+		}
+		log.Println("Token Refreshed.")
+		s.Token = token
+	}
+	return DeleteAPIKey(accountID)
+}
+
+func (s *Session) GetDocument(accountID string) ([]ScheduleCloudant, error) {
+	if !s.IsValid() {
+		log.Println("Access token expired.")
+		token, err := upgradeToken(endpoints.TokenEndpoint, s.Token.RefreshToken, accountID)
+		if err != nil {
+			return nil, err
+		}
+		log.Println("Token Refreshed.")
+		s.Token = token
+	}
+	return GetDocument(accountID)
+}
+
+func (s *Session) CreateDocument(accountID string, data interface{}) error {
+	if !s.IsValid() {
+		log.Println("Access token expired.")
+		token, err := upgradeToken(endpoints.TokenEndpoint, s.Token.RefreshToken, accountID)
+		if err != nil {
+			return err
+		}
+		log.Println("Token Refreshed.")
+		s.Token = token
+	}
+	return CreateDocument(accountID, data)
+}
+
+func (s *Session) DeleteDocument(accountID, id, rev string) error {
+	if !s.IsValid() {
+		log.Println("Access token expired.")
+		token, err := upgradeToken(endpoints.TokenEndpoint, s.Token.RefreshToken, accountID)
+		if err != nil {
+			return err
+		}
+		log.Println("Token Refreshed.")
+		s.Token = token
+	}
+
+	return DeleteDocument(accountID, id, rev)
+}
+
+func (s *Session) UpdateDocument(accountID, id, rev string, data interface{}) error {
+	if !s.IsValid() {
+		log.Println("Access token expired.")
+		token, err := upgradeToken(endpoints.TokenEndpoint, s.Token.RefreshToken, accountID)
+		if err != nil {
+			return err
+		}
+		log.Println("Token Refreshed.")
+		s.Token = token
+	}
+	return UpdateDocument(accountID, id, rev, data)
 }

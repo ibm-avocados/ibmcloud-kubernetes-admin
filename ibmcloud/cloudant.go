@@ -5,8 +5,11 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/IBM-Cloud/go-cloudant"
+	"github.com/joho/godotenv"
+	"github.com/mitchellh/mapstructure"
 )
 
 var username string
@@ -15,9 +18,14 @@ var host string
 var cclient *cloudant.Client
 
 func init() {
+	loadErr := godotenv.Load()
+	if loadErr != nil {
+		log.Println("Error loading .env file")
+	}
 	username = os.Getenv("CLOUDANT_USER_NAME")
 	password = os.Getenv("CLOUDANT_PASSWORD")
-	host = username + ".cloudantnosqldb.appdomain.cloud"
+	host = os.Getenv("CLOUDANT_HOST")
+	log.Println("Cloudant Setup : ", username, password, host)
 	var err error
 	cclient, err = cloudant.NewClient(username, password)
 	if err != nil {
@@ -26,33 +34,42 @@ func init() {
 }
 
 func SetupAccount(accountID string) error {
-	return setupDB(accountID)
+	dbName := "db-" + accountID
+	return setupDB(dbName)
 }
 
 func setupDB(dbName string) error {
-	_, err := cclient.CreateDB(dbName)
+	_, err := cclient.EnsureDB(dbName)
 	return err
 }
 
-func SetAPIKey(apiKey, accountID string) error {
-	return setAPIKey(apiKey, accountID)
+func checkExistingAPIKey(dbName string) error {
+	apiKey, err := getAPIKey(dbName)
+	if err != nil {
+		return err
+	}
+
+	return checkAPIKey(apiKey.APIKey, dbName)
 }
 
-func setAPIKey(apiKey, dbName string) error {
-	db := cclient.DB(dbName)
+func CheckAPIKey(accountID string) error {
+	dbName := "db-" + accountID
+	return checkExistingAPIKey(dbName)
+}
 
-	// check validity of api key
-	// can we get a session?
+func checkAPIKey(apiKey, dbName string) error {
 	session, err := IAMAuthenticate(apiKey)
 	if err != nil {
 		return fmt.Errorf("not a valid api key %v", err)
 	}
 
 	// can we get the account name currently selected?
+
+	accountID := strings.TrimPrefix(dbName, "db-")
 	accounts, err := session.GetAccounts()
 	found := false
 	for _, account := range accounts.Resources {
-		if account.Metadata.GUID == dbName {
+		if account.Metadata.GUID == accountID {
 			found = true
 			break
 		}
@@ -61,7 +78,22 @@ func setAPIKey(apiKey, dbName string) error {
 	if !found {
 		return fmt.Errorf("api key not valid for current account")
 	}
+	return nil
+}
 
+func SetAPIKey(apiKey, accountID string) error {
+	dbName := "db-" + accountID
+	if err := checkAPIKey(apiKey, dbName); err != nil {
+		return err
+	}
+	return setAPIKey(apiKey, dbName)
+}
+
+func setAPIKey(apiKey, dbName string) error {
+	db, err := getDB(dbName)
+	if err != nil {
+		return err
+	}
 	type apiDoc struct {
 		ID     string `json:"_id"`
 		APIKey string `json:"apikey"`
@@ -78,11 +110,183 @@ func setAPIKey(apiKey, dbName string) error {
 	return nil
 }
 
-func GetAPIKey(accountID string) (string, error) {
-	return getAPIKey(accountID)
+func UpdateAPIKey(apiKey, accountID string) error {
+	dbName := "db-" + accountID
+	if err := checkAPIKey(apiKey, dbName); err != nil {
+		return err
+	}
+	return updateAPIKey(apiKey, dbName)
 }
 
-func getAPIKey(dbName string) (string, error) {
+func updateAPIKey(newKey, dbName string) error {
+	db, err := getDB(dbName)
+	if err != nil {
+		return err
+	}
+	apiKey, err := getAPIKey(dbName)
+	if err != nil {
+		return err
+	}
+
+	apiKey.APIKey = newKey
+
+	newRev, err := db.UpdateDocument(apiKey.ID, apiKey.Rev, apiKey)
+	if err != nil {
+		return err
+	}
+
+	log.Printf("updated api key with new rev %s\n", newRev)
+	return nil
+}
+
+func DeleteAPIKey(accountID string) error {
+	dbName := "db-" + accountID
+	return deleteAPIKey(dbName)
+}
+
+func deleteAPIKey(dbName string) error {
+	db, err := getDB(dbName)
+	if err != nil {
+		return err
+	}
+	apiKey, err := getAPIKey(dbName)
+	if err != nil {
+		return err
+	}
+
+	newRev, err := db.DeleteDocument(apiKey.ID, apiKey.Rev)
+	if err != nil {
+		return err
+	}
+	log.Printf("document deleted rev %s\n", newRev)
+	return nil
+}
+
+func GetDocument(accountID string) ([]ScheduleCloudant, error) {
+	dbName := "db-" + accountID
+	return getDocument(dbName)
+}
+
+func getDocument(dbName string) ([]ScheduleCloudant, error) {
+	db, err := getDB(dbName)
+	if err != nil {
+		return nil, err
+	}
+	createQuery := cloudant.Query{}
+	createQuery.Selector = make(map[string]interface{})
+	createQuery.Selector["create_at"] = map[string]int64{
+		"$gt": 0,
+	}
+	createQuery.Selector["status"] = map[string]string{
+		"$eq": "scheduled",
+	}
+
+	resCreate, err := db.SearchDocument(createQuery)
+	if err != nil {
+		return nil, err
+	}
+
+	destroyQuery := cloudant.Query{}
+	destroyQuery.Selector = make(map[string]interface{})
+	destroyQuery.Selector["destroy_at"] = map[string]int64{
+		"$gt": 0,
+	}
+	destroyQuery.Selector["status"] = map[string]string{
+		"$eq": "created",
+	}
+	resDestroy, err := db.SearchDocument(destroyQuery)
+	if err != nil {
+		return nil, err
+	}
+
+	resJoin := append(resCreate, resDestroy...)
+
+	res := make([]ScheduleCloudant, len(resJoin))
+	for i, elem := range resJoin {
+		sched, ok := elem.(map[string]interface{})
+		if !ok {
+			log.Println("could not convert to type")
+			return nil, err
+		}
+		var schedule ScheduleCloudant
+		if err := mapstructure.Decode(sched, &schedule); err != nil {
+			log.Println("nothing is working")
+		}
+		res[i] = schedule
+	}
+
+	return res, nil
+}
+
+func CreateDocument(accountID string, data interface{}) error {
+	dbName := "db-" + accountID
+	return createDocument(dbName, data)
+}
+
+func createDocument(dbName string, data interface{}) error {
+	db, err := getDB(dbName)
+	if err != nil {
+		return err
+	}
+	id, rev, err := db.CreateDocument(data)
+	if err != nil {
+		return err
+	}
+	log.Printf("document set with id %s, rev %s\n", id, rev)
+	return nil
+}
+
+func UpdateDocument(accountID, id, rev string, data interface{}) error {
+	dbName := "db-" + accountID
+	return updateDocument(dbName, id, rev, data)
+}
+
+func updateDocument(dbName, id, rev string, data interface{}) error {
+	db, err := getDB(dbName)
+	if err != nil {
+		return err
+	}
+	newRev, err := db.UpdateDocument(id, rev, data)
+	if err != nil {
+		return err
+	}
+	log.Printf("document updated with rev %s\n", newRev)
+	return nil
+}
+
+func DeleteDocument(accountID, id, rev string) error {
+	dbName := "db-" + accountID
+	return deleteDocument(dbName, id, rev)
+}
+
+func deleteDocument(dbName, id, rev string) error {
+	db, err := getDB(dbName)
+	if err != nil {
+		return err
+	}
+	newRev, err := db.DeleteDocument(id, rev)
+	if err != nil {
+		return nil
+	}
+	log.Printf("document delete with rev %s\n", newRev)
+	return nil
+}
+
+func GetSessionFromCloudant(accountID string) (*Session, error) {
+	dbName := "db-" + accountID
+	apiKey, err := getAPIKey(dbName)
+	if err != nil {
+		return nil, err
+	}
+
+	session, err := IAMAuthenticate(apiKey.APIKey)
+	if err != nil {
+		return nil, err
+	}
+	return session, nil
+}
+
+func getAPIKey(dbName string) (*ApiKey, error) {
 	authEncoded := base64.StdEncoding.EncodeToString([]byte(username + ":" + password))
 
 	header := map[string]string{
@@ -93,14 +297,21 @@ func getAPIKey(dbName string) (string, error) {
 
 	err := fetch(url, header, nil, &result)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return result.APIKey, nil
+	return &result, nil
 }
 
-func GetAllDbs() ([]string, error) {
-	return getAllDbs()
+func GetAllAccountIDs() ([]string, error) {
+	result, err := getAllDbs()
+	if err != nil {
+		return nil, err
+	}
+	for i, val := range result {
+		result[i] = strings.TrimPrefix(val, "db-")
+	}
+	return result, nil
 }
 
 func getAllDbs() ([]string, error) {
@@ -120,31 +331,25 @@ func getAllDbs() ([]string, error) {
 	return result, nil
 }
 
-// func ThrowAway() {
-// 	db := cclient.DB("test")
-// 	type data struct {
-// 		ID   string `json:"_id"`
-// 		Name string `json:"name"`
-// 	}
-// 	testData := &data{
-// 		ID:   "some_id_as_id",
-// 		Name: randomString(),
-// 	}
-// 	id, rev, _ := db.CreateDocument(testData)
-// 	log.Println(id, rev)
-// 	time.Sleep(2 * time.Second)
-// 	testData.Name = randomString()
-// 	rev, _ = db.UpdateDocument(id, rev, testData)
-// }
-// func randomString() string {
-// 	return fmt.Sprintf("%v", time.Now())
-// }
-
 func AddSchedule() error {
 	return addSchedule("")
 }
 
 func addSchedule(dbName string) error {
-	_ = cclient.DB(dbName)
+	_, _ = getDB(dbName)
 	return nil
 }
+
+func getDB(dbName string) (*cloudant.DB, error) {
+	db, err := cclient.EnsureDB(dbName)
+	if err != nil {
+		return nil, err
+	}
+	return db, nil
+}
+
+/*
+GetAPIKey
+
+
+*/
