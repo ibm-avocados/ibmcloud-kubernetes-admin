@@ -1,11 +1,14 @@
-import React from 'react';
-import CreateForm from './common/CreateForm';
+import React from "react";
+import { Loading } from "carbon-components-react";
+import CreateForm from "./common/CreateForm";
 
-const CreatePage = ({ accountID, hasChosenAccount }) => {
-  if (hasChosenAccount) {
+const CreatePage = ({ hasChosenAccount, tokenUpgraded, accountID }) => {
+  if (!hasChosenAccount) {
+    return <h1>Please select account</h1>;
+  } else if (tokenUpgraded) {
     return <CreateForm accountID={accountID} />;
   }
-  return <h1>Please select account</h1>;
+  return <Loading />;
 };
 
 export default CreatePage;

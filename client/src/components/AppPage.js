@@ -5,7 +5,7 @@ import Clusters from './common/Clusters';
 const AppPage = ({ hasChosenAccount, tokenUpgraded, accountID }) => {
   if (!hasChosenAccount) {
     return null;
-  } if (tokenUpgraded) {
+  } else if (tokenUpgraded) {
     return <Clusters accountID={accountID} />;
   }
   return <Loading />;

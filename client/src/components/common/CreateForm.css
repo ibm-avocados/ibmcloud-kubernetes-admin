@@ -174,3 +174,8 @@
   margin-left: auto;
   margin-right: auto;
 }
+
+.bx--modal .bx--time-picker__input-field.bx--text-input {
+  height: 2.5rem;
+  width: 4.875rem;
+}

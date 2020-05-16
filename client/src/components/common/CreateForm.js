@@ -16,6 +16,9 @@ import {
   ModalWrapper,
   DatePicker,
   DatePickerInput,
+  TimePicker,
+  TimePickerSelect,
+  SelectItem,
 } from "carbon-components-react";
 
 import geos from "../data/geo";
@@ -71,7 +74,13 @@ const CreateForm = ({ accountID }) => {
   const [creating, setCreating] = React.useState(false);
   const [loaderDescription, setLoaderDescription] = React.useState("");
   const [createSuccess, setCreateSuccess] = React.useState(false);
-  const [showModal, setShowModal] = React.useState(false);
+  const [startTimeAMPM, setStartTimeAMPM] = React.useState("AM");
+  const [endTimeAMPM, setEndTimeAMPM] = React.useState("AM");
+  const [apiKey, setApiKey] = React.useState("");
+  const [apiKeyValid, setApiKeyValid] = React.useState(false);
+  const [startTime, setStartTime] = React.useState("");
+  const [endTime, setEndTime] = React.useState("");
+  const [dateRange, setDateRange] = React.useState([]);
 
   React.useEffect(() => {
     const loadVersions = async () => {
@@ -102,6 +111,25 @@ const CreateForm = ({ accountID }) => {
     };
 
     loadResourceGroups();
+
+    const checkAPIKey = async () => {
+      try {
+        const apiKey = await fetch("/api/v1/schedule/api", {
+          method: "post",
+          body: JSON.stringify({
+            accountID: accountID,
+          }),
+        });
+        if (apiKey.status === 200) {
+          setApiKeyValid(true);
+          setApiKey("your-api-key-will-be-pulled-from-db");
+        }
+      } catch (e) {
+        console.log(e);
+      }
+    };
+
+    checkAPIKey();
   }, [accountID]);
 
   const toggleRadio = () => {
@@ -111,7 +139,6 @@ const CreateForm = ({ accountID }) => {
   };
 
   const getWorkerZones = async (geo) => {
-    console.log(geo);
     try {
       const locations = await grab(`/api/v1/clusters/${geo}/locations`, {
         Method: "GET",
@@ -207,7 +234,6 @@ const CreateForm = ({ accountID }) => {
   const validTag = (tags) => {
     const re = /^[A-Za-z,0-9:_ .-]+$/;
     const valid = re.test(tags);
-    console.log(valid);
     return !valid;
   };
   const numToStr = (num) => {
@@ -236,8 +262,6 @@ const CreateForm = ({ accountID }) => {
     const range = Number(clusterCount);
     let request = [];
     for (let i = 1; i <= range; i++) {
-      setLoaderDescription(`Creating Cluster ${i} of ${range}`);
-      console.log("Creating luster ", i);
       const suffix = numToStr(i);
       const name = `${clusterNamePrefix}-${suffix}`;
 
@@ -271,62 +295,21 @@ const CreateForm = ({ accountID }) => {
       request.push(CreateClusterRequest);
     }
     return request;
-  }
+  };
 
   const onCreateClicked = async () => {
     console.log("creating clusters");
     setCreating(true);
     setCreateSuccess(false);
 
-    let version = "";
-    if (kubernetesSelected) {
-      const { major, minor, patch } = selectedKubernetes;
-      version = `${major}.${minor}.${patch}`;
-    } else {
-      const { major, minor } = selectedOpenshift;
-      version = `${major}.${minor}_openshift`;
-    }
+    const request = getCreateRequest();
+    const range = request.length;
 
-    let defaultWorkerPoolEntitlement = "";
-    if (openshiftSelected) {
-      defaultWorkerPoolEntitlement = "cloud_pak";
-    }
-
-    const range = Number(clusterCount);
-
-    for (let i = 1; i <= range; i++) {
-      setLoaderDescription(`Creating Cluster ${i} of ${range}`);
+    for (let i = 0; i < range; i++) {
+      setLoaderDescription(`Creating Cluster ${i + 1} of ${range + 1}`);
       console.log("Creating luster ", i);
-      const suffix = numToStr(i);
-      const name = `${clusterNamePrefix}-${suffix}`;
 
-      const ClusterRequest = {
-        name,
-        prefix: "",
-        skipPermPrecheck: false,
-        dataCenter: selectedWorkerZone.id,
-        defaultWorkerPoolName: "",
-        defaultWorkerPoolEntitlement,
-        disableAutoUpdate: true,
-        noSubnnet: false,
-        podSubnet: "",
-        serviceSubnet: "",
-        machineType: selectedFlavor.name,
-        privateVlan: selectedPrivateVlan.id,
-        publicVlan: selectedPublicVlan.id,
-        masterVersion: version,
-        workerNum: Number(workerCount),
-        diskEncryption: true,
-        isolation: "public",
-        GatewayEnabled: false,
-        privateSeviceEndpoint: false,
-        publicServiceEndpoint: false,
-      };
-
-      const CreateClusterRequest = {
-        clusterRequest: ClusterRequest,
-        resourceGroup: selectedGroup.id,
-      };
+      const CreateClusterRequest = request[i];
 
       try {
         const clusterResponse = await grab("/api/v1/clusters", {
@@ -337,9 +320,11 @@ const CreateForm = ({ accountID }) => {
         console.log(clusterResponse);
 
         console.log("Sleeping 5s before trying to set tags");
-        setLoaderDescription(`Preparing to Tag Cluster ${i} of ${range}`);
+        setLoaderDescription(
+          `Preparing to Tag Cluster ${i + 1} of ${range + 1}`
+        );
         await sleep(5000);
-        setLoaderDescription(`Tagging Cluster ${i} of ${range}`);
+        setLoaderDescription(`Tagging Cluster ${i + 1} of ${range + 1}`);
 
         // comma separated tags.
         const tagPromises = tags.split(",").map(async (tag) => {
@@ -403,12 +388,50 @@ const CreateForm = ({ accountID }) => {
     );
   };
 
-  const onScheduleClick = () => {
-    setShowModal(true);
+  const shouldSchedulingBeDisabled = () => {
+    return false;
   };
 
-  const shouldSchedulingBeDisabled = async () => {
-    return false;
+  const shouldScheduleSubmitBeDisabled = () => {
+    const dateSet = dateRange.length === 2;
+    const createTimetSet = !timeInvalid(startTime);
+    const endTimeSet = !timeInvalid(endTime);
+
+    return !(dateSet && createTimetSet && endTimeSet && apiKeyValid);
+  };
+
+  Date.prototype.addTime = function(h, m) {
+    this.setTime(this.getTime() + (h*60*60*1000) + m * 60 * 1000);
+    return this;
+  }
+
+  const onScheduleSubmit = () => {
+    // const request = getCreateRequest();
+    let startDate = dateRange[0];
+    let endDate = dateRange[1];
+    let startHour = Number(startTime.split(":")[0])
+    console.log(startHour);
+    const startMinute = Number(startTime.split(":")[1])
+    const offset = startDate.getTimezoneOffset();
+    console.log(startMinute);
+    startHour += startTimeAMPM === "PM"? 12 : 0;
+    console.log(startHour);
+    let endHour = Number(endTime.split(":")[0])
+    const endMinute = Number(endTime.split(":")[1])
+    endHour += startTimeAMPM === "PM"? 12 : 0;
+
+    startDate.addTime(startHour, startMinute - offset);
+    const createAt = startDate.getTime()/1000;
+
+    
+
+    console.log(createAt);
+    console.log(startDate);
+  };
+
+  const timeInvalid = (time) => {
+    const re = /^(0[0-9]|1[0-2]):[0-5][0-9]$/;
+    return !re.test(time);
   };
 
   const renderFlavors = (item) => {
@@ -428,14 +451,14 @@ const CreateForm = ({ accountID }) => {
 
   const setMinDate = () => {
     let d = new Date();
-    return `${d.getMonth()+1}/${d.getDate()}/${d.getFullYear}`;
+    return `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear}`;
   };
 
   const setMaxDate = () => {
     let d = new Date();
     d.setDate(d.getDate() + 60);
-    return `${d.getMonth()+1}/${d.getDate()}/${d.getFullYear}`;
-  }
+    return `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear}`;
+  };
 
   return (
     <>
@@ -783,20 +806,103 @@ const CreateForm = ({ accountID }) => {
                   </Button>
                 )}
                 <ModalWrapper
-                  disabled={false}
+                  disabled={shouldSchedulingBeDisabled()}
                   hasForm
                   buttonTriggerText="Schedule"
                   triggerButtonKind="tertiary"
-                  handleSubmit={() => console.log("submitted")}
+                  handleSubmit={() => onScheduleSubmit()}
                   shouldCloseAfterSubmit
                 >
-                  <TextInput labelText="API Key" />
+                  <TextInput.PasswordInput
+                    id="api_key_input"
+                    labelText="API Key"
+                    disabled={apiKeyValid}
+                    value={apiKey}
+                    placeholder="Enter a valid api key for this account"
+                    onChange={(e) =>
+                      e.target ? setApiKey(e.target.value) : setApiKey("")
+                    }
+                  />
                   <Spacer height="16px" />
-
-                  <DatePicker dateFormat="m/d/y" datePickerType="range" minDate={setMinDate()} maxDate={setMaxDate()}>
-                    <DatePickerInput/>
-                    <DatePickerInput/>
+                  <DatePicker
+                    dateFormat="m/d/y"
+                    datePickerType="range"
+                    minDate={setMinDate()}
+                    maxDate={setMaxDate()}
+                    onChange={(e) => setDateRange(e)}
+                  >
+                    <DatePickerInput
+                      labelText="Start Date"
+                      id="start_date_picker"
+                      invalid={dateRange.length < 1}
+                      invalidText="Need a start date"
+                    />
+                    <DatePickerInput
+                      labelText="End Date"
+                      id="end_date_picker"
+                      invalid={dateRange.length < 1}
+                      invalidText="Need a end date"
+                    />
                   </DatePicker>
+                  <Spacer height="16px" />
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "row",
+                      alignItems: "flex-start",
+                    }}
+                  >
+                    <TimePicker
+                      id="start_time_picker"
+                      labelText="Start Time"
+                      placeholder="hh:mm"
+                      type="text"
+                      value={startTime}
+                      onChange={(e) =>
+                        e.target
+                          ? setStartTime(e.target.value)
+                          : setStartTime("00:00")
+                      }
+                      invalid={timeInvalid(startTime)}
+                      invalidText="invalid time"
+                      maxLength={5}
+                    >
+                      <TimePickerSelect
+                        labelText="AM/PM"
+                        id="start_time_am_pm"
+                        value={startTimeAMPM}
+                        onChange={(e) => e.target?setStartTimeAMPM(e.target.value):null}
+                      >
+                        <SelectItem text="AM" value="AM" />
+                        <SelectItem text="PM" value="PM" />
+                      </TimePickerSelect>
+                    </TimePicker>
+                    <TimePicker
+                      id="end_time_picker"
+                      labelText="End Time"
+                      placeholder="hh:mm"
+                      type="text"
+                      value={endTime}
+                      onChange={(e) =>
+                        e.target
+                          ? setEndTime(e.target.value)
+                          : setEndTime("00:00")
+                      }
+                      invalid={timeInvalid(endTime)}
+                      invalidText="invalid time"
+                      maxLength={5}
+                    >
+                      <TimePickerSelect
+                        labelText="AM/PM"
+                        id="end_time_am_pm"
+                        value={endTimeAMPM}
+                        onChange={(e) => e.target?setEndTimeAMPM(e.target.value):null}
+                      >
+                        <SelectItem text="AM" value="AM" />
+                        <SelectItem text="PM" value="PM" />
+                      </TimePickerSelect>
+                    </TimePicker>
+                  </div>
                 </ModalWrapper>
                 <Spacer height="16px" />
               </div>

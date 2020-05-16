@@ -60,7 +60,7 @@ const HolderThing = () => {
         accountSelected={handleAccountChosen}
       />
       <Route path="/create" exact>
-        <CreatePage hasChosenAccount={hasChosenAccount} accountID={accountID} />
+        <CreatePage tokenUpgraded={tokenUpgraded} hasChosenAccount={hasChosenAccount} accountID={accountID} />
       </Route>
       <Route path="/schedule" exact />
       <Route path="/" exact>
