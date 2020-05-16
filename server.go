@@ -5,18 +5,15 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/joho/godotenv"
+	_ "github.com/joho/godotenv/autoload"
+	"github.com/moficodes/ibmcloud-kubernetes-admin/ibmcloud"
 )
 
 func init() {
-	loadErr := godotenv.Load()
-	if loadErr != nil {
-		log.Fatal("Error loading .env file")
-	}
+	ibmcloud.SetupCloudant()
 }
 
 func main() {
-
 	go cron()
 	r := mux.NewRouter()
 

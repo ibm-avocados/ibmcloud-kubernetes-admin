@@ -12,7 +12,7 @@ var quit chan struct{}
 var count int
 
 func init() {
-	ticker = time.NewTicker(5 * time.Second)
+	ticker = time.NewTicker(3600 * time.Second)
 	quit = make(chan struct{})
 	count = 0
 }

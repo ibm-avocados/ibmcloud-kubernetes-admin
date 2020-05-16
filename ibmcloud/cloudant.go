@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/IBM-Cloud/go-cloudant"
-	"github.com/joho/godotenv"
 	"github.com/mitchellh/mapstructure"
 )
 
@@ -17,20 +16,16 @@ var password string
 var host string
 var cclient *cloudant.Client
 
-func init() {
-	loadErr := godotenv.Load()
-	if loadErr != nil {
-		log.Println("Error loading .env file")
-	}
+func SetupCloudant() {
 	username = os.Getenv("CLOUDANT_USER_NAME")
 	password = os.Getenv("CLOUDANT_PASSWORD")
 	host = os.Getenv("CLOUDANT_HOST")
-	log.Println("Cloudant Setup : ", username, password, host)
 	var err error
 	cclient, err = cloudant.NewClient(username, password)
 	if err != nil {
 		log.Println("cloudant password not working")
 	}
+	log.Println("cloudant setup")
 }
 
 func SetupAccount(accountID string) error {
