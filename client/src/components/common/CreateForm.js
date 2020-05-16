@@ -13,6 +13,9 @@ import {
   Tooltip,
   InlineLoading,
   ToastNotification,
+  ModalWrapper,
+  DatePicker,
+  DatePickerInput,
 } from "carbon-components-react";
 
 import geos from "../data/geo";
@@ -68,6 +71,7 @@ const CreateForm = ({ accountID }) => {
   const [creating, setCreating] = React.useState(false);
   const [loaderDescription, setLoaderDescription] = React.useState("");
   const [createSuccess, setCreateSuccess] = React.useState(false);
+  const [showModal, setShowModal] = React.useState(false);
 
   React.useEffect(() => {
     const loadVersions = async () => {
@@ -214,6 +218,61 @@ const CreateForm = ({ accountID }) => {
 
   const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+  const getCreateRequest = () => {
+    let version = "";
+    if (kubernetesSelected) {
+      const { major, minor, patch } = selectedKubernetes;
+      version = `${major}.${minor}.${patch}`;
+    } else {
+      const { major, minor } = selectedOpenshift;
+      version = `${major}.${minor}_openshift`;
+    }
+
+    let defaultWorkerPoolEntitlement = "";
+    if (openshiftSelected) {
+      defaultWorkerPoolEntitlement = "cloud_pak";
+    }
+
+    const range = Number(clusterCount);
+    let request = [];
+    for (let i = 1; i <= range; i++) {
+      setLoaderDescription(`Creating Cluster ${i} of ${range}`);
+      console.log("Creating luster ", i);
+      const suffix = numToStr(i);
+      const name = `${clusterNamePrefix}-${suffix}`;
+
+      const ClusterRequest = {
+        name,
+        prefix: "",
+        skipPermPrecheck: false,
+        dataCenter: selectedWorkerZone.id,
+        defaultWorkerPoolName: "",
+        defaultWorkerPoolEntitlement,
+        disableAutoUpdate: true,
+        noSubnnet: false,
+        podSubnet: "",
+        serviceSubnet: "",
+        machineType: selectedFlavor.name,
+        privateVlan: selectedPrivateVlan.id,
+        publicVlan: selectedPublicVlan.id,
+        masterVersion: version,
+        workerNum: Number(workerCount),
+        diskEncryption: true,
+        isolation: "public",
+        GatewayEnabled: false,
+        privateSeviceEndpoint: false,
+        publicServiceEndpoint: false,
+      };
+
+      const CreateClusterRequest = {
+        clusterRequest: ClusterRequest,
+        resourceGroup: selectedGroup.id,
+      };
+      request.push(CreateClusterRequest);
+    }
+    return request;
+  }
+
   const onCreateClicked = async () => {
     console.log("creating clusters");
     setCreating(true);
@@ -281,7 +340,7 @@ const CreateForm = ({ accountID }) => {
         setLoaderDescription(`Preparing to Tag Cluster ${i} of ${range}`);
         await sleep(5000);
         setLoaderDescription(`Tagging Cluster ${i} of ${range}`);
-        
+
         // comma separated tags.
         const tagPromises = tags.split(",").map(async (tag) => {
           try {
@@ -344,9 +403,13 @@ const CreateForm = ({ accountID }) => {
     );
   };
 
-  const onScheduleClick = () => {};
+  const onScheduleClick = () => {
+    setShowModal(true);
+  };
 
-  const shouldSchedulingBeDisabled = () => shouldCreateBeDisabled();
+  const shouldSchedulingBeDisabled = async () => {
+    return false;
+  };
 
   const renderFlavors = (item) => {
     if (item) {
@@ -362,6 +425,17 @@ const CreateForm = ({ accountID }) => {
     }
     return null;
   };
+
+  const setMinDate = () => {
+    let d = new Date();
+    return `${d.getMonth()+1}/${d.getDate()}/${d.getFullYear}`;
+  };
+
+  const setMaxDate = () => {
+    let d = new Date();
+    d.setDate(d.getDate() + 60);
+    return `${d.getMonth()+1}/${d.getDate()}/${d.getFullYear}`;
+  }
 
   return (
     <>
@@ -708,16 +782,22 @@ const CreateForm = ({ accountID }) => {
                     Create
                   </Button>
                 )}
-
-                <Button
-                  style={{ width: "250px" }}
-                  size="field"
-                  onClick={onScheduleClick}
-                  disabled={shouldSchedulingBeDisabled() || creating}
-                  kind="tertiary"
+                <ModalWrapper
+                  disabled={false}
+                  hasForm
+                  buttonTriggerText="Schedule"
+                  triggerButtonKind="tertiary"
+                  handleSubmit={() => console.log("submitted")}
+                  shouldCloseAfterSubmit
                 >
-                  Schedule
-                </Button>
+                  <TextInput labelText="API Key" />
+                  <Spacer height="16px" />
+
+                  <DatePicker dateFormat="m/d/y" datePickerType="range" minDate={setMinDate()} maxDate={setMaxDate()}>
+                    <DatePickerInput/>
+                    <DatePickerInput/>
+                  </DatePicker>
+                </ModalWrapper>
                 <Spacer height="16px" />
               </div>
             </Column>
