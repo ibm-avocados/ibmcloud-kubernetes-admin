@@ -3,6 +3,7 @@ package ibmcloud
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 	"net/url"
@@ -29,7 +30,11 @@ func handleRequest(request *http.Request, header map[string]string, query map[st
 	defer resp.Body.Close()
 
 	if !(resp.StatusCode >= 200 && resp.StatusCode < 300) {
-		return getError(resp)
+		json, err := json.Marshal(resp.Body)
+		if err != nil {
+			return errors.New("unknown")
+		}
+		return errors.New(string(json))
 	}
 
 	// b, _ := ioutil.ReadAll(resp.Body)
@@ -74,6 +79,14 @@ func postBody(endpoint string, header, query map[string]string, jsonValue []byte
 		return err
 	}
 
+	return handleRequest(request, header, query, res)
+}
+
+func put(endpoint string, header, query map[string]string, body []byte, res interface{}) error {
+	request, err := http.NewRequest(http.MethodPut, endpoint, bytes.NewBuffer(body))
+	if err != nil {
+		return err
+	}
 	return handleRequest(request, header, query, res)
 }
 

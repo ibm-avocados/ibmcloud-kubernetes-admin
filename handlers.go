@@ -830,6 +830,9 @@ func setScheduleHandler(w http.ResponseWriter, r *http.Request) {
 		handleError(w, http.StatusUnauthorized, "could not create record", err.Error())
 		return
 	}
+
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, statusOkMessage)
 }
 
 // TODO: complete this

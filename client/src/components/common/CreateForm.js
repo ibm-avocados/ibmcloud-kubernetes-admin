@@ -389,40 +389,64 @@ const CreateForm = ({ accountID }) => {
   };
 
   const shouldSchedulingBeDisabled = () => {
-    return false;
+    return shouldCreateBeDisabled();
   };
 
   const shouldScheduleSubmitBeDisabled = () => {
-    const dateSet = dateRange.length === 2;
+    const dateSet = dateRange.length >= 1;
     const createTimetSet = !timeInvalid(startTime);
     const endTimeSet = !timeInvalid(endTime);
 
     return !(dateSet && createTimetSet && endTimeSet && apiKeyValid);
   };
 
-  Date.prototype.addTime = function(h, m) {
-    this.setTime(this.getTime() + (h*60*60*1000) + m * 60 * 1000);
+  Date.prototype.addTime = function (h, m) {
+    this.setTime(this.getTime() + h * 60 * 60 * 1000 + m * 60 * 1000);
     return this;
-  }
+  };
 
-  const onScheduleSubmit = () => {
-    // const request = getCreateRequest();
+  const onScheduleSubmit = async () => {
+    if (shouldScheduleSubmitBeDisabled()) {
+      return false;
+    }
+    const request = getCreateRequest();
     let startDate = dateRange[0];
     let endDate = dateRange[1];
     let startHour = Number(startTime.split(":")[0]);
-    startHour += startTimeAMPM === "PM"? 12 : 0;
-    const startMinute = Number(startTime.split(":")[1])
-    let endHour = Number(endTime.split(":")[0])
-    endHour += endTimeAMPM === "PM"? 12 : 0;
-    const endMinute = Number(endTime.split(":")[1])
+    startHour += startTimeAMPM === "PM" ? 12 : 0;
+    const startMinute = Number(startTime.split(":")[1]);
+    let endHour = Number(endTime.split(":")[0]);
+    endHour += endTimeAMPM === "PM" ? 12 : 0;
+    const endMinute = Number(endTime.split(":")[1]);
 
-    startDate.addTime(startHour, startMinute);
-    const createAt = startDate.getTime()/1000;
+    startDate.setTime(startDate.getTime() + startHour * 60 * 60 * 1000 + startMinute * 60 * 1000);
+    const createAt = startDate.getTime() / 1000;
 
-    endDate.addTime(endHour, endMinute);
-    const destroyAt = endDate.getTime()/1000;
+    endDate.setTime(endDate.getTime() + endHour * 60 * 60 * 1000 + endMinute * 60 * 1000);
+    const destroyAt = endDate.getTime() / 1000;
 
+    console.log(startDate);
+    console.log(endDate);
 
+    const schedule = {
+      createAt: createAt,
+      destroyAt: destroyAt,
+      status: "scheduled",
+      tags: tags,
+      count: request.length,
+      ClusterRequests: request,
+    };
+
+    try {
+      const response = await grab(`/api/v1/schedule/${accountID}/create`, {
+        method: "post",
+        body: JSON.stringify(schedule),
+      });
+      console.log(response);
+    } catch (e) {
+      console.log("error");
+      console.log(e);
+    }
   };
 
   const timeInvalid = (time) => {
@@ -867,7 +891,9 @@ const CreateForm = ({ accountID }) => {
                         labelText="AM/PM"
                         id="start_time_am_pm"
                         value={startTimeAMPM}
-                        onChange={(e) => e.target?setStartTimeAMPM(e.target.value):null}
+                        onChange={(e) =>
+                          e.target ? setStartTimeAMPM(e.target.value) : null
+                        }
                       >
                         <SelectItem text="AM" value="AM" />
                         <SelectItem text="PM" value="PM" />
@@ -892,7 +918,9 @@ const CreateForm = ({ accountID }) => {
                         labelText="AM/PM"
                         id="end_time_am_pm"
                         value={endTimeAMPM}
-                        onChange={(e) => e.target?setEndTimeAMPM(e.target.value):null}
+                        onChange={(e) =>
+                          e.target ? setEndTimeAMPM(e.target.value) : null
+                        }
                       >
                         <SelectItem text="AM" value="AM" />
                         <SelectItem text="PM" value="PM" />

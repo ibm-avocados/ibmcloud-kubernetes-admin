@@ -395,40 +395,14 @@ type ApiKey struct {
 }
 
 type Schedule struct {
-	CreateAt     string       `json:"create_at"`
-	DestroyAt    string       `json:"destroy_at"`
-	Status       string       `json:"status"`
-	ClusterCount int          `json:"clusterCount"`
-	CreateConfig CreateConfig `json:""`
-}
-
-type CreateConfig struct {
-	Tags          []string      `json:"tags"`
-	Count         int           `json:"count"`
-	ClusterConfig ClusterConfig `json:"cluster_config"`
-}
-
-type ClusterConfig struct {
-	DataCenter                   string `json:"dataCenter"`
-	DefaultWorkerPoolEntitlement string `json:"defaultWorkerPoolEntitlement"`
-	DefaultWorkerPoolName        string `json:"defaultWorkerPoolName"`
-	DisableAutoUpdate            bool   `json:"disableAutoUpdate"`
-	DiskEncryption               bool   `json:"diskEncryption"`
-	GatewayEnabled               bool   `json:"gatewayEnabled"`
-	Isolation                    string `json:"isolation"`
-	MachineType                  string `json:"machineType"`
-	MasterVersion                string `json:"masterVersion"`
-	Name                         string `json:"name"`
-	NoSubnet                     bool   `json:"noSubnet"`
-	PodSubnet                    string `json:"podSubnet"`
-	Prefix                       string `json:"prefix"`
-	PrivateSeviceEndpoint        bool   `json:"privateSeviceEndpoint"`
-	PrivateVlan                  string `json:"privateVlan"`
-	PublicServiceEndpoint        bool   `json:"publicServiceEndpoint"`
-	PublicVlan                   string `json:"publicVlan"`
-	ServiceSubnet                string `json:"serviceSubnet"`
-	SkipPermPrecheck             bool   `json:"skipPermPrecheck"`
-	WorkerNum                    int    `json:"workerNum"`
+	ID              string                 `json:"_id" mapstructure:"_id"`
+	Rev             string                 `json:"_rev" mapstructure:"_rev"`
+	CreateAt        int                    `json:"createAt"`
+	DestroyAt       int                    `json:"destroyAt"`
+	Status          string                 `json:"status"`
+	Tags            string                 `json:"tags"`
+	Count           int                    `json:"count"`
+	ClusterRequests []CreateClusterRequest `json:"ClusterRequests"`
 }
 
 type Vlan struct {

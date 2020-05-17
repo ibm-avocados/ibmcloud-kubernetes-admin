@@ -244,7 +244,7 @@ func (s *Session) DeleteAPIKey(accountID string) error {
 	return DeleteAPIKey(accountID)
 }
 
-func (s *Session) GetDocument(accountID string) ([]ScheduleCloudant, error) {
+func (s *Session) GetDocument(accountID string) ([]Schedule, error) {
 	if !s.IsValid() {
 		log.Println("Access token expired.")
 		token, err := upgradeToken(endpoints.TokenEndpoint, s.Token.RefreshToken, accountID)

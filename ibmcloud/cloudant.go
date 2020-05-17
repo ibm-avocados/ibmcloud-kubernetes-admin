@@ -2,10 +2,12 @@ package ibmcloud
 
 import (
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/IBM-Cloud/go-cloudant"
 	"github.com/mitchellh/mapstructure"
@@ -85,10 +87,7 @@ func SetAPIKey(apiKey, accountID string) error {
 }
 
 func setAPIKey(apiKey, dbName string) error {
-	db, err := getDB(dbName)
-	if err != nil {
-		return err
-	}
+	db := getDB(dbName)
 	type apiDoc struct {
 		ID     string `json:"_id"`
 		APIKey string `json:"apikey"`
@@ -114,10 +113,8 @@ func UpdateAPIKey(apiKey, accountID string) error {
 }
 
 func updateAPIKey(newKey, dbName string) error {
-	db, err := getDB(dbName)
-	if err != nil {
-		return err
-	}
+	db := getDB(dbName)
+
 	apiKey, err := getAPIKey(dbName)
 	if err != nil {
 		return err
@@ -140,10 +137,8 @@ func DeleteAPIKey(accountID string) error {
 }
 
 func deleteAPIKey(dbName string) error {
-	db, err := getDB(dbName)
-	if err != nil {
-		return err
-	}
+	db := getDB(dbName)
+
 	apiKey, err := getAPIKey(dbName)
 	if err != nil {
 		return err
@@ -157,20 +152,22 @@ func deleteAPIKey(dbName string) error {
 	return nil
 }
 
-func GetDocument(accountID string) ([]ScheduleCloudant, error) {
+func GetDocument(accountID string) ([]Schedule, error) {
 	dbName := "db-" + accountID
 	return getDocument(dbName)
 }
 
-func getDocument(dbName string) ([]ScheduleCloudant, error) {
-	db, err := getDB(dbName)
-	if err != nil {
-		return nil, err
-	}
+func getDocument(dbName string) ([]Schedule, error) {
+	db := getDB(dbName)
+
+	timeGT := time.Now().Unix()
+	timeLT := time.Now().Add(time.Hour * 2).Unix()
+
 	createQuery := cloudant.Query{}
 	createQuery.Selector = make(map[string]interface{})
-	createQuery.Selector["create_at"] = map[string]int64{
-		"$gt": 0,
+	createQuery.Selector["createAt"] = map[string]int64{
+		"$gt": timeGT,
+		"$lt": timeLT,
 	}
 	createQuery.Selector["status"] = map[string]string{
 		"$eq": "scheduled",
@@ -183,8 +180,9 @@ func getDocument(dbName string) ([]ScheduleCloudant, error) {
 
 	destroyQuery := cloudant.Query{}
 	destroyQuery.Selector = make(map[string]interface{})
-	destroyQuery.Selector["destroy_at"] = map[string]int64{
-		"$gt": 0,
+	destroyQuery.Selector["destroyAt"] = map[string]int64{
+		"$gt": timeGT,
+		"$lt": timeLT,
 	}
 	destroyQuery.Selector["status"] = map[string]string{
 		"$eq": "created",
@@ -196,14 +194,15 @@ func getDocument(dbName string) ([]ScheduleCloudant, error) {
 
 	resJoin := append(resCreate, resDestroy...)
 
-	res := make([]ScheduleCloudant, len(resJoin))
+	res := make([]Schedule, len(resJoin))
 	for i, elem := range resJoin {
 		sched, ok := elem.(map[string]interface{})
+		log.Println("sched id", sched["_id"])
 		if !ok {
 			log.Println("could not convert to type")
 			return nil, err
 		}
-		var schedule ScheduleCloudant
+		var schedule Schedule
 		if err := mapstructure.Decode(sched, &schedule); err != nil {
 			log.Println("nothing is working")
 		}
@@ -219,10 +218,8 @@ func CreateDocument(accountID string, data interface{}) error {
 }
 
 func createDocument(dbName string, data interface{}) error {
-	db, err := getDB(dbName)
-	if err != nil {
-		return err
-	}
+	db := getDB(dbName)
+
 	id, rev, err := db.CreateDocument(data)
 	if err != nil {
 		return err
@@ -237,12 +234,11 @@ func UpdateDocument(accountID, id, rev string, data interface{}) error {
 }
 
 func updateDocument(dbName, id, rev string, data interface{}) error {
-	db, err := getDB(dbName)
-	if err != nil {
-		return err
-	}
+	db := getDB(dbName)
+
 	newRev, err := db.UpdateDocument(id, rev, data)
 	if err != nil {
+		log.Println("error here", err)
 		return err
 	}
 	log.Printf("document updated with rev %s\n", newRev)
@@ -255,10 +251,8 @@ func DeleteDocument(accountID, id, rev string) error {
 }
 
 func deleteDocument(dbName, id, rev string) error {
-	db, err := getDB(dbName)
-	if err != nil {
-		return err
-	}
+	db := getDB(dbName)
+
 	newRev, err := db.DeleteDocument(id, rev)
 	if err != nil {
 		return nil
@@ -279,6 +273,32 @@ func GetSessionFromCloudant(accountID string) (*Session, error) {
 		return nil, err
 	}
 	return session, nil
+}
+
+func updateDocumentDirect(dbName, id, rev string, doc interface{}) error {
+	authEncoded := base64.StdEncoding.EncodeToString([]byte(username + ":" + password))
+	header := map[string]string{
+		"Authorization": "Basic " + authEncoded,
+		"Content-Type":  "application/json",
+	}
+
+	json, err := json.Marshal(doc)
+	if err != nil {
+		log.Println("marhsal error")
+		return err
+	}
+	var result map[string]interface{}
+	url := fmt.Sprintf("https://%s/%s/%s", host, dbName, id)
+
+	log.Println(url)
+
+	err = put(url, header, nil, json, &result)
+	if err != nil {
+		log.Println("put error")
+		return err
+	}
+	log.Println(result)
+	return nil
 }
 
 func getAPIKey(dbName string) (*ApiKey, error) {
@@ -331,16 +351,14 @@ func AddSchedule() error {
 }
 
 func addSchedule(dbName string) error {
-	_, _ = getDB(dbName)
+	_ = getDB(dbName)
 	return nil
 }
 
-func getDB(dbName string) (*cloudant.DB, error) {
-	db, err := cclient.EnsureDB(dbName)
-	if err != nil {
-		return nil, err
-	}
-	return db, nil
+func getDB(dbName string) *cloudant.DB {
+	db, _ := cclient.EnsureDB(dbName)
+
+	return db
 }
 
 /*
