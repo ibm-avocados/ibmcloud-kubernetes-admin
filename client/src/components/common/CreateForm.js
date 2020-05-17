@@ -409,24 +409,20 @@ const CreateForm = ({ accountID }) => {
     // const request = getCreateRequest();
     let startDate = dateRange[0];
     let endDate = dateRange[1];
-    let startHour = Number(startTime.split(":")[0])
-    console.log(startHour);
-    const startMinute = Number(startTime.split(":")[1])
-    const offset = startDate.getTimezoneOffset();
-    console.log(startMinute);
+    let startHour = Number(startTime.split(":")[0]);
     startHour += startTimeAMPM === "PM"? 12 : 0;
-    console.log(startHour);
+    const startMinute = Number(startTime.split(":")[1])
     let endHour = Number(endTime.split(":")[0])
+    endHour += endTimeAMPM === "PM"? 12 : 0;
     const endMinute = Number(endTime.split(":")[1])
-    endHour += startTimeAMPM === "PM"? 12 : 0;
 
-    startDate.addTime(startHour, startMinute - offset);
+    startDate.addTime(startHour, startMinute);
     const createAt = startDate.getTime()/1000;
 
-    
+    endDate.addTime(endHour, endMinute);
+    const destroyAt = endDate.getTime()/1000;
 
-    console.log(createAt);
-    console.log(startDate);
+
   };
 
   const timeInvalid = (time) => {
