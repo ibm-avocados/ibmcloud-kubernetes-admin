@@ -151,22 +151,38 @@ func deleteAPIKey(dbName string) error {
 	return nil
 }
 
-func GetDocument(accountID string) ([]Schedule, error) {
+func GetAllDocument(accountID string) ([]interface{}, error) {
 	dbName := "db-" + accountID
-	return getDocument(dbName)
+	return getAllDocument(dbName)
 }
 
-func getDocument(dbName string) ([]Schedule, error) {
+func getAllDocument(dbName string) ([]interface{}, error) {
 	db := getDB(dbName)
+	q := cloudant.Query{}
+	q.Selector = make(map[string]interface{})
+	q.Selector["status"] = map[string]interface{}{
+		"$gt": "",
+	}
+	res, err := db.SearchDocument(q)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
 
-	timeGT := time.Now().Unix()
-	timeLT := time.Now().Add(time.Hour * 2).Unix()
+func GetDocument(accountID string) ([]Schedule, error) {
+	dbName := "db-" + accountID
+	return getUpcomingDocument(dbName)
+}
+
+func getUpcomingDocument(dbName string) ([]Schedule, error) {
+	db := getDB(dbName)
 
 	createQuery := cloudant.Query{}
 	createQuery.Selector = make(map[string]interface{})
 	createQuery.Selector["createAt"] = map[string]int64{
-		"$gt": timeGT,
-		"$lt": timeLT,
+		"$gt": time.Now().Unix(),
+		"$lt": time.Now().Add(time.Hour * 2).Unix(),
 	}
 	createQuery.Selector["status"] = map[string]string{
 		"$eq": "scheduled",
@@ -180,8 +196,8 @@ func getDocument(dbName string) ([]Schedule, error) {
 	destroyQuery := cloudant.Query{}
 	destroyQuery.Selector = make(map[string]interface{})
 	destroyQuery.Selector["destroyAt"] = map[string]int64{
-		"$gt": timeGT,
-		"$lt": timeLT,
+		"$gt": time.Now().Unix(),
+		"$lt": time.Now().Add(time.Hour * 2).Unix(),
 	}
 	destroyQuery.Selector["status"] = map[string]string{
 		"$eq": "created",

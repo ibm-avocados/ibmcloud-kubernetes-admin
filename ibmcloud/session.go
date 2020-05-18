@@ -257,6 +257,19 @@ func (s *Session) GetDocument(accountID string) ([]Schedule, error) {
 	return GetDocument(accountID)
 }
 
+func (s *Session) GetAllDocument(accountID string) ([]interface{}, error) {
+	if !s.IsValid() {
+		log.Println("Access token expired.")
+		token, err := upgradeToken(endpoints.TokenEndpoint, s.Token.RefreshToken, accountID)
+		if err != nil {
+			return nil, err
+		}
+		log.Println("Token Refreshed.")
+		s.Token = token
+	}
+	return GetAllDocument(accountID)
+}
+
 func (s *Session) CreateDocument(accountID string, data interface{}) error {
 	if !s.IsValid() {
 		log.Println("Access token expired.")

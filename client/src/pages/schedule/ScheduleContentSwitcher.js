@@ -2,7 +2,7 @@ import React from "react";
 import { ContentSwitcher, Switch } from "carbon-components-react";
 import Calendar from "./Calendar";
 
-const ScheduleContentSwitcher = () => {
+const ScheduleContentSwitcher = ({ accountID }) => {
   const [selected, setSelected] = React.useState(0);
 
   return (
@@ -11,8 +11,8 @@ const ScheduleContentSwitcher = () => {
         <Switch name="one" text="List" />
         <Switch name="two" text="Calendar" />
       </ContentSwitcher>
-      {selected === 0 ? <h1>List Showing</h1> : null}
-      {selected === 1 ? <Calendar /> : null}
+      {selected === 0 ? <h1>{accountID}</h1> : null}
+      {selected === 1 ? <Calendar accountID={accountID} /> : null}
     </>
   );
 };

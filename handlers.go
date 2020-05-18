@@ -846,11 +846,30 @@ func updateScheduleHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func getAllScheduleHandler(w http.ResponseWriter, r *http.Request) {
-	_, err := getCloudSessions(r)
+	session, err := getCloudSessions(r)
 	if err != nil {
 		handleError(w, http.StatusUnauthorized, "could not get session", err.Error())
 		return
 	}
+
+	vars := mux.Vars(r)
+
+	accountID, ok := vars["accountID"]
+
+	if !ok {
+		handleError(w, http.StatusBadRequest, "could not get accountID")
+		return
+	}
+
+	docs, err := session.GetAllDocument(accountID)
+	if err != nil {
+		handleError(w, http.StatusBadRequest, "could not get accountID")
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	e := json.NewEncoder(w)
+	e.Encode(docs)
+	return
 }
 
 func getCloudSessions(r *http.Request) (*ibmcloud.Session, error) {

@@ -58,13 +58,12 @@ func main() {
 	api.HandleFunc("/schedule/api", updateAPITokenHandler).Methods(http.MethodPut)
 	api.HandleFunc("/schedule/api", checkAPITokenHandler).Methods(http.MethodPost)
 	api.HandleFunc("/schedule/{accountID}/create", setScheduleHandler).Methods(http.MethodPost)
+	api.HandleFunc("/schedule/{accountID}/all", getAllScheduleHandler).Methods(http.MethodGet)
 	api.HandleFunc("/schedule/{accountID}", getScheduleHandler).Methods(http.MethodGet)
 	api.HandleFunc("/schedule/{accountID}", updateScheduleHandler).Methods(http.MethodPut)
 	api.HandleFunc("/schedule/{accountID}", deleteScheduleHandler).Methods(http.MethodDelete)
-	api.HandleFunc("/schedule/{accountID}/all", getAllScheduleHandler).Methods(http.MethodGet)
 
 	r.PathPrefix("/").Handler(http.FileServer(http.Dir("client/build/"))).Methods("GET")
-	r.HandleFunc("/", notFoundHandler)
 
 	port := ":9000"
 

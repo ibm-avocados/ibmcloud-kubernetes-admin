@@ -4,9 +4,9 @@ import ScheduleContentSwitcher from './ScheduleContentSwitcher';
 
 const SchedulePage = ({ hasChosenAccount, tokenUpgraded, accountID }) => {
   if (!hasChosenAccount) {
-    return <h1>Please select account</h1>;
+  return <h1>Please Select Account</h1>;
   } else if (tokenUpgraded) {
-    return <ScheduleContentSwitcher />;
+    return <ScheduleContentSwitcher accountID={accountID}/>;
   }
   return <Loading />;
 };
