@@ -70,10 +70,7 @@ const CreateForm = ({ accountID }) => {
   const [selectedPublicVlan, setSelecetedPublicVlan] = React.useState(null);
   const [selectedFlavor, setSelectedFlavor] = React.useState(null);
   const [selectedGroup, setSelectedGroup] = React.useState(null);
-  // ui indicators
-  const [creating, setCreating] = React.useState(false);
-  const [loaderDescription, setLoaderDescription] = React.useState("");
-  const [createSuccess, setCreateSuccess] = React.useState(false);
+  //scheduling helpers
   const [startTimeAMPM, setStartTimeAMPM] = React.useState("AM");
   const [endTimeAMPM, setEndTimeAMPM] = React.useState("AM");
   const [apiKey, setApiKey] = React.useState("");
@@ -81,6 +78,13 @@ const CreateForm = ({ accountID }) => {
   const [startTime, setStartTime] = React.useState("");
   const [endTime, setEndTime] = React.useState("");
   const [dateRange, setDateRange] = React.useState([]);
+
+  // ui indicators
+  const [creating, setCreating] = React.useState(false);
+  const [loaderDescription, setLoaderDescription] = React.useState("");
+  const [createSuccess, setCreateSuccess] = React.useState(false);
+  const [scheduleSuccess, setScheduleSuccess] = React.useState(false);
+  const [toast, setToast] = React.useState(null);
 
   React.useEffect(() => {
     const loadVersions = async () => {
@@ -131,6 +135,24 @@ const CreateForm = ({ accountID }) => {
 
     checkAPIKey();
   }, [accountID]);
+
+  const resetState = () => {
+    setTags("");
+    setWorkerCount(1);
+    setClusterCount(1);
+    setClusterNamePrefix("");
+    setStartTime("");
+    setEndTime("");
+    setDateRange([]);
+    setSelectedKuberetes(null);
+    setSelectedOpenshift(null);
+    setSelectedRegion(null);
+    setSelectedWorkerZone(null);
+    setSelecetedPrivateVlan(null);
+    setSelecetedPublicVlan(null);
+    setSelectedFlavor(null);
+    setSelectedGroup(null);
+  };
 
   const toggleRadio = () => {
     setKubernetesSelected(!kubernetesSelected);
@@ -352,8 +374,16 @@ const CreateForm = ({ accountID }) => {
       }
     }
 
+    setToast({
+      title: "Cluster Created",
+      subtitle: `${clusterCount} ${
+        kubernetesSelected ? "Kubernetes" : "Openshift"
+      } Clusters Created`,
+      caption: `Datacenter: ${selectedWorkerZone.display_name}, ${selectedRegion.display_name}`,
+    });
     setCreateSuccess(true);
     setCreating(false);
+    resetState();
     // console.log(JSON.stringify(CreateClusterRequest));
   };
 
@@ -400,15 +430,11 @@ const CreateForm = ({ accountID }) => {
     return !(dateSet && createTimetSet && endTimeSet && apiKeyValid);
   };
 
-  Date.prototype.addTime = function (h, m) {
-    this.setTime(this.getTime() + h * 60 * 60 * 1000 + m * 60 * 1000);
-    return this;
-  };
-
   const onScheduleSubmit = async () => {
     if (shouldScheduleSubmitBeDisabled()) {
       return false;
     }
+    setScheduleSuccess(false);
     const request = getCreateRequest();
     let startDate = dateRange[0];
     let endDate = dateRange[1];
@@ -419,10 +445,14 @@ const CreateForm = ({ accountID }) => {
     endHour += endTimeAMPM === "PM" ? 12 : 0;
     const endMinute = Number(endTime.split(":")[1]);
 
-    startDate.setTime(startDate.getTime() + startHour * 60 * 60 * 1000 + startMinute * 60 * 1000);
+    startDate.setTime(
+      startDate.getTime() + startHour * 60 * 60 * 1000 + startMinute * 60 * 1000
+    );
     const createAt = startDate.getTime() / 1000;
 
-    endDate.setTime(endDate.getTime() + endHour * 60 * 60 * 1000 + endMinute * 60 * 1000);
+    endDate.setTime(
+      endDate.getTime() + endHour * 60 * 60 * 1000 + endMinute * 60 * 1000
+    );
     const destroyAt = endDate.getTime() / 1000;
 
     console.log(startDate);
@@ -447,6 +477,16 @@ const CreateForm = ({ accountID }) => {
       console.log("error");
       console.log(e);
     }
+    setToast({
+      title: "Cluster Scheduled",
+      subtitle: `${clusterCount} ${
+        kubernetesSelected ? "Kubernetes" : "Openshift"
+      } Clusters Scheduled`,
+      caption: `Create At : ${startDate.toLocaleString()} Delete At : ${endDate.toLocaleString()}`
+    })
+    setScheduleSuccess(true);
+    resetState();
+    return true;
   };
 
   const timeInvalid = (time) => {
@@ -780,18 +820,16 @@ const CreateForm = ({ accountID }) => {
               />
             </Column>
           </Row>
-          <Spacer height="16px" />
+          <Spacer height="16px" /> 
 
-          {createSuccess ? (
+          {createSuccess || scheduleSuccess  ? (
             <>
               <Spacer height="16px" />
               <ToastNotification
-                title="Cluster Created"
-                subtitle={`${clusterCount} ${
-                  kubernetesSelected ? "Kubernetes" : "Openshift"
-                } Clusters Created`}
+                title={toast.title}
+                subtitle={toast.subtitle}
                 kind="success"
-                caption={`Datacenter: ${selectedWorkerZone.display_name}, ${selectedRegion.display_name}`}
+                caption={toast.caption}
                 timeout={5000}
                 style={{
                   minWidth: "50rem",

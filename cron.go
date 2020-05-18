@@ -2,6 +2,8 @@ package main
 
 import (
 	"log"
+	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -13,7 +15,13 @@ var quit chan struct{}
 var count int
 
 func init() {
-	ticker = time.NewTicker(20 * time.Second)
+	_period := os.Getenv("TICKER_PERIOD")
+	period, err := strconv.Atoi(_period)
+	if err != nil {
+		period = 3600
+	}
+	log.Printf("ticker running in %d seconds interval\n", period)
+	ticker = time.NewTicker(time.Duration(period) * time.Second)
 	quit = make(chan struct{})
 	count = 0
 }
@@ -25,7 +33,7 @@ func cron() {
 			// do stuff
 			count++
 			log.Printf("Timer called %d times", count)
-			checkCloudant()
+			runCron()
 		case <-quit:
 			ticker.Stop()
 			return
@@ -34,7 +42,7 @@ func cron() {
 }
 
 func runCron() {
-
+	checkCloudant()
 }
 
 func checkCloudant() {

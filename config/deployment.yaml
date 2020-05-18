@@ -1,4 +1,3 @@
-  
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -26,12 +25,23 @@ spec:
         imagePullPolicy: Always
         name:  destination
         env:
-          - name: PORT
-            value: "9000"
-          - name: HOST_IP
-            value: destination
-          - name: SCHEME
-            value: http
+          - name: CLOUDANT_USER_NAME
+            valueFrom: 
+              secretKeyRef:
+                name: cloudant-secret
+                key: username
+          - name: CLOUDANT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: cloudant-secret
+                key: password
+          - name: CLOUDANT_HOST
+            valueFrom:
+              secretKeyRef:
+                name: cloudant-secret
+                key: host
+          - name: TICKER_PERIOD
+            value: "1200"
         resources:
           limits:
             cpu: 500m

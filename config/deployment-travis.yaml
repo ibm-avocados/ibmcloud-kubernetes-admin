@@ -28,10 +28,6 @@ spec:
         env:
           - name: PORT
             value: "9000"
-          - name: HOST_IP
-            value: destination
-          - name: SCHEME
-            value: http
         resources:
           limits:
             cpu: 500m
