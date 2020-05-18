@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -32,7 +33,7 @@ func handleRequest(request *http.Request, header map[string]string, query map[st
 	if !(resp.StatusCode >= 200 && resp.StatusCode < 300) {
 		json, err := json.Marshal(resp.Body)
 		if err != nil {
-			return errors.New("unknown")
+			log.Println(err)
 		}
 		return errors.New(string(json))
 	}
@@ -75,7 +76,6 @@ func postForm(endpoint string, header, query map[string]string, form url.Values,
 func postBody(endpoint string, header, query map[string]string, jsonValue []byte, res interface{}) error {
 	request, err := http.NewRequest(http.MethodPost, endpoint, bytes.NewBuffer(jsonValue))
 	if err != nil {
-
 		return err
 	}
 

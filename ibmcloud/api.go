@@ -408,6 +408,7 @@ func createCluster(token string, request CreateClusterRequest) (*CreateClusterRe
 
 	body, err := json.Marshal(request.ClusterRequest)
 	if err != nil {
+		log.Println(err)
 		return nil, err
 	}
 
