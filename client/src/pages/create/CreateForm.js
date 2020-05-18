@@ -419,8 +419,7 @@ const CreateForm = ({ accountID }) => {
   };
 
   const shouldSchedulingBeDisabled = () => {
-    // return shouldCreateBeDisabled();
-    return false;
+    return shouldCreateBeDisabled();
   };
 
   const shouldScheduleSubmitBeDisabled = () => {
