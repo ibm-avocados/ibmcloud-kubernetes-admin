@@ -419,7 +419,8 @@ const CreateForm = ({ accountID }) => {
   };
 
   const shouldSchedulingBeDisabled = () => {
-    return shouldCreateBeDisabled();
+    // return shouldCreateBeDisabled();
+    return false;
   };
 
   const shouldScheduleSubmitBeDisabled = () => {
@@ -482,11 +483,44 @@ const CreateForm = ({ accountID }) => {
       subtitle: `${clusterCount} ${
         kubernetesSelected ? "Kubernetes" : "Openshift"
       } Clusters Scheduled`,
-      caption: `Create At : ${startDate.toLocaleString()} Delete At : ${endDate.toLocaleString()}`
-    })
+      caption: `Create At : ${startDate.toLocaleString()} Delete At : ${endDate.toLocaleString()}`,
+    });
     setScheduleSuccess(true);
     resetState();
     return true;
+  };
+
+  const onSubmitAPIKeyClicked = async () => {
+    try {
+      const response = await grab("/api/v1/schedule/api/create", {
+        method: "post",
+        body: JSON.stringify({
+          accountID: accountID,
+          apiKey: apiKey,
+        }),
+      });
+      console.log(response);
+      setApiKeyValid(true);
+      setApiKey("your-api-key-will-be-pulled-from-db");
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  const onDeleteAPIKeyClicked = async () => {
+    try {
+      const response = await grab("/api/v1/schedule/api", {
+        method: "delete",
+        body: JSON.stringify({
+          accountID: accountID,
+        }),
+      });
+      console.log(response);
+      setApiKey("")
+      setApiKeyValid(false);
+    } catch (e) {
+      console.log(e);
+    }
   };
 
   const timeInvalid = (time) => {
@@ -820,9 +854,9 @@ const CreateForm = ({ accountID }) => {
               />
             </Column>
           </Row>
-          <Spacer height="16px" /> 
+          <Spacer height="16px" />
 
-          {createSuccess || scheduleSuccess  ? (
+          {createSuccess || scheduleSuccess ? (
             <>
               <Spacer height="16px" />
               <ToastNotification
@@ -881,6 +915,23 @@ const CreateForm = ({ accountID }) => {
                       e.target ? setApiKey(e.target.value) : setApiKey("")
                     }
                   />
+                  <Spacer height="16px" />
+                  <div>
+                    {!apiKeyValid ? (
+                        <Button onClick={onSubmitAPIKeyClicked} size="small">
+                          Save API Key
+                        </Button>
+                    ) : (
+                      <Button
+                        kind="danger"
+                        size="small"
+                        onClick={onDeleteAPIKeyClicked}
+                      >
+                        Delete API Key
+                      </Button>
+                    )}
+                  </div>
+
                   <Spacer height="16px" />
                   <DatePicker
                     dateFormat="m/d/y"
