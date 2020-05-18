@@ -2,7 +2,7 @@ import React from 'react';
 import { Dropdown } from 'carbon-components-react';
 import styles from './Navbar.module.css';
 // import Dropdown from "react-dropdown";
-import history from '../../globalHistory';
+import history from '../globalHistory';
 import './Dropdown.css';
 
 const MenuItem = (props) => (

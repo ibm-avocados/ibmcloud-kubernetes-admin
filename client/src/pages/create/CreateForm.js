@@ -21,7 +21,7 @@ import {
   SelectItem,
 } from "carbon-components-react";
 
-import geos from "../data/geo";
+import geos from "../../common/data/geo";
 
 import styles from "./CreateForm.module.css";
 
