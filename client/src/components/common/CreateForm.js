@@ -830,7 +830,7 @@ const CreateForm = ({ accountID }) => {
                 subtitle={toast.subtitle}
                 kind="success"
                 caption={toast.caption}
-                timeout={5000}
+                timeout={10000}
                 style={{
                   minWidth: "50rem",
                   marginBottom: ".5rem",

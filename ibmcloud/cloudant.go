@@ -2,7 +2,6 @@ package ibmcloud
 
 import (
 	"encoding/base64"
-	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -27,7 +26,7 @@ func SetupCloudant() {
 	if err != nil {
 		log.Println("cloudant password not working")
 	}
-	log.Println("cloudant setup")
+	log.Println("cloudant setup complete")
 }
 
 func SetupAccount(accountID string) error {
@@ -197,7 +196,6 @@ func getDocument(dbName string) ([]Schedule, error) {
 	res := make([]Schedule, len(resJoin))
 	for i, elem := range resJoin {
 		sched, ok := elem.(map[string]interface{})
-		log.Println("sched id", sched["_id"])
 		if !ok {
 			log.Println("could not convert to type")
 			return nil, err
@@ -236,12 +234,11 @@ func UpdateDocument(accountID, id, rev string, data interface{}) error {
 func updateDocument(dbName, id, rev string, data interface{}) error {
 	db := getDB(dbName)
 
-	newRev, err := db.UpdateDocument(id, rev, data)
+	_, err := db.UpdateDocument(id, rev, data)
 	if err != nil {
 		log.Println("error here", err)
 		return err
 	}
-	log.Printf("document updated with rev %s\n", newRev)
 	return nil
 }
 
@@ -253,11 +250,10 @@ func DeleteDocument(accountID, id, rev string) error {
 func deleteDocument(dbName, id, rev string) error {
 	db := getDB(dbName)
 
-	newRev, err := db.DeleteDocument(id, rev)
+	_, err := db.DeleteDocument(id, rev)
 	if err != nil {
 		return nil
 	}
-	log.Printf("document delete with rev %s\n", newRev)
 	return nil
 }
 
@@ -273,32 +269,6 @@ func GetSessionFromCloudant(accountID string) (*Session, error) {
 		return nil, err
 	}
 	return session, nil
-}
-
-func updateDocumentDirect(dbName, id, rev string, doc interface{}) error {
-	authEncoded := base64.StdEncoding.EncodeToString([]byte(username + ":" + password))
-	header := map[string]string{
-		"Authorization": "Basic " + authEncoded,
-		"Content-Type":  "application/json",
-	}
-
-	json, err := json.Marshal(doc)
-	if err != nil {
-		log.Println("marhsal error")
-		return err
-	}
-	var result map[string]interface{}
-	url := fmt.Sprintf("https://%s/%s/%s", host, dbName, id)
-
-	log.Println(url)
-
-	err = put(url, header, nil, json, &result)
-	if err != nil {
-		log.Println("put error")
-		return err
-	}
-	log.Println(result)
-	return nil
 }
 
 func getAPIKey(dbName string) (*ApiKey, error) {
