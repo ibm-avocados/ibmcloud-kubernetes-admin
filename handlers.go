@@ -239,8 +239,6 @@ func authenticationHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Println(session.Token.Expiration)
-
 	setCookie(w, session)
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintln(w, statusOkMessage)
@@ -267,7 +265,6 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		handleError(w, http.StatusUnauthorized, "could not get session", err.Error())
 		return
 	}
-	log.Println(session.Token.Expiration)
 
 	if !session.IsValid() {
 		handleError(w, http.StatusUnauthorized, "session expired")
@@ -315,7 +312,6 @@ func clusterDeleteHandler(w http.ResponseWriter, r *http.Request) {
 	id := fmt.Sprintf("%v", body["id"])
 	resoueceGroup := fmt.Sprintf("%v", body["resourceGroup"])
 	deleteResources := fmt.Sprintf("%v", body["deleteResources"])
-	log.Println(id, resoueceGroup, deleteResources)
 	err = session.DeleteCluster(id, resoueceGroup, deleteResources)
 	if err != nil {
 		handleError(w, http.StatusInternalServerError, "could not delete", err.Error())
@@ -589,8 +585,6 @@ func setClusterTagHandler(w http.ResponseWriter, r *http.Request) {
 	clusterResourceGroup := fmt.Sprintf("%v", resourceGroup)
 
 	res, err := session.SetClusterTag(clusterTag, clusterID, clusterResourceGroup)
-	//
-	log.Println(err)
 	if err != nil {
 		log.Println("set cluster tag : ", err)
 		handleError(w, http.StatusInternalServerError, "could not update tag", err.Error())
@@ -779,7 +773,6 @@ func getScheduleHandler(w http.ResponseWriter, r *http.Request) {
 		handleError(w, http.StatusUnauthorized, "could not get session", err.Error())
 		return
 	}
-	log.Println("here")
 
 	vars := mux.Vars(r)
 
@@ -845,6 +838,14 @@ func deleteScheduleHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func updateScheduleHandler(w http.ResponseWriter, r *http.Request) {
+	_, err := getCloudSessions(r)
+	if err != nil {
+		handleError(w, http.StatusUnauthorized, "could not get session", err.Error())
+		return
+	}
+}
+
+func getAllScheduleHandler(w http.ResponseWriter, r *http.Request) {
 	_, err := getCloudSessions(r)
 	if err != nil {
 		handleError(w, http.StatusUnauthorized, "could not get session", err.Error())

@@ -1,6 +1,6 @@
 import React from "react";
 import { Loading } from "carbon-components-react";
-import CreateForm from "./common/CreateForm";
+import CreateForm from "./CreateForm";
 
 const CreatePage = ({ hasChosenAccount, tokenUpgraded, accountID }) => {
   if (!hasChosenAccount) {

@@ -88,7 +88,7 @@ func checkCloudant() {
 					}
 				}
 				schedule.Status = "created"
-				log.Println("schedule id", schedule.ID, "schedule rev", schedule.Rev)
+
 				if err := session.UpdateDocument(accountID, schedule.ID, schedule.Rev, schedule); err != nil {
 					log.Println("could not update document", err)
 					continue
@@ -96,6 +96,19 @@ func checkCloudant() {
 				log.Println("updated schedule")
 			} else if schedule.Status == "created" {
 				// deal with deleting the clusters and updating the schedule to completed
+				for _, clusterRequest := range schedule.ClusterRequests {
+					if err := session.DeleteCluster(clusterRequest.ClusterRequest.Name, clusterRequest.ResourceGroup, "true"); err != nil {
+						log.Println("error deleting cluster, investigate : ", clusterRequest.ClusterRequest.Name, err)
+						continue
+					}
+					log.Println("deleted cluster : ", clusterRequest.ClusterRequest.Name)
+				}
+				schedule.Status = "completed"
+				if err := session.UpdateDocument(accountID, schedule.ID, schedule.Rev, schedule); err != nil {
+					log.Println("could not update document", err)
+					continue
+				}
+				log.Println("updated schedule to complete")
 			} else {
 				// idk what can be coming in this code block, since those are the only two status we check
 			}

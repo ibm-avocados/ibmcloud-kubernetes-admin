@@ -23,7 +23,7 @@ import {
   Money16 as Money,
 } from '@carbon/icons-react';
 
-import headers from '../data/headers';
+import headers from '../../common/data/headers';
 
 import './Cluster.css';
 import useClusters from './useClusters';

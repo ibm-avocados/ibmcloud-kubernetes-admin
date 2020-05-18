@@ -35,6 +35,8 @@
   background: transparent;
 }
 
+
+
 .menuItem:hover {
   color: var(--text-04);
   cursor: pointer;

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Loading } from 'carbon-components-react';
-import Clusters from './common/Clusters';
+import Clusters from './Clusters';
 
 const AppPage = ({ hasChosenAccount, tokenUpgraded, accountID }) => {
   if (!hasChosenAccount) {

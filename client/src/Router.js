@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Router, Switch, Route } from 'react-router-dom';
-import AppPage from './components/AppPage';
-import CreatePage from './components/CreatePage';
-import Login from './components/Login';
-import Navbar from './components/common/Navbar';
+import AppPage from './pages/clusters/AppPage';
+import CreatePage from './pages/create/CreatePage';
+import Login from './Login';
+import Navbar from './common/Navbar';
 import history from './globalHistory';
 
 const HolderThing = () => {
