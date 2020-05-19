@@ -76,7 +76,7 @@ const HolderThing = (props) => {
           accountID={accountID}
         />
       </Route>
-      <Route path="/" exact>
+      <Route path="/">
         <AppPage
           hasChosenAccount={hasChosenAccount}
           tokenUpgraded={tokenUpgraded}
