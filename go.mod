@@ -10,6 +10,8 @@ require (
 	github.com/mitchellh/mapstructure v1.3.0
 	github.com/parnurzeal/gorequest v0.2.16 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
+	github.com/sendgrid/rest v2.4.1+incompatible // indirect
+	github.com/sendgrid/sendgrid-go v3.5.0+incompatible // indirect
 	github.com/smartystreets/goconvey v1.6.4 // indirect
 	github.com/stretchr/testify v1.5.1 // indirect
 	github.com/timjacobi/go-couchdb v0.0.0-20160817113035-5f9d2a1a29e5 // indirect
