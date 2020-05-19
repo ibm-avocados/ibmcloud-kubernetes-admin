@@ -17,6 +17,7 @@ func init() {
 
 func main() {
 	cron.Start()
+
 	server := server.NewServer()
 	r := mux.NewRouter()
 

@@ -42,6 +42,11 @@ spec:
                 key: host
           - name: TICKER_PERIOD
             value: "3600"
+          - name: SENDGRID_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: sendgrid-secret
+                key: apikey
         resources:
           limits:
             cpu: 500m

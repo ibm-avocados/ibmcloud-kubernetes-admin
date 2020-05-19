@@ -420,6 +420,7 @@ type ScheduleV2 struct {
 	Count         string               `json:"count"`
 	CreateRequest CreateClusterRequest `json:"createRequest"`
 	Clusters      []string             `json:"clusters"`
+	Notify        []string             `json:"notify"`
 }
 
 type Vlan struct {
