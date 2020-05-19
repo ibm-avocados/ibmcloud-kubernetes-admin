@@ -2,10 +2,10 @@ frontend:
 	cd client; yarn run build; cd ..;
 
 build: 
-	go build -o kubes .
+	go build -o kubeadmin ./cmd/web/main.go
 
 start: frontend build
-	./kubes
+	./kubeadmin
 	
 docker: 
 	DOCKER_BUILDKIT=1 docker build -t moficodes/ibm-kubernetes-admin:$(tag) .
@@ -13,5 +13,8 @@ docker:
 push:
 	docker push moficodes/ibm-kubernetes-admin:$(tag)
 
-run:
+run: frontend
+	go run ./cmd/web/main.go
+
+run-local:
 	go run ./cmd/web/main.go
