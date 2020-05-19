@@ -13,6 +13,24 @@
   color: var(--ui-03);
 }
 
+.activeItem {
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  padding: 1rem;
+  color: var(--text-04);
+  background: transparent;
+}
+
+.item {
+  font-size: 1rem;
+  font-weight: 400;
+  border: none;
+  padding: 1rem;
+  color: var(--text-03);
+  background: transparent;
+}
+
 .title:hover {
   cursor: pointer;
   color: var(--ui-02);

@@ -40,7 +40,7 @@ const ScheduleCalendar = ({ accountID }) => {
     const loadEvents = async () => {
       try {
         const data = await grab(`/api/v1/schedule/${accountID}/all`);
-        console.log(data);
+        console.log("Data :", data);
         const events = data.map((schedule, i) => {
           const start = new Date(schedule["createAt"] * 1000).toISOString();
           const end = new Date(schedule["destroyAt"] * 1000).toISOString();
@@ -74,7 +74,7 @@ const ScheduleCalendar = ({ accountID }) => {
             backgroundColor: bg,
           }
         })
-        console.log(events);
+        console.log("Events : ", events);
         setEvents(events);
       } catch (e) {
         console.log(e);

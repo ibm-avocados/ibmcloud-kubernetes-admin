@@ -67,11 +67,15 @@ func main() {
 	api.HandleFunc("/schedule/{accountID}", server.UpdateScheduleHandler).Methods(http.MethodPut)
 	api.HandleFunc("/schedule/{accountID}", server.DeleteScheduleHandler).Methods(http.MethodDelete)
 
-	r.PathPrefix("/").Handler(http.FileServer(http.Dir("client/build/"))).Methods("GET")
+	r.PathPrefix("/").HandlerFunc(serveHTML)
 
 	port := ":9000"
 
-	log.Println("starting server on port ", port)
+	log.Println("starting server on port serving index", port)
 
 	log.Fatalln(http.ListenAndServe(port, r))
+}
+
+func serveHTML(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "client/build/index.html")
 }

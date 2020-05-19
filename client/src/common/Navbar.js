@@ -9,7 +9,7 @@ const MenuItem = (props) => {
   return (
     <>
       <div
-        className={styles.menuItem}
+        className={props.stylesx}
         onClick={props.onClickHandler}
       >
         {props.label}
@@ -47,8 +47,8 @@ const Navbar = (props) => {
         <div className={styles.title} onClick={homeClick}>
           <span className={styles.bold}>IBM</span> Cloud
         </div>
-        <MenuItem label="Create" onClickHandler={handleCreateClick} />
-        <MenuItem label="Schedule" onClickHandler={handleScheduleClick} />
+        <MenuItem stylesx={props.path === "/create" ? styles.activeItem : styles.item} label="Create" onClickHandler={handleCreateClick} />
+        <MenuItem stylesx={props.path === "/schedule" ? styles.activeItem : styles.item}label="Schedule" onClickHandler={handleScheduleClick} />
         <Dropdown
           disabled={props.accountsLoaded}
           className="navbar-dropdown"

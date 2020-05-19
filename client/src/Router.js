@@ -7,7 +7,8 @@ import Login from "./Login";
 import Navbar from "./common/Navbar";
 import history from "./globalHistory";
 
-const HolderThing = () => {
+const HolderThing = (props) => {
+  console.log("PROPS TO ROUTER", props);
   const [isLoadingAccounts, setLoadingAccounts] = useState(true);
   const [accounts, setAccounts] = useState([]);
   const [accountID, setSelectedAccountID] = useState();
@@ -56,6 +57,7 @@ const HolderThing = () => {
   return (
     <>
       <Navbar
+        path={props.location.pathname}
         isLoaded={!isLoadingAccounts}
         items={accounts}
         accountSelected={handleAccountChosen}
@@ -93,14 +95,13 @@ const AppRouter = () => {
       }
     });
   }, []);
+  //style={path === “create” ? styles.activeItem : styles.item}
 
   return (
     <Router history={history}>
       <Switch>
         <Route path="/login" exact component={Login} />
-        <Route path="/">
-          <HolderThing />
-        </Route>
+        <Route path="/" component={HolderThing}/>
       </Switch>
     </Router>
   );
