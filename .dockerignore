@@ -11,8 +11,6 @@
 
 # dependencies
 /node_modules
-/.pnp
-.pnp.js
 
 # testing
 /coverage
@@ -93,3 +91,5 @@ yarn-error.log
 .git/
 .idea/
 README.md
+
+config/
