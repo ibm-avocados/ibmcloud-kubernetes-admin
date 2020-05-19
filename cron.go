@@ -66,7 +66,7 @@ func checkCloudant() {
 		log.Println("schedule found : ", len(schedules))
 
 		for _, schedule := range schedules {
-			log.Printf("creating %s clusters", schedule.Count)
+
 			count, err := strconv.Atoi(schedule.Count)
 			if err != nil {
 				log.Println("error converting count", schedule.Count, err)
@@ -76,7 +76,7 @@ func checkCloudant() {
 			name := schedule.CreateRequest.ClusterRequest.Name
 			if schedule.Status == "scheduled" {
 				// deal with creating the clusters and updating the schedule to created
-
+				log.Printf("creating %d clusters", count)
 				// get tags out of the schedule
 				tags := strings.Split(schedule.Tags, ",")
 
@@ -107,6 +107,7 @@ func checkCloudant() {
 				schedule.Status = "created"
 			} else if schedule.Status == "created" {
 				// deal with deleting the clusters and updating the schedule to completed
+				log.Printf("deleting %d clusters", count)
 				if count == len(schedule.Clusters) {
 					for _, cluster := range schedule.Clusters {
 						if err := session.DeleteCluster(cluster, schedule.CreateRequest.ResourceGroup, "true"); err != nil {
