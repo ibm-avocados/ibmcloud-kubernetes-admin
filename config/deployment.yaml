@@ -21,7 +21,7 @@ spec:
         run:  admin
     spec:
       containers:
-      - image:  moficodes/ibmcloud-kubernetes-admin:v0.1.9
+      - image:  moficodes/ibmcloud-kubernetes-admin:v0.1.12
         imagePullPolicy: Always
         name:  destination
         env:
@@ -41,7 +41,7 @@ spec:
                 name: cloudant-secret
                 key: host
           - name: TICKER_PERIOD
-            value: "1200"
+            value: "3600"
         resources:
           limits:
             cpu: 500m

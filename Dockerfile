@@ -1,4 +1,4 @@
-FROM golang:1.13-alpine AS builder
+FROM golang:1.14-alpine AS builder
 
 # Create the user and group files that will be used in the running container to
 # run the process as an unprivileged user.
@@ -24,12 +24,12 @@ RUN go mod download
 # Import the code from the context.
 COPY pkg/ pkg/
 COPY cmd/ cmd/
+COPY internals/ internals/
 
 # Build the executable to `/app`. Mark the build as statically linked.
 RUN CGO_ENABLED=0 go build \
     -installsuffix 'static' \
     -o /app ./cmd/web/main.go
-
 
 FROM node:12.14 as build-deps
 
