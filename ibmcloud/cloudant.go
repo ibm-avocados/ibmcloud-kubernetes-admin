@@ -170,6 +170,62 @@ func getAllDocument(dbName string) ([]interface{}, error) {
 	return res, nil
 }
 
+func GetDocumentV2(accountID string) ([]ScheduleV2, error) {
+	dbName := "db-" + accountID
+	return getUpcomingDocumentV2(dbName)
+}
+
+func getUpcomingDocumentV2(dbName string) ([]ScheduleV2, error) {
+	db := getDB(dbName)
+
+	createQuery := cloudant.Query{}
+	createQuery.Selector = make(map[string]interface{})
+	createQuery.Selector["createAt"] = map[string]int64{
+		"$gt": time.Now().Unix(),
+		"$lt": time.Now().Add(time.Hour * 2).Unix(),
+	}
+	createQuery.Selector["status"] = map[string]string{
+		"$eq": "scheduled",
+	}
+
+	resCreate, err := db.SearchDocument(createQuery)
+	if err != nil {
+		return nil, err
+	}
+
+	destroyQuery := cloudant.Query{}
+	destroyQuery.Selector = make(map[string]interface{})
+	destroyQuery.Selector["destroyAt"] = map[string]int64{
+		"$gt": time.Now().Unix(),
+		"$lt": time.Now().Add(time.Hour * 2).Unix(),
+	}
+	destroyQuery.Selector["status"] = map[string]string{
+		"$eq": "created",
+	}
+	resDestroy, err := db.SearchDocument(destroyQuery)
+	if err != nil {
+		return nil, err
+	}
+
+	resJoin := append(resCreate, resDestroy...)
+
+	res := make([]ScheduleV2, len(resJoin))
+	for i, elem := range resJoin {
+		sched, ok := elem.(map[string]interface{})
+		if !ok {
+			log.Println("could not convert to type")
+			return nil, err
+		}
+		var schedule ScheduleV2
+		if err := mapstructure.Decode(sched, &schedule); err != nil {
+			log.Println("nothing is working")
+		}
+		res[i] = schedule
+	}
+
+	return res, nil
+}
+
 func GetDocument(accountID string) ([]Schedule, error) {
 	dbName := "db-" + accountID
 	return getUpcomingDocument(dbName)
