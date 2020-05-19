@@ -6,7 +6,7 @@ import (
 
 	"github.com/gorilla/mux"
 	_ "github.com/joho/godotenv/autoload"
-	"github.com/moficodes/ibmcloud-kubernetes-admin/ibmcloud"
+	"github.com/moficodes/ibmcloud-kubernetes-admin/pkg/ibmcloud"
 )
 
 func init() {
