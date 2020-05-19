@@ -419,7 +419,7 @@ const useClusters = (accountID) => {
     const clusters = arrayToMap(_clusters);
     const clusterDeletePromise = Object.keys(clusters).map(async (id) => {
       try {
-        const data = await grab('/api/v1/clusters', {
+        await grab('/api/v1/clusters', {
           method: 'DELETE',
           body: JSON.stringify({
             id,

@@ -328,7 +328,7 @@ const CreateForm = ({ accountID }) => {
     const range = request.length;
 
     for (let i = 0; i < range; i++) {
-      setLoaderDescription(`Creating Cluster ${i + 1} of ${range + 1}`);
+      setLoaderDescription(`Creating Cluster ${i + 1} of ${range}`);
       console.log("Creating luster ", i);
 
       const CreateClusterRequest = request[i];
@@ -343,10 +343,10 @@ const CreateForm = ({ accountID }) => {
 
         console.log("Sleeping 5s before trying to set tags");
         setLoaderDescription(
-          `Preparing to Tag Cluster ${i + 1} of ${range + 1}`
+          `Preparing to Tag Cluster ${i + 1} of ${range}`
         );
         await sleep(5000);
-        setLoaderDescription(`Tagging Cluster ${i + 1} of ${range + 1}`);
+        setLoaderDescription(`Tagging Cluster ${i + 1} of ${range}`);
 
         // comma separated tags.
         const tagPromises = tags.split(",").map(async (tag) => {
@@ -434,8 +434,51 @@ const CreateForm = ({ accountID }) => {
     if (shouldScheduleSubmitBeDisabled()) {
       return false;
     }
+
     setScheduleSuccess(false);
-    const request = getCreateRequest();
+    let version = "";
+    if (kubernetesSelected) {
+      const { major, minor, patch } = selectedKubernetes;
+      version = `${major}.${minor}.${patch}`;
+    } else {
+      const { major, minor } = selectedOpenshift;
+      version = `${major}.${minor}_openshift`;
+    }
+
+    let defaultWorkerPoolEntitlement = "";
+    if (openshiftSelected) {
+      defaultWorkerPoolEntitlement = "cloud_pak";
+    }
+    const name = `${clusterNamePrefix}`;
+
+    const ClusterRequest = {
+      name: name,
+      prefix: "",
+      skipPermPrecheck: false,
+      dataCenter: selectedWorkerZone.id,
+      defaultWorkerPoolName: "",
+      defaultWorkerPoolEntitlement,
+      disableAutoUpdate: true,
+      noSubnnet: false,
+      podSubnet: "",
+      serviceSubnet: "",
+      machineType: selectedFlavor.name,
+      privateVlan: selectedPrivateVlan.id,
+      publicVlan: selectedPublicVlan.id,
+      masterVersion: version,
+      workerNum: Number(workerCount),
+      diskEncryption: true,
+      isolation: "public",
+      GatewayEnabled: false,
+      privateSeviceEndpoint: false,
+      publicServiceEndpoint: false,
+    };
+
+    const CreateClusterRequest = {
+      clusterRequest: ClusterRequest,
+      resourceGroup: selectedGroup.id,
+    };
+
     let startDate = dateRange[0];
     let endDate = dateRange[1];
     let startHour = Number(startTime.split(":")[0]);
@@ -463,9 +506,12 @@ const CreateForm = ({ accountID }) => {
       destroyAt: destroyAt,
       status: "scheduled",
       tags: tags,
-      count: request.length,
-      ClusterRequests: request,
+      count: clusterCount,
+      createRequest: CreateClusterRequest,
+      clusters: []
     };
+
+    console.log(JSON.stringify(schedule, null, "\t"));
 
     try {
       const response = await grab(`/api/v1/schedule/${accountID}/create`, {
@@ -515,7 +561,7 @@ const CreateForm = ({ accountID }) => {
         }),
       });
       console.log(response);
-      setApiKey("")
+      setApiKey("");
       setApiKeyValid(false);
     } catch (e) {
       console.log(e);
@@ -575,6 +621,7 @@ const CreateForm = ({ accountID }) => {
               >
                 <div className="radio-tile-content">
                   <img
+                    alt="kubernetes logo"
                     className="radio-tile-image"
                     src="https://i.ibb.co/cDqxKBd/download.png"
                     height={100}
@@ -609,6 +656,7 @@ const CreateForm = ({ accountID }) => {
               >
                 <div className="radio-tile-content">
                   <img
+                    alt="openshift logo"
                     className="radio-tile-image"
                     src="https://i.ibb.co/0fFQCD2/openshift.png"
                     height={100}
@@ -917,9 +965,9 @@ const CreateForm = ({ accountID }) => {
                   <Spacer height="16px" />
                   <div>
                     {!apiKeyValid ? (
-                        <Button onClick={onSubmitAPIKeyClicked} size="small">
-                          Save API Key
-                        </Button>
+                      <Button onClick={onSubmitAPIKeyClicked} size="small">
+                        Save API Key
+                      </Button>
                     ) : (
                       <Button
                         kind="danger"

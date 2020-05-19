@@ -405,6 +405,23 @@ type Schedule struct {
 	ClusterRequests []CreateClusterRequest `json:"ClusterRequests"`
 }
 
+type CreateClusterRequest struct {
+	ClusterRequest ClusterRequest `json:"clusterRequest"`
+	ResourceGroup  string         `json:"resourceGroup"`
+}
+
+type ScheduleV2 struct {
+	ID            string               `json:"_id" mapstructure:"_id"`
+	Rev           string               `json:"_rev" mapstructure:"_rev"`
+	CreateAt      int                  `json:"createAt"`
+	DestroyAt     int                  `json:"destroyAt"`
+	Status        string               `json:"status"`
+	Tags          string               `json:"tags"`
+	Count         string               `json:"count"`
+	CreateRequest CreateClusterRequest `json:"createRequest"`
+	Clusters      []string             `json:"clusters"`
+}
+
 type Vlan struct {
 	ID         string         `json:"id"`
 	Type       string         `json:"type"`
@@ -474,11 +491,6 @@ type ErrorItems struct {
 type NonCriticalErrors struct {
 	IncidentID string       `json:"incidentID"`
 	Items      []ErrorItems `json:"items"`
-}
-
-type CreateClusterRequest struct {
-	ClusterRequest ClusterRequest `json:"clusterRequest"`
-	ResourceGroup  string         `json:"resourceGroup"`
 }
 
 type ClusterRequest struct {

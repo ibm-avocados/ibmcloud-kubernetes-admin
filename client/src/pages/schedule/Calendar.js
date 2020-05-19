@@ -62,6 +62,9 @@ const ScheduleCalendar = ({ accountID }) => {
             case "completed":
               bg = "#525252";
               break;
+            default:
+              bg = "#0f62fe";
+              break;
           }
           return {
             id: id,
