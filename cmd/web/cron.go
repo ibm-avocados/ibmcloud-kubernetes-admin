@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/moficodes/ibmcloud-kubernetes-admin/ibmcloud"
+	"github.com/moficodes/ibmcloud-kubernetes-admin/pkg/ibmcloud"
 )
 
 var ticker *time.Ticker

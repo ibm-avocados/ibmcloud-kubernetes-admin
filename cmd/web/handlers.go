@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/gorilla/mux"
-	"github.com/moficodes/ibmcloud-kubernetes-admin/ibmcloud"
+	"github.com/moficodes/ibmcloud-kubernetes-admin/pkg/ibmcloud"
 )
 
 const (

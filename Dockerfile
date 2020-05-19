@@ -22,13 +22,13 @@ COPY ./go.mod ./go.sum ./
 RUN go mod download
 
 # Import the code from the context.
-COPY ibmcloud/ ibmcloud/
-COPY server.go handlers.go cron.go ./
+COPY pkg/ pkg/
+COPY cmd/ cmd/
 
 # Build the executable to `/app`. Mark the build as statically linked.
 RUN CGO_ENABLED=0 go build \
     -installsuffix 'static' \
-    -o /app .
+    -o /app ./cmd/web/.
 
 
 FROM node:12.14 as build-deps
