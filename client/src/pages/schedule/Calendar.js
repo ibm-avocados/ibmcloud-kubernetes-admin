@@ -44,7 +44,7 @@ const ScheduleCalendar = ({ accountID }) => {
         const events = data.map((schedule, i) => {
           const start = new Date(schedule["createAt"] * 1000).toISOString();
           const end = new Date(schedule["destroyAt"] * 1000).toISOString();
-          let _title = schedule["ClusterRequests"][0]["clusterRequest"]["name"];
+          let _title = schedule["createRequest"]["clusterRequest"]["name"];
           const title = _title.substring(0, _title.length-4);
 
 
