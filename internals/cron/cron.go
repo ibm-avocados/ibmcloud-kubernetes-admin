@@ -1,4 +1,4 @@
-package main
+package cron
 
 import (
 	"fmt"
@@ -18,13 +18,17 @@ var count int
 func init() {
 	_period := os.Getenv("TICKER_PERIOD")
 	period, err := strconv.Atoi(_period)
-	if err != nil {
+	if err != nil || period == 0 {
 		period = 3600
 	}
 	log.Printf("ticker running in %d seconds interval\n", period)
 	ticker = time.NewTicker(time.Duration(period) * time.Second)
 	quit = make(chan struct{})
 	count = 0
+}
+
+func Start() {
+	go cron()
 }
 
 func cron() {

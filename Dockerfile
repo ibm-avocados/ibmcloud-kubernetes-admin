@@ -28,7 +28,7 @@ COPY cmd/ cmd/
 # Build the executable to `/app`. Mark the build as statically linked.
 RUN CGO_ENABLED=0 go build \
     -installsuffix 'static' \
-    -o /app ./cmd/web/.
+    -o /app ./cmd/web/main.go
 
 
 FROM node:12.14 as build-deps
