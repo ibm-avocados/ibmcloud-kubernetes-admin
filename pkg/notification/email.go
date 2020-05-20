@@ -4,12 +4,13 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/sendgrid/sendgrid-go"
 	"github.com/sendgrid/sendgrid-go/helpers/mail"
 )
 
-func Email(subject, textContent, htmlContent string, recipients []string) error {
+func Email(subject, htmlContent string, recipients ...string) error {
 	m := mail.NewV3Mail()
 	from := os.Getenv("ADMIN_FROM_EMAIL")
 	name := "IBMCloud Kube Admin"
@@ -23,10 +24,19 @@ func Email(subject, textContent, htmlContent string, recipients []string) error 
 	}
 	p.AddTos(tos...)
 
-	m.AddPersonalizations(p)
+	// bcc the admins of the app
+	adminEmail := os.Getenv("ADMIN_TO_EMAIL")
+	if adminEmail == "" {
+		return fmt.Errorf("no admin email provided")
+	}
+	admins := strings.Split(adminEmail, ",")
+	bccs := make([]*mail.Email, len(admins))
+	for i, admin := range admins {
+		bccs[i] = mail.NewEmail(fmt.Sprintf("Admin %d", i+1), admin)
+	}
+	p.AddBCCs(bccs...)
 
-	text := mail.NewContent("text/plain", textContent)
-	m.AddContent(text)
+	m.AddPersonalizations(p)
 
 	html := mail.NewContent("text/html", htmlContent)
 	m.AddContent(html)
@@ -38,4 +48,12 @@ func Email(subject, textContent, htmlContent string, recipients []string) error 
 	}
 	log.Println(res.StatusCode)
 	return nil
+}
+
+func EmailAdmin(subject, htmlContent string) error {
+	adminEmail := os.Getenv("ADMIN_TO_EMAIL")
+	if adminEmail == "" {
+		return fmt.Errorf("no admin email provided")
+	}
+	return Email(subject, htmlContent, strings.Split(adminEmail, ",")...)
 }

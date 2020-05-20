@@ -394,6 +394,12 @@ type ApiKey struct {
 	APIKey string `json:"apiKey"`
 }
 
+type AccountAdminEmails struct {
+	ID     string   `json:"_id"`
+	Rev    string   `json:"_rev"`
+	Emails []string `json:"emails"`
+}
+
 type Schedule struct {
 	ID              string                 `json:"_id" mapstructure:"_id"`
 	Rev             string                 `json:"_rev" mapstructure:"_rev"`

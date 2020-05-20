@@ -9,29 +9,19 @@ import (
 	"time"
 
 	"github.com/moficodes/ibmcloud-kubernetes-admin/pkg/ibmcloud"
+	"github.com/moficodes/ibmcloud-kubernetes-admin/pkg/notification"
 )
 
-var ticker *time.Ticker
-var quit chan struct{}
-var count int
-
-func init() {
+func Start() {
 	_period := os.Getenv("TICKER_PERIOD")
 	period, err := strconv.Atoi(_period)
 	if err != nil || period == 0 {
 		period = 3600
 	}
 	log.Printf("ticker running in %d seconds interval\n", period)
-	ticker = time.NewTicker(time.Duration(period) * time.Second)
-	quit = make(chan struct{})
-	count = 0
-}
-
-func Start() {
-	go cron()
-}
-
-func cron() {
+	ticker := time.NewTicker(time.Duration(period) * time.Second)
+	quit := make(chan struct{})
+	count := 0
 	for {
 		select {
 		case <-ticker.C:
@@ -53,12 +43,19 @@ func runCron() {
 func checkCloudant() {
 	accounts, err := ibmcloud.GetAllAccountIDs()
 	if err != nil {
+		// basically means cloudant is not there or can not be connected to
+		// no way to recover
+		// only sane option is to contact admin
+		notification.EmailAdmin("Cloudant Not Available", "<strong>Check cloudant database</strong>")
 		log.Println("error getting accounts")
 	}
 
 	for _, accountID := range accounts {
 		session, err := ibmcloud.GetSessionFromCloudant(accountID)
 		if err != nil {
+			// could not get session
+			// means either there was not api key! eek
+			// or the api key was deleted need to notify account admins
 			log.Println(err)
 		}
 
@@ -79,6 +76,28 @@ func checkCloudant() {
 
 			name := schedule.CreateRequest.ClusterRequest.Name
 			if schedule.Status == "scheduled" {
+				log.Printf("deleting %d clusters", count)
+				if count == len(schedule.Clusters) {
+					for _, cluster := range schedule.Clusters {
+						if err := session.DeleteCluster(cluster, schedule.CreateRequest.ResourceGroup, "true"); err != nil {
+							log.Println("error deleting cluster, investigate : ", schedule.CreateRequest.ClusterRequest.Name, err)
+							continue
+						}
+						log.Println("deleted cluster : ", cluster)
+					}
+				} else {
+					for i := 1; i <= count; i++ {
+						suffix := fmt.Sprintf("-%03d", i)
+						clusterName := name + suffix
+						if err := session.DeleteCluster(clusterName, schedule.CreateRequest.ResourceGroup, "true"); err != nil {
+							log.Println("error deleting cluster, investigate : ", clusterName, err)
+							continue
+						}
+						log.Println("deleted cluster : ", clusterName)
+					}
+				}
+				schedule.Status = "completed"
+			} else if schedule.Status == "created" {
 				// deal with creating the clusters and updating the schedule to created
 				log.Printf("creating %d clusters", count)
 				// get tags out of the schedule
@@ -109,29 +128,6 @@ func checkCloudant() {
 				}
 
 				schedule.Status = "created"
-			} else if schedule.Status == "created" {
-				// deal with deleting the clusters and updating the schedule to completed
-				log.Printf("deleting %d clusters", count)
-				if count == len(schedule.Clusters) {
-					for _, cluster := range schedule.Clusters {
-						if err := session.DeleteCluster(cluster, schedule.CreateRequest.ResourceGroup, "true"); err != nil {
-							log.Println("error deleting cluster, investigate : ", schedule.CreateRequest.ClusterRequest.Name, err)
-							continue
-						}
-						log.Println("deleted cluster : ", cluster)
-					}
-				} else {
-					for i := 1; i <= count; i++ {
-						suffix := fmt.Sprintf("-%03d", i)
-						clusterName := name + suffix
-						if err := session.DeleteCluster(clusterName, schedule.CreateRequest.ResourceGroup, "true"); err != nil {
-							log.Println("error deleting cluster, investigate : ", clusterName, err)
-							continue
-						}
-						log.Println("deleted cluster : ", clusterName)
-					}
-				}
-				schedule.Status = "completed"
 			} else {
 				// idk what can be coming in this code block, since those are the only two status we check
 			}

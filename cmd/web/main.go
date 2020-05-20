@@ -8,18 +8,12 @@ import (
 
 	"github.com/gorilla/mux"
 	_ "github.com/joho/godotenv/autoload"
-	"github.com/moficodes/ibmcloud-kubernetes-admin/internals/cron"
 	"github.com/moficodes/ibmcloud-kubernetes-admin/internals/server"
 	"github.com/moficodes/ibmcloud-kubernetes-admin/pkg/ibmcloud"
 )
 
-func init() {
-	ibmcloud.SetupCloudant()
-}
-
 func main() {
-	cron.Start()
-
+	ibmcloud.SetupCloudant()
 	server := server.NewServer()
 	r := mux.NewRouter()
 
@@ -68,6 +62,12 @@ func main() {
 	api.HandleFunc("/schedule/{accountID}", server.GetScheduleHandler).Methods(http.MethodGet)
 	api.HandleFunc("/schedule/{accountID}", server.UpdateScheduleHandler).Methods(http.MethodPut)
 	api.HandleFunc("/schedule/{accountID}", server.DeleteScheduleHandler).Methods(http.MethodDelete)
+
+	api.HandleFunc("/notification/{accountID}/email", server.GetAdminEmails).Methods(http.MethodGet)
+	api.HandleFunc("/notification/email/create", server.CreateAdminEmails).Methods(http.MethodPost)
+	api.HandleFunc("/notification/email/add", server.AddAdminEmails).Methods(http.MethodPut)
+	api.HandleFunc("/notification/email/remove", server.RemoveAdminEmails).Methods(http.MethodPut)
+	api.HandleFunc("/notification/email", server.DeleteAdminEmails).Methods(http.MethodDelete)
 
 	spa := spaHandler{staticPath: "client/build", indexPath: "index.html"}
 	r.PathPrefix("/").Handler(spa)

@@ -39,6 +39,11 @@ func setupDB(dbName string) error {
 	return err
 }
 
+func CheckAPIKey(accountID string) error {
+	dbName := "db-" + accountID
+	return checkExistingAPIKey(dbName)
+}
+
 func checkExistingAPIKey(dbName string) error {
 	apiKey, err := getAPIKey(dbName)
 	if err != nil {
@@ -46,11 +51,6 @@ func checkExistingAPIKey(dbName string) error {
 	}
 
 	return checkAPIKey(apiKey.APIKey, dbName)
-}
-
-func CheckAPIKey(accountID string) error {
-	dbName := "db-" + accountID
-	return checkExistingAPIKey(dbName)
 }
 
 func checkAPIKey(apiKey, dbName string) error {
@@ -149,6 +149,139 @@ func deleteAPIKey(dbName string) error {
 	}
 	log.Printf("document deleted rev %s\n", newRev)
 	return nil
+}
+
+func getAPIKey(dbName string) (*ApiKey, error) {
+	authEncoded := base64.StdEncoding.EncodeToString([]byte(username + ":" + password))
+
+	header := map[string]string{
+		"Authorization": "Basic " + authEncoded,
+	}
+	var result ApiKey
+	url := fmt.Sprintf("https://%s/%s/api_key", host, dbName)
+
+	err := fetch(url, header, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return &result, nil
+}
+
+func CreateAdminEmails(accountId string, emails ...string) error {
+	dbName := "db-" + accountId
+	return createAdminEmail(dbName, emails...)
+}
+
+func createAdminEmail(dbName string, email ...string) error {
+	db := getDB(dbName)
+	admins := AccountAdminEmails{
+		ID:     "admin",
+		Emails: email,
+	}
+	id, rev, err := db.CreateDocument(admins)
+	if err != nil {
+		return err
+	}
+	log.Println(id, rev, "admin emails set")
+	return nil
+}
+
+func RemoveAdminEmails(accountID string, emails ...string) error {
+	dbName := "db-" + accountID
+	return removeAccountAdminEmails(dbName, emails...)
+}
+
+func removeAccountAdminEmails(dbName string, emails ...string) error {
+	db := getDB(dbName)
+	admins, err := getAccountAdminEmails(dbName)
+	if err != nil {
+		return err
+	}
+	adminEmails := admins.Emails
+	for _, email := range emails {
+		idx := find(adminEmails, email)
+		if idx > 0 {
+			adminEmails = removeIndex(adminEmails, idx)
+		}
+	}
+	newRev, err := db.UpdateDocument(admins.ID, admins.Rev, adminEmails)
+	if err != nil {
+		return err
+	}
+
+	log.Println("updated email with ", newRev)
+	return nil
+}
+
+func AddAdminEmails(accountID string, email ...string) error {
+	dbName := "db-" + accountID
+	return addAccountAdminEmails(dbName, email...)
+}
+
+func addAccountAdminEmails(dbName string, email ...string) error {
+	db := getDB(dbName)
+	admins, err := getAccountAdminEmails(dbName)
+	if err != nil {
+		log.Println("could not get valid admin emails")
+		return err
+	}
+
+	admins.Emails = append(admins.Emails, email...)
+
+	newRev, err := db.UpdateDocument(admins.ID, admins.Rev, admins.Emails)
+	if err != nil {
+		return err
+	}
+
+	log.Printf("updated admin emails with new rev %s\n", newRev)
+	return nil
+}
+
+func DeleteAdminEmails(accountID string) error {
+	dbName := "db-" + accountID
+	return deleteAccountAdminEmails(dbName)
+}
+
+func deleteAccountAdminEmails(dbName string) error {
+	db := getDB(dbName)
+	admins, err := getAccountAdminEmails(dbName)
+	if err != nil {
+		return err
+	}
+	newRev, err := db.UpdateDocument(admins.ID, admins.Rev, []string{})
+	if err != nil {
+		return err
+	}
+
+	log.Printf("removed admin emails ", newRev)
+	return nil
+}
+
+func GetAccountAdminEmails(accountID string) ([]string, error) {
+	dbName := "db-" + accountID
+	admins, err := getAccountAdminEmails(dbName)
+	if err != nil {
+		return nil, err
+	}
+	return admins.Emails, nil
+}
+
+func getAccountAdminEmails(dbName string) (*AccountAdminEmails, error) {
+	authEncoded := base64.StdEncoding.EncodeToString([]byte(username + ":" + password))
+
+	header := map[string]string{
+		"Authorization": "Basic " + authEncoded,
+	}
+	var result AccountAdminEmails
+	url := fmt.Sprintf("https://%s/%s/admins", host, dbName)
+
+	err := fetch(url, header, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return &result, nil
 }
 
 func GetAllDocument(accountID string) ([]interface{}, error) {
@@ -343,23 +476,6 @@ func GetSessionFromCloudant(accountID string) (*Session, error) {
 	return session, nil
 }
 
-func getAPIKey(dbName string) (*ApiKey, error) {
-	authEncoded := base64.StdEncoding.EncodeToString([]byte(username + ":" + password))
-
-	header := map[string]string{
-		"Authorization": "Basic " + authEncoded,
-	}
-	var result ApiKey
-	url := fmt.Sprintf("https://%s/%s/api_key", host, dbName)
-
-	err := fetch(url, header, nil, &result)
-	if err != nil {
-		return nil, err
-	}
-
-	return &result, nil
-}
-
 func GetAllAccountIDs() ([]string, error) {
 	result, err := getAllDbs()
 	if err != nil {
@@ -401,6 +517,19 @@ func getDB(dbName string) *cloudant.DB {
 	db, _ := cclient.EnsureDB(dbName)
 
 	return db
+}
+
+func find(a []string, x string) int {
+	for i, n := range a {
+		if x == n {
+			return i
+		}
+	}
+	return -1
+}
+
+func removeIndex(s []string, index int) []string {
+	return append(s[:index], s[index+1:]...)
 }
 
 /*

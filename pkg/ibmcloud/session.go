@@ -322,3 +322,68 @@ func (s *Session) UpdateDocument(accountID, id, rev string, data interface{}) er
 	}
 	return UpdateDocument(accountID, id, rev, data)
 }
+
+func (s *Session) CreateAdminEmails(accountID string, emails ...string) error {
+	if !s.IsValid() {
+		log.Println("Access token expired.")
+		token, err := upgradeToken(endpoints.TokenEndpoint, s.Token.RefreshToken, accountID)
+		if err != nil {
+			return err
+		}
+		log.Println("Token Refreshed.")
+		s.Token = token
+	}
+	return CreateAdminEmails(accountID, emails...)
+}
+
+func (s *Session) RemoveAdminEmails(accountID string, emails ...string) error {
+	if !s.IsValid() {
+		log.Println("Access token expired.")
+		token, err := upgradeToken(endpoints.TokenEndpoint, s.Token.RefreshToken, accountID)
+		if err != nil {
+			return err
+		}
+		log.Println("Token Refreshed.")
+		s.Token = token
+	}
+	return RemoveAdminEmails(accountID, emails...)
+}
+
+func (s *Session) AddAdminEmails(accountID string, emails ...string) error {
+	if !s.IsValid() {
+		log.Println("Access token expired.")
+		token, err := upgradeToken(endpoints.TokenEndpoint, s.Token.RefreshToken, accountID)
+		if err != nil {
+			return err
+		}
+		log.Println("Token Refreshed.")
+		s.Token = token
+	}
+	return AddAdminEmails(accountID, emails...)
+}
+
+func (s *Session) DeleteAdminEmails(accountID string) error {
+	if !s.IsValid() {
+		log.Println("Access token expired.")
+		token, err := upgradeToken(endpoints.TokenEndpoint, s.Token.RefreshToken, accountID)
+		if err != nil {
+			return err
+		}
+		log.Println("Token Refreshed.")
+		s.Token = token
+	}
+	return DeleteAdminEmails(accountID)
+}
+
+func (s *Session) GetAccountAdminEmails(accountID string) ([]string, error) {
+	if !s.IsValid() {
+		log.Println("Access token expired.")
+		token, err := upgradeToken(endpoints.TokenEndpoint, s.Token.RefreshToken, accountID)
+		if err != nil {
+			return nil, err
+		}
+		log.Println("Token Refreshed.")
+		s.Token = token
+	}
+	return GetAccountAdminEmails(accountID)
+}
