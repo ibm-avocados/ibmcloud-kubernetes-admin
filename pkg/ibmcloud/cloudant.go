@@ -175,8 +175,12 @@ func CreateAdminEmails(accountId string, emails ...string) error {
 
 func createAdminEmail(dbName string, email ...string) error {
 	db := getDB(dbName)
-	admins := AccountAdminEmails{
-		ID:     "admin",
+
+	admins := struct {
+		ID     string   `json:"_id"`
+		Emails []string `json:"emails"`
+	}{
+		ID:     "admins",
 		Emails: email,
 	}
 	id, rev, err := db.CreateDocument(admins)

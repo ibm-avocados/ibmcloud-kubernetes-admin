@@ -1,5 +1,8 @@
 import React from "react";
 
+import WorkshopAccount from "./WorkshopAccount";
+import NotificationEmail from "./NotificationEmail";
+
 import {
   Form,
   TextInput,
@@ -86,6 +89,10 @@ const CreateForm = ({ accountID }) => {
   const [scheduleSuccess, setScheduleSuccess] = React.useState(false);
   const [toast, setToast] = React.useState(null);
 
+  // notification specific states
+
+  const [selectedEmails, setSelectedEmails] = React.useState([]);
+
   React.useEffect(() => {
     const loadVersions = async () => {
       try {
@@ -132,8 +139,9 @@ const CreateForm = ({ accountID }) => {
         console.log(e);
       }
     };
-
     checkAPIKey();
+
+    
   }, [accountID]);
 
   const resetState = () => {
@@ -342,9 +350,7 @@ const CreateForm = ({ accountID }) => {
         console.log(clusterResponse);
 
         console.log("Sleeping 5s before trying to set tags");
-        setLoaderDescription(
-          `Preparing to Tag Cluster ${i + 1} of ${range}`
-        );
+        setLoaderDescription(`Preparing to Tag Cluster ${i + 1} of ${range}`);
         await sleep(5000);
         setLoaderDescription(`Tagging Cluster ${i + 1} of ${range}`);
 
@@ -508,7 +514,7 @@ const CreateForm = ({ accountID }) => {
       tags: tags,
       count: clusterCount,
       createRequest: CreateClusterRequest,
-      clusters: []
+      clusters: [],
     };
 
     console.log(JSON.stringify(schedule, null, "\t"));
@@ -567,6 +573,8 @@ const CreateForm = ({ accountID }) => {
       console.log(e);
     }
   };
+
+  
 
   const timeInvalid = (time) => {
     const re = /^(0[0-9]|1[0-2]):[0-5][0-9]$/;
@@ -802,11 +810,10 @@ const CreateForm = ({ accountID }) => {
             </Column>
 
             <Column md={4} lg={3}>
-              <FormLabel>Cluster count</FormLabel>
               <TextInput
                 value={clusterCount}
                 onChange={(e) => setClusterCount(e.target.value.trim())}
-                labelText=""
+                labelText="Cluster count"
                 id="cluster_count"
                 disabled={creating}
                 placeholder="20"
@@ -947,6 +954,7 @@ const CreateForm = ({ accountID }) => {
                 <ModalWrapper
                   disabled={shouldSchedulingBeDisabled()}
                   hasForm
+                  hasScrollingContent
                   buttonTriggerText="Schedule"
                   triggerButtonKind="tertiary"
                   handleSubmit={() => onScheduleSubmit()}
@@ -1063,6 +1071,13 @@ const CreateForm = ({ accountID }) => {
                       </TimePickerSelect>
                     </TimePicker>
                   </div>
+                  <Spacer height="16px" />
+                  <WorkshopAccount />
+                  <Spacer height="16px" />
+                  <NotificationEmail
+                    accountID={accountID}
+                    setSelectedEmails={setSelectedEmails}
+                  />
                 </ModalWrapper>
                 <Spacer height="16px" />
               </div>
