@@ -21,7 +21,7 @@ spec:
         run:  admin
     spec:
       containers:
-      - image:  moficodes/ibmcloud-kubernetes-admin:v0.1.17
+      - image:  moficodes/ibmcloud-kubernetes-admin:v0.1.18
         imagePullPolicy: Always
         name:  kubeadmin
         env:
@@ -40,6 +40,17 @@ spec:
               secretKeyRef:
                 name: cloudant-secret
                 key: host
+          - name: TICKER_PERIOD
+            value: "3600"
+          - name: SENDGRID_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: sendgrid-secret
+                key: apikey
+          - name: ADMIN_FROM_EMAIL
+            value: iksadmin@ibm.com
+          - name: ADMIN_TO_EMAIL
+            value: "moficodes@ibm.com,awesome@ibm.com"
         resources:
           limits:
             cpu: 500m
