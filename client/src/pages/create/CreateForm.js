@@ -424,9 +424,7 @@ const CreateForm = ({ accountID }) => {
   };
 
   const shouldSchedulingBeDisabled = () => {
-    //TODO: fix this
-    // return shouldCreateBeDisabled();
-    return false;
+    return shouldCreateBeDisabled();
   };
 
   const shouldScheduleSubmitBeDisabled = () => {
