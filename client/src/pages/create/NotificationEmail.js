@@ -20,19 +20,21 @@ const NotificationEmail = ({ accountID, setSelectedEmails }) => {
   const [emailAvailable, setEmailAvailable] = React.useState(false);
   const [emails, setEmails] = React.useState([]);
   const [emailText, setEmailText] = React.useState("");
+  const [updateEmailText, setUpdateEmailText] = React.useState("");
 
   React.useEffect(() => {
-    const getAccountAdmins = async () => {
-      try {
-        const emails = await grab(`/api/v1/notification/${accountID}/email`);
-        setEmailAvailable(true);
-        setEmails(emails);
-      } catch (e) {
-        console.log(e);
-      }
-    };
     getAccountAdmins();
   }, [accountID]);
+
+  const getAccountAdmins = async () => {
+    try {
+      const emails = await grab(`/api/v1/notification/${accountID}/email`);
+      setEmailAvailable(true);
+      setEmails(emails);
+    } catch (e) {
+      console.log(e);
+    }
+  };
 
   const onEmailSubmit = async () => {
     const emails = emailText
@@ -55,6 +57,48 @@ const NotificationEmail = ({ accountID, setSelectedEmails }) => {
     }
   };
 
+  const onAddEmailSubmit = async () => {
+    const emails = updateEmailText
+      .toLowerCase()
+      .split(",")
+      .map((email) => email.trim());
+    try {
+      const response = await grab("/api/v1/notification/email/add", {
+        method: "put",
+        body: JSON.stringify({
+          email: emails,
+          accountID: accountID,
+        }),
+      });
+      console.log(response);
+      getAccountAdmins();
+      setUpdateEmailText("");
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  const onRemoveEmailSubmit = async () => {
+    const emails = updateEmailText
+      .toLowerCase()
+      .split(",")
+      .map((email) => email.trim());
+    try {
+      const response = await grab("/api/v1/notification/email/remove", {
+        method: "put",
+        body: JSON.stringify({
+          email: emails,
+          accountID: accountID,
+        }),
+      });
+      console.log(response);
+      getAccountAdmins();
+      setUpdateEmailText("");
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
   const emailItems = emails
     ? emails.map((email, i) => ({
         id: i,
@@ -63,11 +107,19 @@ const NotificationEmail = ({ accountID, setSelectedEmails }) => {
       }))
     : [];
 
+  const onEmailSelected = (selectedItems) => {
+    if (!selectedItems || selectedItems.length === 0) {
+      setSelectedEmails([]);
+    }
+    setSelectedEmails(selectedItems.map((v) => v.label));
+  };
+
   return (
     <>
       {!emailAvailable ? (
         <>
           <TextInput
+            id="email-input"
             value={emailText}
             onChange={(e) => setEmailText(e.target.value.trim())}
             labelText="Account admin emails"
@@ -85,12 +137,37 @@ const NotificationEmail = ({ accountID, setSelectedEmails }) => {
       ) : (
         <>
           <MultiSelect
+            id="email-select"
             titleText="Notify emails"
             items={emailItems}
             itemToString={(item) => item.text}
-            onChange={(items) => setSelectedEmails(items.map(item => item.text))}
-            label="Select email addresses"
+            onChange={({ selectedItems }) => onEmailSelected(selectedItems)}
+            label="Select specific email addresses to notify (defaults to all)"
           />
+          <Spacer height="16px" />
+          <TextInput
+            id="add-email-input"
+            value={updateEmailText}
+            onChange={(e) => setUpdateEmailText(e.target.value.trim())}
+            labelText="Update admin emails"
+            placeholder="user1@email.com,user2@email.com"
+          />
+          <Spacer height="16px" />
+          <Button
+            onClick={onAddEmailSubmit}
+            size="small"
+            disabled={updateEmailText.trim().length < 6}
+          >
+            Add Email for account
+          </Button>
+          <Button
+            onClick={onRemoveEmailSubmit}
+            size="small"
+            kind="danger"
+            disabled={updateEmailText.trim().length < 6}
+          >
+            Remove Email for account
+          </Button>
         </>
       )}
 

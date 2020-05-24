@@ -8,33 +8,33 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func (s *Server) GetScheduleHandler(w http.ResponseWriter, r *http.Request) {
-	session, err := getCloudSessions(r)
-	if err != nil {
-		handleError(w, http.StatusUnauthorized, "could not get session", err.Error())
-		return
-	}
+// func (s *Server) GetScheduleHandler(w http.ResponseWriter, r *http.Request) {
+// 	session, err := getCloudSessions(r)
+// 	if err != nil {
+// 		handleError(w, http.StatusUnauthorized, "could not get session", err.Error())
+// 		return
+// 	}
 
-	vars := mux.Vars(r)
+// 	vars := mux.Vars(r)
 
-	accountID, ok := vars["accountID"]
+// 	accountID, ok := vars["accountID"]
 
-	if !ok {
-		handleError(w, http.StatusBadRequest, "could not get accountID")
-		return
-	}
+// 	if !ok {
+// 		handleError(w, http.StatusBadRequest, "could not get accountID")
+// 		return
+// 	}
 
-	docs, err := session.GetDocument(accountID)
-	if err != nil {
-		handleError(w, http.StatusUnauthorized, "could not get docs", err.Error())
-		return
-	}
+// 	docs, err := session.GetDocument(accountID)
+// 	if err != nil {
+// 		handleError(w, http.StatusUnauthorized, "could not get docs", err.Error())
+// 		return
+// 	}
 
-	w.WriteHeader(http.StatusOK)
-	e := json.NewEncoder(w)
-	e.Encode(docs)
-	return
-}
+// 	w.WriteHeader(http.StatusOK)
+// 	e := json.NewEncoder(w)
+// 	e.Encode(docs)
+// 	return
+// }
 
 func (s *Server) SetScheduleHandler(w http.ResponseWriter, r *http.Request) {
 	session, err := getCloudSessions(r)

@@ -24,18 +24,6 @@ func Email(subject, htmlContent string, recipients ...string) error {
 	}
 	p.AddTos(tos...)
 
-	// bcc the admins of the app
-	adminEmail := os.Getenv("ADMIN_TO_EMAIL")
-	if adminEmail == "" {
-		return fmt.Errorf("no admin email provided")
-	}
-	admins := strings.Split(adminEmail, ",")
-	bccs := make([]*mail.Email, len(admins))
-	for i, admin := range admins {
-		bccs[i] = mail.NewEmail(fmt.Sprintf("Admin %d", i+1), admin)
-	}
-	p.AddBCCs(bccs...)
-
 	m.AddPersonalizations(p)
 
 	html := mail.NewContent("text/html", htmlContent)
@@ -46,7 +34,7 @@ func Email(subject, htmlContent string, recipients ...string) error {
 	if err != nil {
 		return err
 	}
-	log.Println(res.StatusCode)
+	log.Println("status code of email", res.StatusCode)
 	return nil
 }
 

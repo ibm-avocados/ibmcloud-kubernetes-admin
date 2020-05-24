@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>IBMCloud Kubernetes Admin</title>
+  </head>
+
+  <body>
+    <h1>{{ .Schedule.Count }} clusters {{ .Schedule.Status }}</h1>
+    <p>Data Center : {{.Schedule.CreateRequest.ClusterRequest.DataCenter}} </p>
+    {{ if .Errors }}
+      <ol>
+        {{range .Errors}}
+          <li>{{ .Message }}</li>
+        {{end}}
+      </ol>
+    {{ end }}
+  </body>
+</html>

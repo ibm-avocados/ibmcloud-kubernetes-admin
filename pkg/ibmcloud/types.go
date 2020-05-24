@@ -400,23 +400,23 @@ type AccountAdminEmails struct {
 	Emails []string `json:"emails"`
 }
 
-type Schedule struct {
-	ID              string                 `json:"_id" mapstructure:"_id"`
-	Rev             string                 `json:"_rev" mapstructure:"_rev"`
-	CreateAt        int                    `json:"createAt"`
-	DestroyAt       int                    `json:"destroyAt"`
-	Status          string                 `json:"status"`
-	Tags            string                 `json:"tags"`
-	Count           int                    `json:"count"`
-	ClusterRequests []CreateClusterRequest `json:"ClusterRequests"`
-}
+// type Schedule struct {
+// 	ID              string                 `json:"_id" mapstructure:"_id"`
+// 	Rev             string                 `json:"_rev" mapstructure:"_rev"`
+// 	CreateAt        int                    `json:"createAt"`
+// 	DestroyAt       int                    `json:"destroyAt"`
+// 	Status          string                 `json:"status"`
+// 	Tags            string                 `json:"tags"`
+// 	Count           int                    `json:"count"`
+// 	ClusterRequests []CreateClusterRequest `json:"ClusterRequests"`
+// }
 
 type CreateClusterRequest struct {
 	ClusterRequest ClusterRequest `json:"clusterRequest"`
 	ResourceGroup  string         `json:"resourceGroup"`
 }
 
-type ScheduleV2 struct {
+type Schedule struct {
 	ID            string               `json:"_id" mapstructure:"_id"`
 	Rev           string               `json:"_rev" mapstructure:"_rev"`
 	CreateAt      int                  `json:"createAt"`
@@ -426,7 +426,7 @@ type ScheduleV2 struct {
 	Count         string               `json:"count"`
 	CreateRequest CreateClusterRequest `json:"createRequest"`
 	Clusters      []string             `json:"clusters"`
-	Notify        []string             `json:"notify"`
+	NotifyEmails  []string             `json:"notifyEmails"`
 }
 
 type Vlan struct {

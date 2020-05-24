@@ -63,7 +63,7 @@ func main() {
 	api.HandleFunc("/schedule/api", server.CheckAPITokenHandler).Methods(http.MethodPost)
 	api.HandleFunc("/schedule/{accountID}/create", server.SetScheduleHandler).Methods(http.MethodPost)
 	api.HandleFunc("/schedule/{accountID}/all", server.GetAllScheduleHandler).Methods(http.MethodGet)
-	api.HandleFunc("/schedule/{accountID}", server.GetScheduleHandler).Methods(http.MethodGet)
+	// api.HandleFunc("/schedule/{accountID}", server.GetScheduleHandler).Methods(http.MethodGet)
 	api.HandleFunc("/schedule/{accountID}", server.UpdateScheduleHandler).Methods(http.MethodPut)
 	api.HandleFunc("/schedule/{accountID}", server.DeleteScheduleHandler).Methods(http.MethodDelete)
 

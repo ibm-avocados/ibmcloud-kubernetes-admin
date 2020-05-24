@@ -23,28 +23,6 @@ func (s *Server) CreateAdminEmails(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// _accountID, ok := body["accountID"]
-	// if !ok {
-	// 	handleError(w, http.StatusBadRequest, "no accountID provided", err.Error())
-	// 	return
-	// }
-
-	// accountID := fmt.Sprintf("%v", _accountID)
-
-	// _email, ok := body["email"]
-	// if !ok {
-	// 	handleError(w, http.StatusBadRequest, "no emails provided", err.Error())
-	// 	return
-	// }
-	// fmt.Println()
-	// _emails, ok := _email.([]interface{})
-	// if !ok {
-	// 	handleError(w, http.StatusBadRequest, "not a valid type", err.Error())
-	// 	return
-	// }
-
-	// fmt.Println(_emails)
-	// emails := make([])
 	fmt.Println(body)
 	if err := session.CreateAdminEmails(body.AccountID, body.Email...); err != nil {
 		handleError(w, http.StatusInternalServerError, "could not create", err.Error())
@@ -61,7 +39,7 @@ func (s *Server) AddAdminEmails(w http.ResponseWriter, r *http.Request) {
 		handleError(w, http.StatusUnauthorized, "could not get session", err.Error())
 		return
 	}
-	var body map[string]interface{}
+	var body AccountEmailBody
 	decoder := json.NewDecoder(r.Body)
 	err = decoder.Decode(&body)
 	if err != nil {
@@ -69,27 +47,7 @@ func (s *Server) AddAdminEmails(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_accountID, ok := body["accountID"]
-	if !ok {
-		handleError(w, http.StatusBadRequest, "no accountID provided", err.Error())
-		return
-	}
-
-	accountID := fmt.Sprintf("%v", _accountID)
-
-	_email, ok := body["email"]
-	if !ok {
-		handleError(w, http.StatusBadRequest, "no emails provided", err.Error())
-		return
-	}
-
-	emails, ok := _email.([]string)
-	if !ok {
-		handleError(w, http.StatusBadRequest, "not a valid type", err.Error())
-		return
-	}
-
-	if err := session.AddAdminEmails(accountID, emails...); err != nil {
+	if err := session.AddAdminEmails(body.AccountID, body.Email...); err != nil {
 		handleError(w, http.StatusInternalServerError, "could not add", err.Error())
 		return
 	}
@@ -104,7 +62,7 @@ func (s *Server) RemoveAdminEmails(w http.ResponseWriter, r *http.Request) {
 		handleError(w, http.StatusUnauthorized, "could not get session", err.Error())
 		return
 	}
-	var body map[string]interface{}
+	var body AccountEmailBody
 	decoder := json.NewDecoder(r.Body)
 	err = decoder.Decode(&body)
 	if err != nil {
@@ -112,27 +70,7 @@ func (s *Server) RemoveAdminEmails(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_accountID, ok := body["accountID"]
-	if !ok {
-		handleError(w, http.StatusBadRequest, "no accountID provided", err.Error())
-		return
-	}
-
-	accountID := fmt.Sprintf("%v", _accountID)
-
-	_email, ok := body["email"]
-	if !ok {
-		handleError(w, http.StatusBadRequest, "no emails provided", err.Error())
-		return
-	}
-
-	emails, ok := _email.([]string)
-	if !ok {
-		handleError(w, http.StatusBadRequest, "not a valid type", err.Error())
-		return
-	}
-
-	if err := session.RemoveAdminEmails(accountID, emails...); err != nil {
+	if err := session.RemoveAdminEmails(body.AccountID, body.Email...); err != nil {
 		handleError(w, http.StatusInternalServerError, "could not delete", err.Error())
 		return
 	}

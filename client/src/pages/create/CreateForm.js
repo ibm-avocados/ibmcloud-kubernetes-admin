@@ -1,6 +1,5 @@
 import React from "react";
 
-import WorkshopAccount from "./WorkshopAccount";
 import NotificationEmail from "./NotificationEmail";
 
 import {
@@ -425,7 +424,9 @@ const CreateForm = ({ accountID }) => {
   };
 
   const shouldSchedulingBeDisabled = () => {
-    return shouldCreateBeDisabled();
+    //TODO: fix this
+    // return shouldCreateBeDisabled();
+    return false;
   };
 
   const shouldScheduleSubmitBeDisabled = () => {
@@ -515,6 +516,7 @@ const CreateForm = ({ accountID }) => {
       count: clusterCount,
       createRequest: CreateClusterRequest,
       clusters: [],
+      notifyEmails: selectedEmails,
     };
 
     console.log(JSON.stringify(schedule, null, "\t"));
@@ -954,6 +956,7 @@ const CreateForm = ({ accountID }) => {
                 <ModalWrapper
                   disabled={shouldSchedulingBeDisabled()}
                   hasForm
+                  aria-label="modal"
                   hasScrollingContent
                   buttonTriggerText="Schedule"
                   triggerButtonKind="tertiary"
@@ -1071,8 +1074,6 @@ const CreateForm = ({ accountID }) => {
                       </TimePickerSelect>
                     </TimePicker>
                   </div>
-                  <Spacer height="16px" />
-                  <WorkshopAccount />
                   <Spacer height="16px" />
                   <NotificationEmail
                     accountID={accountID}

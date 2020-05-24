@@ -206,10 +206,10 @@ func removeAccountAdminEmails(dbName string, emails ...string) error {
 	for _, email := range emails {
 		idx := find(adminEmails, email)
 		if idx > 0 {
-			adminEmails = removeIndex(adminEmails, idx)
+			admins.Emails = removeIndex(adminEmails, idx)
 		}
 	}
-	newRev, err := db.UpdateDocument(admins.ID, admins.Rev, adminEmails)
+	newRev, err := db.UpdateDocument(admins.ID, admins.Rev, admins)
 	if err != nil {
 		return err
 	}
@@ -233,8 +233,9 @@ func addAccountAdminEmails(dbName string, email ...string) error {
 
 	admins.Emails = append(admins.Emails, email...)
 
-	newRev, err := db.UpdateDocument(admins.ID, admins.Rev, admins.Emails)
+	newRev, err := db.UpdateDocument(admins.ID, admins.Rev, admins)
 	if err != nil {
+		log.Println("email document update failed", err)
 		return err
 	}
 
@@ -258,7 +259,7 @@ func deleteAccountAdminEmails(dbName string) error {
 		return err
 	}
 
-	log.Printf("removed admin emails ", newRev)
+	log.Printf("removed admin emails %s", newRev)
 	return nil
 }
 
@@ -304,62 +305,6 @@ func getAllDocument(dbName string) ([]interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	return res, nil
-}
-
-func GetDocumentV2(accountID string) ([]ScheduleV2, error) {
-	dbName := "db-" + accountID
-	return getUpcomingDocumentV2(dbName)
-}
-
-func getUpcomingDocumentV2(dbName string) ([]ScheduleV2, error) {
-	db := getDB(dbName)
-
-	createQuery := cloudant.Query{}
-	createQuery.Selector = make(map[string]interface{})
-	createQuery.Selector["createAt"] = map[string]int64{
-		"$gt": time.Now().Unix(),
-		"$lt": time.Now().Add(time.Hour * 2).Unix(),
-	}
-	createQuery.Selector["status"] = map[string]string{
-		"$eq": "scheduled",
-	}
-
-	resCreate, err := db.SearchDocument(createQuery)
-	if err != nil {
-		return nil, err
-	}
-
-	destroyQuery := cloudant.Query{}
-	destroyQuery.Selector = make(map[string]interface{})
-	destroyQuery.Selector["destroyAt"] = map[string]int64{
-		"$gt": time.Now().Unix(),
-		"$lt": time.Now().Add(time.Hour * 2).Unix(),
-	}
-	destroyQuery.Selector["status"] = map[string]string{
-		"$eq": "created",
-	}
-	resDestroy, err := db.SearchDocument(destroyQuery)
-	if err != nil {
-		return nil, err
-	}
-
-	resJoin := append(resCreate, resDestroy...)
-
-	res := make([]ScheduleV2, len(resJoin))
-	for i, elem := range resJoin {
-		sched, ok := elem.(map[string]interface{})
-		if !ok {
-			log.Println("could not convert to type")
-			return nil, err
-		}
-		var schedule ScheduleV2
-		if err := mapstructure.Decode(sched, &schedule); err != nil {
-			log.Println("nothing is working")
-		}
-		res[i] = schedule
-	}
-
 	return res, nil
 }
 
@@ -418,6 +363,62 @@ func getUpcomingDocument(dbName string) ([]Schedule, error) {
 
 	return res, nil
 }
+
+// func GetDocument(accountID string) ([]Schedule, error) {
+// 	dbName := "db-" + accountID
+// 	return getUpcomingDocument(dbName)
+// }
+
+// func getUpcomingDocument(dbName string) ([]Schedule, error) {
+// 	db := getDB(dbName)
+
+// 	createQuery := cloudant.Query{}
+// 	createQuery.Selector = make(map[string]interface{})
+// 	createQuery.Selector["createAt"] = map[string]int64{
+// 		"$gt": time.Now().Unix(),
+// 		"$lt": time.Now().Add(time.Hour * 2).Unix(),
+// 	}
+// 	createQuery.Selector["status"] = map[string]string{
+// 		"$eq": "scheduled",
+// 	}
+
+// 	resCreate, err := db.SearchDocument(createQuery)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	destroyQuery := cloudant.Query{}
+// 	destroyQuery.Selector = make(map[string]interface{})
+// 	destroyQuery.Selector["destroyAt"] = map[string]int64{
+// 		"$gt": time.Now().Unix(),
+// 		"$lt": time.Now().Add(time.Hour * 2).Unix(),
+// 	}
+// 	destroyQuery.Selector["status"] = map[string]string{
+// 		"$eq": "created",
+// 	}
+// 	resDestroy, err := db.SearchDocument(destroyQuery)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	resJoin := append(resCreate, resDestroy...)
+
+// 	res := make([]Schedule, len(resJoin))
+// 	for i, elem := range resJoin {
+// 		sched, ok := elem.(map[string]interface{})
+// 		if !ok {
+// 			log.Println("could not convert to type")
+// 			return nil, err
+// 		}
+// 		var schedule Schedule
+// 		if err := mapstructure.Decode(sched, &schedule); err != nil {
+// 			log.Println("nothing is working")
+// 		}
+// 		res[i] = schedule
+// 	}
+
+// 	return res, nil
+// }
 
 func CreateDocument(accountID string, data interface{}) error {
 	dbName := "db-" + accountID
