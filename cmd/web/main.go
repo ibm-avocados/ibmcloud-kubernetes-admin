@@ -8,12 +8,16 @@ import (
 
 	"github.com/gorilla/mux"
 	_ "github.com/joho/godotenv/autoload"
+	"github.com/moficodes/ibmcloud-kubernetes-admin/internals/cron"
 	"github.com/moficodes/ibmcloud-kubernetes-admin/internals/server"
 	"github.com/moficodes/ibmcloud-kubernetes-admin/pkg/ibmcloud"
 )
 
 func main() {
 	ibmcloud.SetupCloudant()
+
+	go cron.Start()
+
 	server := server.NewServer()
 	r := mux.NewRouter()
 

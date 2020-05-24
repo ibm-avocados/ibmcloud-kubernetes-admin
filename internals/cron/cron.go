@@ -57,6 +57,15 @@ func checkCloudant() {
 			// means either there was not api key! eek
 			// or the api key was deleted need to notify account admins
 			log.Println(err)
+			notification.EmailAdmin("API key invalid/unavailable", fmt.Sprintf("<p>Check api key for %s</p>", accountID))
+			continue
+		}
+
+		adminEmails, err := session.GetAccountAdminEmails(accountID)
+		if err != nil || len(adminEmails) == 0 {
+			if err := notification.EmailAdmin("No account email available", "<h1>No account email available</h1>"); err != nil {
+				log.Println(err)
+			}
 		}
 
 		log.Println("checking schedules for account : ", accountID)
@@ -75,7 +84,7 @@ func checkCloudant() {
 			}
 
 			name := schedule.CreateRequest.ClusterRequest.Name
-			if schedule.Status == "scheduled" {
+			if schedule.Status == "created" {
 				log.Printf("deleting %d clusters", count)
 				if count == len(schedule.Clusters) {
 					for _, cluster := range schedule.Clusters {
@@ -97,11 +106,40 @@ func checkCloudant() {
 					}
 				}
 				schedule.Status = "completed"
-			} else if schedule.Status == "created" {
+			} else if schedule.Status == "scheduled" {
 				// deal with creating the clusters and updating the schedule to created
 				log.Printf("creating %d clusters", count)
 				// get tags out of the schedule
 				tags := strings.Split(schedule.Tags, ",")
+
+				vlans, err := session.GetDatacenterVlan(schedule.CreateRequest.ClusterRequest.DataCenter)
+				if err != nil {
+					// could not get vlan
+					// skip the scheduling
+					log.Println(err)
+					continue
+				}
+
+				privateVlans := make([]ibmcloud.Vlan, 0)
+				publicVlans := make([]ibmcloud.Vlan, 0)
+
+				for _, vlan := range vlans {
+					if vlan.Type == "private" {
+						privateVlans = append(privateVlans, vlan)
+					} else if vlan.Type == "public" {
+						publicVlans = append(publicVlans, vlan)
+					}
+				}
+
+				// at these point, ideally we have a list of private and public vlans
+				// if theres nothing in this list
+				// vlans got deleted
+				// and we can no longer create the clusters (?) [might be ok to set empty]
+				// at this situation email the account admins
+				if len(privateVlans) == 0 || len(publicVlans) == 0 {
+					notification.Email("No vlan available", "<h1>Add vlan for region</h1>")
+					continue
+				}
 
 				// for each cluster loop through and create cluster, ignore error for now.
 				for i := 1; i <= count; i++ {
