@@ -8,7 +8,6 @@ import Navbar from "./common/Navbar";
 import history from "./globalHistory";
 
 const HolderThing = (props) => {
-  console.log("PROPS TO ROUTER", props);
   const [isLoadingAccounts, setLoadingAccounts] = useState(true);
   const [accounts, setAccounts] = useState([]);
   const [accountID, setSelectedAccountID] = useState();

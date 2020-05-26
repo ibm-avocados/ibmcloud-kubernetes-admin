@@ -49,7 +49,7 @@ const NotificationEmail = ({ accountID, setSelectedEmails }) => {
           accountID: accountID,
         }),
       });
-      console.log(response);
+      console.log("email submitted");
       setEmails(emails);
       setEmailAvailable(true);
     } catch (e) {
@@ -70,7 +70,7 @@ const NotificationEmail = ({ accountID, setSelectedEmails }) => {
           accountID: accountID,
         }),
       });
-      console.log(response);
+      console.log("email added");
       getAccountAdmins();
       setUpdateEmailText("");
     } catch (e) {
@@ -91,7 +91,7 @@ const NotificationEmail = ({ accountID, setSelectedEmails }) => {
           accountID: accountID,
         }),
       });
-      console.log(response);
+      console.log("email removed");
       getAccountAdmins();
       setUpdateEmailText("");
     } catch (e) {

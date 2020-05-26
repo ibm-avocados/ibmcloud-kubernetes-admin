@@ -111,7 +111,6 @@ const CreateForm = ({ accountID }) => {
         const resourceGroups = await grab(
           `/api/v1/resourcegroups/${accountID}`
         );
-        console.log(resourceGroups);
         if (resourceGroups) {
           setResourceGroups(resourceGroups.resources);
         }
@@ -336,7 +335,7 @@ const CreateForm = ({ accountID }) => {
 
     for (let i = 0; i < range; i++) {
       setLoaderDescription(`Creating Cluster ${i + 1} of ${range}`);
-      console.log("Creating luster ", i);
+      console.log("creating luster ", i);
 
       const CreateClusterRequest = request[i];
 
@@ -346,11 +345,11 @@ const CreateForm = ({ accountID }) => {
           body: JSON.stringify(CreateClusterRequest),
         });
 
-        console.log(clusterResponse);
+        console.log("cluster created with id : ", clusterResponse.id);
 
-        console.log("Sleeping 5s before trying to set tags");
+        console.log("Sleeping 3s before trying to set tags");
         setLoaderDescription(`Preparing to Tag Cluster ${i + 1} of ${range}`);
-        await sleep(5000);
+        await sleep(3000);
         setLoaderDescription(`Tagging Cluster ${i + 1} of ${range}`);
 
         // comma separated tags.
@@ -389,7 +388,6 @@ const CreateForm = ({ accountID }) => {
     setCreateSuccess(true);
     setCreating(false);
     resetState();
-    // console.log(JSON.stringify(CreateClusterRequest));
   };
 
   const shouldCreateBeDisabled = () => {
@@ -503,9 +501,6 @@ const CreateForm = ({ accountID }) => {
     );
     const destroyAt = endDate.getTime() / 1000;
 
-    console.log(startDate);
-    console.log(endDate);
-
     const schedule = {
       createAt: createAt,
       destroyAt: destroyAt,
@@ -517,16 +512,13 @@ const CreateForm = ({ accountID }) => {
       notifyEmails: selectedEmails,
     };
 
-    console.log(JSON.stringify(schedule, null, "\t"));
-
     try {
       const response = await grab(`/api/v1/schedule/${accountID}/create`, {
         method: "post",
         body: JSON.stringify(schedule),
       });
-      console.log(response);
+      console.log("schedule set");
     } catch (e) {
-      console.log("error");
       console.log(e);
     }
     setToast({
@@ -566,7 +558,7 @@ const CreateForm = ({ accountID }) => {
           accountID: accountID,
         }),
       });
-      console.log(response);
+      console.log("api key removed");
       setApiKey("");
       setApiKeyValid(false);
     } catch (e) {
