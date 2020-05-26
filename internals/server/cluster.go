@@ -3,6 +3,7 @@ package server
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -60,6 +61,8 @@ func (s *Server) ClusterCreateHandler(w http.ResponseWriter, r *http.Request) {
 		handleError(w, http.StatusUnauthorized, "could not create cluster", err.Error())
 		return
 	}
+
+	log.Println("cluster created :", createResponse.ID)
 
 	w.WriteHeader(http.StatusOK)
 	e := json.NewEncoder(w)

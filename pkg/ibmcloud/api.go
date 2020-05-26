@@ -61,7 +61,6 @@ const (
 
 const basicAuth = "Basic Yng6Yng="
 
-// TODO: logical timeout, 10 seconds wasn't long enough.
 var client *http.Client
 
 func init() {
@@ -418,7 +417,7 @@ func createCluster(token string, request CreateClusterRequest) (*CreateClusterRe
 		log.Println(err)
 		return nil, err
 	}
-
+	log.Println("cluster created. id :", result.ID)
 	return &result, nil
 }
 
@@ -437,6 +436,7 @@ func deleteCluster(token, id, resourceGroup, deleteResources string) error {
 	if err != nil {
 		return err
 	}
+	log.Println("cluster deleted, id :", id)
 	return nil
 }
 
