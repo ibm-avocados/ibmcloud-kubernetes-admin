@@ -21,7 +21,7 @@ spec:
         run:  admin
     spec:
       containers:
-      - image:  moficodes/ibmcloud-kubernetes-admin:v0.1.19
+      - image:  moficodes/ibmcloud-kubernetes-admin:v0.1.20
         imagePullPolicy: Always
         name:  kubeadmin
         env:
@@ -53,9 +53,9 @@ spec:
             value: "moficodes@ibm.com,awesome@ibm.com"
         resources:
           limits:
-            cpu: 500m
-            memory: 1Gi
+            cpu: 1000m
+            memory: 4Gi
           requests:
-            cpu: 500m
-            memory: 1Gi
+            cpu: 1000m
+            memory: 4Gi
       restartPolicy: Always
