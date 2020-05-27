@@ -39,6 +39,19 @@ func setupDB(dbName string) error {
 	return err
 }
 
+func GetAPIKey(accountID string) (string, err) {
+	dbName := "db-" + accountID
+	return getAPIKey(dbName)
+}
+
+func getAPIKey(dbName string) (string, error) {
+	apiKey, err := getAPIKey(dbName)
+	if err != nil {
+		return "", err
+	}
+	return apiKey.APIKey, nil
+}
+
 func CheckAPIKey(accountID string) error {
 	dbName := "db-" + accountID
 	return checkExistingAPIKey(dbName)

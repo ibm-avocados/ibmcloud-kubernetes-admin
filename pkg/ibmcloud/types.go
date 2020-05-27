@@ -417,16 +417,21 @@ type CreateClusterRequest struct {
 }
 
 type Schedule struct {
-	ID            string               `json:"_id" mapstructure:"_id"`
-	Rev           string               `json:"_rev" mapstructure:"_rev"`
-	CreateAt      int                  `json:"createAt"`
-	DestroyAt     int                  `json:"destroyAt"`
-	Status        string               `json:"status"`
-	Tags          string               `json:"tags"`
-	Count         string               `json:"count"`
-	CreateRequest CreateClusterRequest `json:"createRequest"`
-	Clusters      []string             `json:"clusters"`
-	NotifyEmails  []string             `json:"notifyEmails"`
+	ID                string               `json:"_id" mapstructure:"_id"`
+	Rev               string               `json:"_rev" mapstructure:"_rev"`
+	CreateAt          int                  `json:"createAt"`
+	DestroyAt         int                  `json:"destroyAt"`
+	Status            string               `json:"status"`
+	Tags              string               `json:"tags"`
+	Count             string               `json:"count"`
+	CreateRequest     CreateClusterRequest `json:"createRequest"`
+	Clusters          []string             `json:"clusters"`
+	NotifyEmails      []string             `json:"notifyEmails"`
+	EventName         string               `json:"eventName"`
+	Password          string               `json:"password"`
+	ResourceGroupName string               `json:"resourceGroupName"`
+	AccessGroupName   string               `json:"accessGroupName"`
+	IsWorkshop        bool                 `json:"isWorkshop"`
 }
 
 type Vlan struct {

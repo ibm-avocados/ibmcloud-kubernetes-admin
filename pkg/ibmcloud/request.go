@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 )
 
 func handleRequest(request *http.Request, header map[string]string, query map[string]string, res interface{}) error {
@@ -22,6 +23,8 @@ func handleRequest(request *http.Request, header map[string]string, query map[st
 	}
 
 	request.URL.RawQuery = q.Encode()
+
+	client := &http.Client{Timeout: time.Duration(150 * time.Second)}
 
 	resp, err := client.Do(request)
 	if err != nil {

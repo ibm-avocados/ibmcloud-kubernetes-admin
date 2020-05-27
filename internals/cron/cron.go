@@ -1,9 +1,7 @@
 package cron
 
 import (
-	"bytes"
 	"fmt"
-	"html/template"
 	"log"
 	"math/rand"
 	"os"
@@ -277,23 +275,18 @@ func checkCloudant() {
 			if err := notification.Email("IBMCloud Kubernetes Admin Schedule executed", emailBody, notifyEmails...); err != nil {
 				log.Println("error sending email")
 			}
+
+			// if its a workshop deploy cloud foundry and update github issue
+			if !schedule.IsWorkshop {
+				continue
+			}
+
+			setEnvs(accountID, schedule)
+			apikey := session.GetAPIKey(accountID)
+			org, space, region := "", "", ""
+			if err != deploy(apikey, org, space, schedule.ResourceGroupName, region); err != nil {
+				notification.EmailAdmin("failed deploying cloud foundry app", "<h1>Cloud foundry app failed to deploy</h1>")
+			}
 		}
 	}
-}
-
-func getEmailBody(data EmailData) (string, error) {
-	tmpl, err := template.ParseFiles("templates/email.gohtml")
-	if err != nil {
-		log.Println("could not parse file", err)
-		return "", err
-	}
-	htmlTemplate := template.Must(tmpl, err)
-	buf := new(bytes.Buffer)
-
-	if err := htmlTemplate.Execute(buf, data); err != nil {
-		log.Println("could not parse file", err)
-		return "", err
-	}
-
-	return buf.String(), nil
 }

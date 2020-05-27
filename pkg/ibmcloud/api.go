@@ -61,12 +61,6 @@ const (
 
 const basicAuth = "Basic Yng6Yng="
 
-var client *http.Client
-
-func init() {
-	client = &http.Client{Timeout: time.Duration(150 * time.Second)}
-}
-
 //// useful for loagging
 // bodyBytes, err := ioutil.ReadAll(resp.Body)
 // if err != nil {
