@@ -223,7 +223,7 @@ func (s *Session) GetAPIKey(accountID string) (string, error) {
 		log.Println("Access token expired.")
 		token, err := upgradeToken(endpoints.TokenEndpoint, s.Token.RefreshToken, accountID)
 		if err != nil {
-			return err
+			return "", err
 		}
 		log.Println("Token Refreshed.")
 		s.Token = token

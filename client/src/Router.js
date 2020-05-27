@@ -3,6 +3,7 @@ import { Router, Switch, Route } from "react-router-dom";
 import AppPage from "./pages/clusters/AppPage";
 import CreatePage from "./pages/create/CreatePage";
 import SchedulePage from "./pages/schedule/SchedulePage";
+import SettingsPage from "./pages/settings/SettingsPage";
 import Login from "./Login";
 import Navbar from "./common/Navbar";
 import history from "./globalHistory";
@@ -75,6 +76,13 @@ const HolderThing = (props) => {
           accountID={accountID}
         />
       </Route>
+      <Route path="/settings" exact>
+        <SettingsPage
+          tokenUpgraded={tokenUpgraded}
+          hasChosenAccount={hasChosenAccount}
+          accountID={accountID}
+        />
+      </Route>
       <Route path="/" exact>
         <AppPage
           hasChosenAccount={hasChosenAccount}
@@ -100,7 +108,7 @@ const AppRouter = () => {
     <Router history={history}>
       <Switch>
         <Route path="/login" exact component={Login} />
-        <Route path="/" component={HolderThing}/>
+        <Route path="/" component={HolderThing} />
       </Switch>
     </Router>
   );

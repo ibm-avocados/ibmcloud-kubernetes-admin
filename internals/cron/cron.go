@@ -282,9 +282,9 @@ func checkCloudant() {
 			}
 
 			setEnvs(accountID, schedule)
-			apikey := session.GetAPIKey(accountID)
+			apikey, _ := session.GetAPIKey(accountID)
 			org, space, region := "", "", ""
-			if err != deploy(apikey, org, space, schedule.ResourceGroupName, region); err != nil {
+			if err := deploy(apikey, org, space, schedule.ResourceGroupName, region); err != nil {
 				notification.EmailAdmin("failed deploying cloud foundry app", "<h1>Cloud foundry app failed to deploy</h1>")
 			}
 		}
