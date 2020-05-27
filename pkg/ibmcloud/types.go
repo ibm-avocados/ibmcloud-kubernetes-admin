@@ -400,6 +400,18 @@ type AccountAdminEmails struct {
 	Emails []string `json:"emails"`
 }
 
+type AccountMetaData struct {
+	ID               string `json:"id"`
+	Rev              string `json:"rev"`
+	Org              string `json:"org"`
+	Space            string `json:"space"`
+	Region           string `json:"region"`
+	IssueRepo        string `json:"issue_repo"`
+	GrantClusterRepo string `json:"grant_cluster_repo"`
+	GithubUser       string `json:"github_user"`
+	GithubToken      string `json:"github_token"`
+}
+
 // type Schedule struct {
 // 	ID              string                 `json:"_id" mapstructure:"_id"`
 // 	Rev             string                 `json:"_rev" mapstructure:"_rev"`

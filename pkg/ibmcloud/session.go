@@ -257,6 +257,32 @@ func (s *Session) DeleteAPIKey(accountID string) error {
 	return DeleteAPIKey(accountID)
 }
 
+func (s *Session) GetAccountMetaData(accountID string) (*AccountMetaData, error) {
+	if !s.IsValid() {
+		log.Println("Access token expired.")
+		token, err := upgradeToken(endpoints.TokenEndpoint, s.Token.RefreshToken, accountID)
+		if err != nil {
+			return nil, err
+		}
+		log.Println("Token Refreshed.")
+		s.Token = token
+	}
+	return GetAccountMetadata(accountID)
+}
+
+func (s *Session) CreateAccountMetaData(accountID, org, space, region, issueRepo, grantClusterRepo, githubUser, githubToken string) error {
+	if !s.IsValid() {
+		log.Println("Access token expired.")
+		token, err := upgradeToken(endpoints.TokenEndpoint, s.Token.RefreshToken, accountID)
+		if err != nil {
+			return nil, err
+		}
+		log.Println("Token Refreshed.")
+		s.Token = token
+	}
+	return CreateAccountMetadata(accountID, org, space, region, issueRepo, grantClusterRepo, githubUser, githubToken)
+}
+
 func (s *Session) GetDocument(accountID string) ([]Schedule, error) {
 	if !s.IsValid() {
 		log.Println("Access token expired.")
