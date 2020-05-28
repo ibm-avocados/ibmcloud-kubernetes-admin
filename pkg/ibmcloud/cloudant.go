@@ -186,7 +186,7 @@ func createAccountMetaData(dbName, org, space, region, issueRepo, grantClusterRe
 	db := getDB(dbName)
 
 	metaData := struct {
-		ID               string `json:"id"`
+		ID               string `json:"_id"`
 		Org              string `json:"org"`
 		Space            string `json:"space"`
 		Region           string `json:"region"`

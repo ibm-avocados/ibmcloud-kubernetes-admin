@@ -401,12 +401,12 @@ type AccountAdminEmails struct {
 }
 
 type AccountMetaData struct {
-	ID               string `json:"id"`
-	Rev              string `json:"rev"`
+	ID               string `json:"_id"`
+	Rev              string `json:"_rev"`
 	Org              string `json:"org"`
 	Space            string `json:"space"`
 	Region           string `json:"region"`
-	IssueRepo        string `json:"issuRepo"`
+	IssueRepo        string `json:"issueRepo"`
 	GrantClusterRepo string `json:"grantClusterRepo"`
 	GithubUser       string `json:"githubUser"`
 	GithubToken      string `json:"githubToken"`

@@ -12,7 +12,22 @@ import {
 
 const Spacer = ({ height }) => <div style={{ marginTop: height }} />;
 
-const Settings = () => {
+const TOKEN_MESSAGE = "github-token-saved-and-hidden";
+
+const grab = async (url, options, retryCount = 0) => {
+  const response = await fetch(url, options);
+  const data = await response.json();
+  if (response.status !== 200) {
+    if (retryCount > 0) {
+      return await grab(url, options, retryCount - 1);
+    }
+    throw Error(data);
+  }
+
+  return data;
+};
+
+const Settings = ({ accountID }) => {
   const [apiKeyValid, setApiKeyValid] = React.useState(false);
   const [apiKey, setApiKey] = React.useState("");
   const [org, setOrg] = React.useState("");
@@ -22,6 +37,100 @@ const Settings = () => {
   const [grantClusterRepo, setGrantClusterRepo] = React.useState("");
   const [githubUser, setGithubUser] = React.useState("");
   const [githubToken, setGithubToken] = React.useState("");
+  const [method, setMethod] = React.useState("put");
+  const [data, setData] = React.useState(null);
+
+  React.useEffect(() => {
+    loadMetaData();
+    const checkAPIKey = async () => {
+      try {
+        const apiKey = await fetch("/api/v1/schedule/api", {
+          method: "post",
+          body: JSON.stringify({
+            accountID: accountID,
+          }),
+        });
+        if (apiKey.status === 200) {
+          setApiKeyValid(true);
+          setApiKey("your-api-key-will-be-pulled-from-db");
+        }
+      } catch (e) {
+        console.log(e);
+      }
+    };
+    checkAPIKey();
+  }, [accountID]);
+
+  const loadMetaData = async () => {
+    try {
+      const metadata = await grab(`/api/v1/workshop/${accountID}/metadata`);
+      if (metadata === null) {
+        setMethod("post");
+      } else {
+        setData(metadata);
+        setOrg(metadata.org);
+        setSpace(metadata.space);
+        setRegion(metadata.region);
+        setIssueRepo(metadata.issueRepo);
+        setGrantClusterRepo(metadata.grantClusterRepo);
+        setGithubUser(metadata.githubUser);
+        if (metadata.githubToken !== "") {
+          setGithubToken(TOKEN_MESSAGE);
+        }
+      }
+    } catch (e) {
+      console.log(e);
+      setMethod("post");
+    }
+  };
+
+  const shouldUpdateBeDisabled = () => {
+    if (data) {
+      return (
+        data.org === org &&
+        data.space === space &&
+        data.githubUser === githubUser &&
+        data.issueRepo === issueRepo &&
+        data.grantClusterRepo === grantClusterRepo &&
+        data.region === region &&
+        githubToken === TOKEN_MESSAGE
+      );
+    }
+
+    return (
+      org === "" ||
+      space === "" ||
+      region === "" ||
+      issueRepo === "" ||
+      grantClusterRepo === "" ||
+      githubUser === "" ||
+      githubToken === ""
+    );
+  };
+
+  const saveMetaData = async () => {
+    try {
+      let token = githubToken;
+      if(data && token === TOKEN_MESSAGE){
+        token = data.githubToken;
+      }
+      const response = await grab(`/api/v1/workshop/${accountID}/metadata`, {
+        method: method,
+        body: JSON.stringify({
+          org: org,
+          space: space,
+          region: region,
+          issueRepo: issueRepo,
+          grantClusterRepo: grantClusterRepo,
+          githubUser: githubUser,
+          githubToken: token,
+        }),
+      });
+      loadMetaData();
+    } catch (e) {
+      console.log(e);
+    }
+  };
 
   return (
     <Form>
@@ -44,7 +153,7 @@ const Settings = () => {
         </Row>
         <Spacer height="16px" />
         {!apiKeyValid ? (
-          <Button onClick={() => console.log("save")}>Save</Button>
+          <Button onClick={() => console.log(data)}>Save</Button>
         ) : (
           <Button kind="danger" onClick={() => console.log("delete")}>
             Delete
@@ -133,7 +242,11 @@ const Settings = () => {
         <Spacer height="16px" />
         <Row>
           <Column>
-            <Button onClick={() => console.log("save")} size="default">
+            <Button
+              disabled={shouldUpdateBeDisabled()}
+              onClick={saveMetaData}
+              size="default"
+            >
               Update
             </Button>
           </Column>

@@ -28,6 +28,7 @@ import geos from "../../common/data/geo";
 import styles from "./CreateForm.module.css";
 
 import "./CreateForm.css";
+import WorkshopAccount from "./WorkshopAccount";
 
 const Spacer = ({ height }) => <div style={{ marginTop: height }} />;
 
@@ -422,7 +423,9 @@ const CreateForm = ({ accountID }) => {
   };
 
   const shouldSchedulingBeDisabled = () => {
-    return shouldCreateBeDisabled();
+    // TODO: 
+    return false;
+    // return shouldCreateBeDisabled();
   };
 
   const shouldScheduleSubmitBeDisabled = () => {
@@ -1069,6 +1072,7 @@ const CreateForm = ({ accountID }) => {
                     accountID={accountID}
                     setSelectedEmails={setSelectedEmails}
                   />
+                  <WorkshopAccount accountID={accountID}/>
                 </ModalWrapper>
                 <Spacer height="16px" />
               </div>
