@@ -22,7 +22,6 @@ func (s *Server) AuthenticationHandler(w http.ResponseWriter, r *http.Request) {
 
 	otp := fmt.Sprintf("%v", body["otp"])
 
-	log.Println(otp)
 	session, err := ibmcloud.Authenticate(otp)
 	if err != nil {
 		log.Println("could not authenticate with the otp provided")

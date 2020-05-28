@@ -23,5 +23,11 @@ func setEnvs(accountID string, metadata *ibmcloud.AccountMetaData, schedule ibmc
 	if err := os.Setenv("ACCOUNT", accountID); err != nil {
 		return err
 	}
+	if err := os.Setenv("FILTER_TAG", schedule.EventName); err != nil {
+		return err
+	}
+	if err := os.Setenv("ACCESS_GROUP_NAME", metadata.AccessGroup); err != nil {
+		return err
+	}
 	return nil
 }

@@ -279,10 +279,10 @@ func checkCloudant() {
 
 			// if its a workshop deploy cloud foundry and update github issue
 			if !schedule.IsWorkshop {
+				log.Println("Not a workshop")
 				continue
 			}
 
-			setEnvs(accountID, schedule)
 			apikey, err := session.GetAPIKey(accountID)
 			if err != nil {
 				log.Println("could not get api key")
@@ -293,7 +293,7 @@ func checkCloudant() {
 				log.Println("could not get account metadata")
 				continue
 			}
-
+			setEnvs(accountID, metadata, schedule)
 			// if the schedule is created we deploy the app
 			// probably will deploy even if there was minor errors
 			if schedule.Status == "created" {
