@@ -7,12 +7,11 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strings"
 	"time"
 )
 
 func CreateComment(token, githubURL, issue, comment string) error {
-	endpoint := fmt.Sprintf("https://api.%s/issues/%s/comments", processURL(githubURL), issue)
+	endpoint := fmt.Sprintf("https://api.%s/issues/%s/comments", githubURL, issue)
 
 	header := map[string]string{
 		"Authorization": token,
@@ -90,13 +89,4 @@ func handleRequest(request *http.Request, header map[string]string, query map[st
 		return err
 	}
 	return nil
-}
-
-func processURL(url string) string {
-	if strings.Contains(url, "https://") {
-		return strings.ReplaceAll(url, "https://", "")
-	} else if strings.Contains(url, "http://") {
-		return strings.ReplaceAll(url, "http://", "")
-	}
-	return url
 }

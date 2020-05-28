@@ -3,7 +3,6 @@ package server
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -26,7 +25,6 @@ func (s *Server) GetMetaDataHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	metadata, err := session.GetAccountMetaData(accountID)
-	log.Println(metadata)
 	w.WriteHeader(http.StatusOK)
 	e := json.NewEncoder(w)
 	e.Encode(metadata)

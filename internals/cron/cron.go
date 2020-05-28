@@ -24,6 +24,7 @@ type EmailData struct {
 	Errors   []ScheduleError
 }
 
+// Start
 func Start() {
 	_period := os.Getenv("TICKER_PERIOD")
 	period, err := strconv.Atoi(_period)
@@ -282,10 +283,29 @@ func checkCloudant() {
 			}
 
 			setEnvs(accountID, schedule)
-			apikey, _ := session.GetAPIKey(accountID)
-			org, space, region := "", "", ""
-			if err := deploy(apikey, org, space, schedule.ResourceGroupName, region); err != nil {
-				notification.EmailAdmin("failed deploying cloud foundry app", "<h1>Cloud foundry app failed to deploy</h1>")
+			apikey, err := session.GetAPIKey(accountID)
+			if err != nil {
+				log.Println("could not get api key")
+				continue
+			}
+			metadata, err := session.GetAccountMetaData(accountID)
+			if err != nil {
+				log.Println("could not get account metadata")
+				continue
+			}
+
+			// if the schedule is created we deploy the app
+			// probably will deploy even if there was minor errors
+			if schedule.Status == "created" {
+				if err := deploy(apikey, metadata, schedule); err != nil {
+					log.Println("could not deploy cloud foundry application")
+					continue
+				}
+			} else if schedule.Status == "completed" {
+				if err := cleanUp(apikey, metadata, schedule); err != nil {
+					log.Println("could not cleanup cloud foundry application")
+					continue
+				}
 			}
 		}
 	}

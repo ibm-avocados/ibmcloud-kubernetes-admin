@@ -6,7 +6,7 @@ import (
 	"github.com/moficodes/ibmcloud-kubernetes-admin/pkg/ibmcloud"
 )
 
-func setEnvs(accountID string, schedule ibmcloud.Schedule) error {
+func setEnvs(accountID string, metadata *ibmcloud.AccountMetaData, schedule ibmcloud.Schedule) error {
 
 	if err := os.Setenv("EVENT_NAME", schedule.EventName); err != nil {
 		return err
