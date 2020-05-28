@@ -12,7 +12,7 @@ import (
 )
 
 func CreateComment(token, githubURL, issue, comment string) error {
-	endpoint := fmt.Sprintf("https://api.%s/issues/%s/comments", processURL(githubURL), owner, repo, issue)
+	endpoint := fmt.Sprintf("https://api.%s/issues/%s/comments", processURL(githubURL), issue)
 
 	header := map[string]string{
 		"Authorization": token,
@@ -97,5 +97,6 @@ func processURL(url string) string {
 		return strings.ReplaceAll(url, "https://", "")
 	} else if strings.Contains(url, "http://") {
 		return strings.ReplaceAll(url, "http://", "")
-	} return url
+	}
+	return url
 }

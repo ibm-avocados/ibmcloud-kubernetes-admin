@@ -18,6 +18,7 @@ func cacheIdentityEndpoints() error {
 	return nil
 }
 
+// GetIdentityEndpoints returns the list of endpoints for IBMCloud IAM
 func GetIdentityEndpoints() (*IdentityEndpoints, error) {
 	err := cacheIdentityEndpoints()
 	if err != nil {
@@ -26,26 +27,32 @@ func GetIdentityEndpoints() (*IdentityEndpoints, error) {
 	return endpoints, nil
 }
 
+// GetZones returns an array of Zones
 func GetZones(showFlavors, location string) ([]Zone, error) {
 	return getZones(showFlavors, location)
 }
 
+// GetVersions queries the IKS api for current kubernetes and openshift master versions
 func GetVersions() (*ClusterVersion, error) {
 	return getVersions()
 }
 
+// GetLocations returns an array of Locations
 func GetLocations() ([]Location, error) {
 	return getLocations()
 }
 
+// GetGeoLocations returns a list of location based on geo
 func GetGeoLocations(geo string) ([]Location, error) {
 	return getGeoLocations(geo)
 }
 
+// GetMachineType returns a array of flavors of machines in a location based on queries
 func GetMachineType(datacenter, serverType, os string, cpuLimit, memoryLimit int) ([]MachineFlavor, error) {
 	return getMachineTypes(datacenter, serverType, os, cpuLimit, memoryLimit)
 }
 
+// IAMAuthenticate uses the api key to authenticate and return a Session
 func IAMAuthenticate(apikey string) (*Session, error) {
 	err := cacheIdentityEndpoints()
 	if err != nil {
@@ -61,6 +68,7 @@ func IAMAuthenticate(apikey string) (*Session, error) {
 	return &Session{Token: token}, nil
 }
 
+// Authenticate uses the one time passcode to authenticate and return a Session
 func Authenticate(otp string) (*Session, error) {
 	err := cacheIdentityEndpoints()
 	if err != nil {
@@ -76,10 +84,12 @@ func Authenticate(otp string) (*Session, error) {
 	return &Session{Token: token}, nil
 }
 
+// GetAccounts get a list of accounts for the current session
 func (s *Session) GetAccounts() (*Accounts, error) {
 	return s.getAccountsWithEndpoint(nil)
 }
 
+// IsValid checks if session is expired or not
 func (s *Session) IsValid() bool {
 	now := time.Now().Unix()
 	difference := int64(s.Token.Expiration) - now
@@ -111,22 +121,27 @@ func (s *Session) getAccountsWithEndpoint(nextURL *string) (*Accounts, error) {
 	return accounts, nil
 }
 
+// GetCluster returns a Cluster with clusterID / name
 func (s *Session) GetCluster(clusterID, resourceGroup string) (*Cluster, error) {
 	return getCluster(s.Token.AccessToken, clusterID, resourceGroup)
 }
 
+// GetClusters returns array of Clusters for current session
 func (s *Session) GetClusters(location string) ([]*Cluster, error) {
 	return getClusters(s.Token.AccessToken, location)
 }
 
+// GetDatacenterVlan get an array of Vlan (public, private)
 func (s *Session) GetDatacenterVlan(datacenter string) ([]Vlan, error) {
 	return getDatacenterVlan(s.Token.AccessToken, s.Token.RefreshToken, datacenter)
 }
 
+// GetAccountResources return AccountResources
 func (s *Session) GetAccountResources(accountID string) (*AccountResources, error) {
 	return getAccountResources(s.Token.AccessToken, accountID)
 }
 
+// GetWorkers returns workers for a cluster
 func (s *Session) GetWorkers(clusterID string) ([]Worker, error) {
 	return getClusterWorkers(s.Token.AccessToken, clusterID)
 }
@@ -143,6 +158,7 @@ func bindAccountToToken(refreshToken, accountID string) (*Session, error) {
 	return &Session{Token: token}, nil
 }
 
+// BindAccountToToken upgrades session with account
 func (s *Session) BindAccountToToken(accountID string) (*Session, error) {
 	session, err := bindAccountToToken(s.Token.RefreshToken, accountID)
 	if err != nil {
@@ -151,6 +167,7 @@ func (s *Session) BindAccountToToken(accountID string) (*Session, error) {
 	return session, err
 }
 
+// RenewSession renews session with refresh token
 func (s *Session) RenewSession() (*Session, error) {
 	err := cacheIdentityEndpoints()
 	if err != nil {
@@ -163,35 +180,44 @@ func (s *Session) RenewSession() (*Session, error) {
 	return &Session{Token: token}, nil
 }
 
+// DeleteCluster deletes cluster with a given id/name
 func (s *Session) DeleteCluster(id, resourceGroup, deleteResources string) error {
 	return deleteCluster(s.Token.AccessToken, id, resourceGroup, deleteResources)
 }
 
+// CreateCluster creates a cluster
 func (s *Session) CreateCluster(request CreateClusterRequest) (*CreateClusterResponse, error) {
 	return createCluster(s.Token.AccessToken, request)
 }
 
+// SetTag sets the tag for a list of resources
 func (s *Session) SetTag(updateTag UpdateTag) (*TagResult, error) {
 	return setTags(s.Token.AccessToken, updateTag)
 }
 
+// SetClusterTag sets the tag for a cluster
 func (s *Session) SetClusterTag(tag, clusterID, resourceID string) (*TagResult, error) {
 	return setClusterTags(s.Token.AccessToken, tag, clusterID, resourceID)
 }
 
+// DeleteTag deletes tag from list of resources
 func (s *Session) DeleteTag(updateTag UpdateTag) (*TagResult, error) {
 	return deleteTags(s.Token.AccessToken, updateTag)
 }
 
+// GetTags get tag infor for a cluster
 func (s *Session) GetTags(clusterCRN string) (*Tags, error) {
 	return getTags(s.Token.AccessToken, clusterCRN)
 }
 
+// GetBillingData get billing info for the month for a specific cluster
 func (s *Session) GetBillingData(accountID, clusterID, clusterCRN string) (string, error) {
 	return getBillingData(s.Token.AccessToken, accountID, clusterID, clusterCRN)
 }
 
 // CLOUDANT RELATED METHODS
+
+// SetAPIKey sets the api key for an account
 func (s *Session) SetAPIKey(apiKey, accountID string) error {
 	if !s.IsValid() {
 		log.Println("Access token expired.")
@@ -205,6 +231,7 @@ func (s *Session) SetAPIKey(apiKey, accountID string) error {
 	return SetAPIKey(apiKey, accountID)
 }
 
+// CheckAPIKey checks if the APIKey is valid
 func (s *Session) CheckAPIKey(accountID string) error {
 	if !s.IsValid() {
 		log.Println("Access token expired.")
@@ -218,6 +245,7 @@ func (s *Session) CheckAPIKey(accountID string) error {
 	return CheckAPIKey(accountID)
 }
 
+// GetAPIKey returns the APIKey
 func (s *Session) GetAPIKey(accountID string) (string, error) {
 	if !s.IsValid() {
 		log.Println("Access token expired.")
@@ -231,6 +259,7 @@ func (s *Session) GetAPIKey(accountID string) (string, error) {
 	return GetAPIKey(accountID)
 }
 
+// UpdateAPIKey update the existing api key
 func (s *Session) UpdateAPIKey(apiKey, accountID string) error {
 	if !s.IsValid() {
 		log.Println("Access token expired.")
@@ -244,6 +273,7 @@ func (s *Session) UpdateAPIKey(apiKey, accountID string) error {
 	return UpdateAPIKey(apiKey, accountID)
 }
 
+// DeleteAPIKey delete the api key
 func (s *Session) DeleteAPIKey(accountID string) error {
 	if !s.IsValid() {
 		log.Println("Access token expired.")
@@ -267,7 +297,7 @@ func (s *Session) GetAccountMetaData(accountID string) (*AccountMetaData, error)
 		log.Println("Token Refreshed.")
 		s.Token = token
 	}
-	return GetAccountMetadata(accountID)
+	return GetAccountMetaData(accountID)
 }
 
 func (s *Session) CreateAccountMetaData(accountID, org, space, region, issueRepo, grantClusterRepo, githubUser, githubToken string) error {
@@ -275,12 +305,25 @@ func (s *Session) CreateAccountMetaData(accountID, org, space, region, issueRepo
 		log.Println("Access token expired.")
 		token, err := upgradeToken(endpoints.TokenEndpoint, s.Token.RefreshToken, accountID)
 		if err != nil {
-			return nil, err
+			return err
 		}
 		log.Println("Token Refreshed.")
 		s.Token = token
 	}
 	return CreateAccountMetadata(accountID, org, space, region, issueRepo, grantClusterRepo, githubUser, githubToken)
+}
+
+func (s *Session) UpdateAccountMetaData(accountID, org, space, region, issueRepo, grantClusterRepo, githubUser, githubToken string) error {
+	if !s.IsValid() {
+		log.Println("Access token expired.")
+		token, err := upgradeToken(endpoints.TokenEndpoint, s.Token.RefreshToken, accountID)
+		if err != nil {
+			return err
+		}
+		log.Println("Token Refreshed.")
+		s.Token = token
+	}
+	return UpdateAccountMetadata(accountID, org, space, region, issueRepo, grantClusterRepo, githubUser, githubToken)
 }
 
 func (s *Session) GetDocument(accountID string) ([]Schedule, error) {
@@ -295,19 +338,6 @@ func (s *Session) GetDocument(accountID string) ([]Schedule, error) {
 	}
 	return GetDocument(accountID)
 }
-
-// func (s *Session) GetDocument(accountID string) ([]Schedule, error) {
-// 	if !s.IsValid() {
-// 		log.Println("Access token expired.")
-// 		token, err := upgradeToken(endpoints.TokenEndpoint, s.Token.RefreshToken, accountID)
-// 		if err != nil {
-// 			return nil, err
-// 		}
-// 		log.Println("Token Refreshed.")
-// 		s.Token = token
-// 	}
-// 	return GetDocument(accountID)
-// }
 
 func (s *Session) GetAllDocument(accountID string) ([]interface{}, error) {
 	if !s.IsValid() {

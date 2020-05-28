@@ -406,10 +406,10 @@ type AccountMetaData struct {
 	Org              string `json:"org"`
 	Space            string `json:"space"`
 	Region           string `json:"region"`
-	IssueRepo        string `json:"issue_repo"`
-	GrantClusterRepo string `json:"grant_cluster_repo"`
-	GithubUser       string `json:"github_user"`
-	GithubToken      string `json:"github_token"`
+	IssueRepo        string `json:"issuRepo"`
+	GrantClusterRepo string `json:"grantClusterRepo"`
+	GithubUser       string `json:"githubUser"`
+	GithubToken      string `json:"githubToken"`
 }
 
 // type Schedule struct {

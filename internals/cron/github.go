@@ -8,13 +8,10 @@ import (
 )
 
 func createComment(issue, comment string) error {
-	apiEndpoint := os.Getenv("GITHUB_API_ENDPOINT")
-	repo := os.Getenv("REPO")
-	owner := os.Getenv("OWNER")
 	githubUser := os.Getenv("GITHUB_USER")
 	githubToken := os.Getenv("GITHUB_TOKEN")
 	token := "Basic " + base64Encode(githubUser+":"+githubToken)
-	if err := notification.CreateComment(token, apiEndpoint, owner, repo, issue, comment); err != nil {
+	if err := notification.CreateComment(token, "", issue, comment); err != nil {
 		return err
 	}
 	return nil

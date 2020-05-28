@@ -182,7 +182,7 @@ func CreateAccountMetadata(accountID, org, space, region, issueRepo, grantCluste
 	return createAccountMetaData(dbName, org, space, region, issueRepo, grantClusterRepo, githubUser, githubToken)
 }
 
-func createMetaDataDocs(dbName, org, space, region, issueRepo, grantClusterRepo, githubUser, githubToken string) error {
+func createAccountMetaData(dbName, org, space, region, issueRepo, grantClusterRepo, githubUser, githubToken string) error {
 	db := getDB(dbName)
 
 	metaData := struct {
@@ -190,10 +190,10 @@ func createMetaDataDocs(dbName, org, space, region, issueRepo, grantClusterRepo,
 		Org              string `json:"org"`
 		Space            string `json:"space"`
 		Region           string `json:"region"`
-		IssueRepo        string `json:"issue_repo"`
-		GrantClusterRepo string `json:"grant_cluster_repo"`
-		GithubUser       string `json:"github_user"`
-		GithubToken      string `json:"github_token"`
+		IssueRepo        string `json:"issueRepo"`
+		GrantClusterRepo string `json:"grantClusterRepo"`
+		GithubUser       string `json:"githubUser"`
+		GithubToken      string `json:"githubToken"`
 	}{
 		ID:               "metadata",
 		Org:              org,
