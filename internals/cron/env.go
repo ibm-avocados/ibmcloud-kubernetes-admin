@@ -17,9 +17,6 @@ func setEnvs(accountID string, schedule ibmcloud.Schedule) error {
 	if err := os.Setenv("RESOURCE_GROUP_NAME", schedule.ResourceGroupName); err != nil {
 		return err
 	}
-	if err := os.Setenv("ACCESS_GROUP_NAME", schedule.AccessGroupName); err != nil {
-		return err
-	}
 	if err := os.Setenv("APP_HOSTNAME", schedule.EventName); err != nil {
 		return err
 	}

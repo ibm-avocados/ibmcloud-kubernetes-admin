@@ -33,6 +33,7 @@ const Settings = ({ accountID }) => {
   const [org, setOrg] = React.useState("");
   const [space, setSpace] = React.useState("");
   const [region, setRegion] = React.useState("");
+  const [accessGroup, setAccessGroup] = React.useState("");
   const [issueRepo, setIssueRepo] = React.useState("");
   const [grantClusterRepo, setGrantClusterRepo] = React.useState("");
   const [githubUser, setGithubUser] = React.useState("");
@@ -89,6 +90,7 @@ const Settings = ({ accountID }) => {
       return (
         data.org === org &&
         data.space === space &&
+        data.accessGroup === accessGroup &&
         data.githubUser === githubUser &&
         data.issueRepo === issueRepo &&
         data.grantClusterRepo === grantClusterRepo &&
@@ -101,6 +103,7 @@ const Settings = ({ accountID }) => {
       org === "" ||
       space === "" ||
       region === "" ||
+      accessGroup === "" ||
       issueRepo === "" ||
       grantClusterRepo === "" ||
       githubUser === "" ||
@@ -111,7 +114,7 @@ const Settings = ({ accountID }) => {
   const saveMetaData = async () => {
     try {
       let token = githubToken;
-      if(data && token === TOKEN_MESSAGE){
+      if (data && token === TOKEN_MESSAGE) {
         token = data.githubToken;
       }
       const response = await grab(`/api/v1/workshop/${accountID}/metadata`, {
@@ -120,6 +123,7 @@ const Settings = ({ accountID }) => {
           org: org,
           space: space,
           region: region,
+          accessGroup: accessGroup,
           issueRepo: issueRepo,
           grantClusterRepo: grantClusterRepo,
           githubUser: githubUser,
@@ -161,7 +165,7 @@ const Settings = ({ accountID }) => {
         )}
         <Spacer height="16px" />
         <Row>
-          <Column sm={4} md={4} lg={4}>
+          <Column sm={4} md={4} lg={3}>
             <Spacer height="16px" />
             <TextInput
               labelText="Org"
@@ -172,7 +176,7 @@ const Settings = ({ accountID }) => {
             />
           </Column>
 
-          <Column sm={4} md={4} lg={4}>
+          <Column sm={4} md={4} lg={3}>
             <Spacer height="16px" />
             <TextInput
               labelText="Space"
@@ -182,7 +186,7 @@ const Settings = ({ accountID }) => {
               onChange={(e) => setSpace(e.target.value.trim())}
             />
           </Column>
-          <Column sm={4} md={4} lg={4}>
+          <Column sm={4} md={4} lg={3}>
             <Spacer height="16px" />
             <TextInput
               labelText="Region"
@@ -190,6 +194,16 @@ const Settings = ({ accountID }) => {
               placeholder="us-south"
               value={region}
               onChange={(e) => setRegion(e.target.value.trim())}
+            />
+          </Column>
+          <Column sm={4} md={4} lg={3}>
+            <Spacer height="16px" />
+            <TextInput
+              labelText="Access Group"
+              id="account_accessgroup"
+              placeholder="lab-users"
+              value={accessGroup}
+              onChange={(e) => setAccessGroup(e.target.value.trim())}
             />
           </Column>
         </Row>

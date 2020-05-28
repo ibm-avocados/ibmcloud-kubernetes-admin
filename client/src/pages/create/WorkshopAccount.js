@@ -24,8 +24,7 @@ const grab = async (url, options, retryCount = 0) => {
   return data;
 };
 
-const WorkshopAccount = ({ accountID }) => {
-  const [isWorkshop, setIsWorkshop] = React.useState(false);
+const WorkshopAccount = ({ accountID, githubIssue, setGithubIssue, isWorkshop, setIsWorkshop }) => {
   return (
     <>
       <Checkbox
@@ -33,19 +32,27 @@ const WorkshopAccount = ({ accountID }) => {
         labelText="Workshop"
         onChange={(e) => setIsWorkshop(e)}
       />
-      {isWorkshop ? <WorkshopView accountID={accountID} /> : <></>}
+      {isWorkshop ? (
+        <WorkshopView
+          githubIssue={githubIssue}
+          setGithubIssue={setGithubIssue}
+          accountID={accountID}
+        />
+      ) : (
+        <></>
+      )}
     </>
   );
 };
 
-const WorkshopView = ({ accountID }) => {
+const WorkshopView = ({ accountID, setGithubIssue, githubIssue }) => {
   const [loading, setLoading] = React.useState(false);
   const [metadataAvailable, setMetadataAvailable] = React.useState(false);
   const [apiKeyValid, setApiKeyValid] = React.useState(false);
 
   const onSettingsButtonClicked = () => {
     history.push("/settings");
-  }
+  };
   React.useEffect(() => {
     const checkMetadata = async () => {
       setLoading(true);
@@ -85,7 +92,16 @@ const WorkshopView = ({ accountID }) => {
       </>
     );
   }
-  return <p>Good to go ✅</p>;
+  return (
+    <TextInput
+      id="workshop_issue"
+      value={githubIssue}
+      invalid={isNaN(githubIssue) || githubIssue === ""}
+      invalidText="Must be a number"
+      onChange={(e) => setGithubIssue(e.target.value.trim())}
+      labelText="Github Issue Number"
+    />
+  );
 };
 
 export default WorkshopAccount;

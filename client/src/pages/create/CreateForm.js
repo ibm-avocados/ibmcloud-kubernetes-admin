@@ -82,6 +82,9 @@ const CreateForm = ({ accountID }) => {
   const [endTime, setEndTime] = React.useState("");
   const [dateRange, setDateRange] = React.useState([]);
 
+  const [isWorkshop, setIsWorkshop] = React.useState(false);
+  const [githubIssue, setGithubIssue] = React.useState("");
+
   // ui indicators
   const [creating, setCreating] = React.useState(false);
   const [loaderDescription, setLoaderDescription] = React.useState("");
@@ -114,6 +117,7 @@ const CreateForm = ({ accountID }) => {
         );
         if (resourceGroups) {
           setResourceGroups(resourceGroups.resources);
+          console.log(resourceGroups.resources);
         }
       } catch (e) {
         console.log(e);
@@ -139,8 +143,6 @@ const CreateForm = ({ accountID }) => {
       }
     };
     checkAPIKey();
-
-    
   }, [accountID]);
 
   const resetState = () => {
@@ -423,9 +425,7 @@ const CreateForm = ({ accountID }) => {
   };
 
   const shouldSchedulingBeDisabled = () => {
-    // TODO: 
-    return false;
-    // return shouldCreateBeDisabled();
+    return shouldCreateBeDisabled();
   };
 
   const shouldScheduleSubmitBeDisabled = () => {
@@ -504,6 +504,8 @@ const CreateForm = ({ accountID }) => {
     );
     const destroyAt = endDate.getTime() / 1000;
 
+    const password = kubernetesSelected?"ikslab":"oslab";
+      
     const schedule = {
       createAt: createAt,
       destroyAt: destroyAt,
@@ -513,7 +515,18 @@ const CreateForm = ({ accountID }) => {
       createRequest: CreateClusterRequest,
       clusters: [],
       notifyEmails: selectedEmails,
+      eventName: clusterNamePrefix,
+      password: password,
+      resourceGroupName: selectedGroup.name,
+      githubIssue: githubIssue,
+      isWorkshop: isWorkshop,
     };
+
+    /*
+    	EventName         string               `json:"eventName"`
+	Password          string               `json:"password"`
+	ResourceGroupName string               `json:"resourceGroupName"`
+    */
 
     try {
       const response = await grab(`/api/v1/schedule/${accountID}/create`, {
@@ -568,8 +581,6 @@ const CreateForm = ({ accountID }) => {
       console.log(e);
     }
   };
-
-  
 
   const timeInvalid = (time) => {
     const re = /^(0[0-9]|1[0-2]):[0-5][0-9]$/;
@@ -1072,7 +1083,13 @@ const CreateForm = ({ accountID }) => {
                     accountID={accountID}
                     setSelectedEmails={setSelectedEmails}
                   />
-                  <WorkshopAccount accountID={accountID}/>
+                  <WorkshopAccount
+                    isWorkshop={isWorkshop}
+                    setIsWorkshop={setIsWorkshop}
+                    githubIssue={githubIssue}
+                    setGithubIssue={setGithubIssue}
+                    accountID={accountID}
+                  />
                 </ModalWrapper>
                 <Spacer height="16px" />
               </div>

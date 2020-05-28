@@ -406,6 +406,7 @@ type AccountMetaData struct {
 	Org              string `json:"org"`
 	Space            string `json:"space"`
 	Region           string `json:"region"`
+	AccessGroup      string `json:"accessGroup"`
 	IssueRepo        string `json:"issueRepo"`
 	GrantClusterRepo string `json:"grantClusterRepo"`
 	GithubUser       string `json:"githubUser"`
@@ -442,7 +443,7 @@ type Schedule struct {
 	EventName         string               `json:"eventName"`
 	Password          string               `json:"password"`
 	ResourceGroupName string               `json:"resourceGroupName"`
-	AccessGroupName   string               `json:"accessGroupName"`
+	GithubIssueNumber string               `json:"githubIssueNumber"`
 	IsWorkshop        bool                 `json:"isWorkshop"`
 }
 

@@ -177,12 +177,12 @@ func getAPIKey(dbName string) (*ApiKey, error) {
 	return &result, nil
 }
 
-func CreateAccountMetadata(accountID, org, space, region, issueRepo, grantClusterRepo, githubUser, githubToken string) error {
+func CreateAccountMetadata(accountID, org, space, region, accessGroup, issueRepo, grantClusterRepo, githubUser, githubToken string) error {
 	dbName := "db-" + accountID
-	return createAccountMetaData(dbName, org, space, region, issueRepo, grantClusterRepo, githubUser, githubToken)
+	return createAccountMetaData(dbName, org, space, region, accessGroup, issueRepo, grantClusterRepo, githubUser, githubToken)
 }
 
-func createAccountMetaData(dbName, org, space, region, issueRepo, grantClusterRepo, githubUser, githubToken string) error {
+func createAccountMetaData(dbName, org, space, region, accessGroup, issueRepo, grantClusterRepo, githubUser, githubToken string) error {
 	db := getDB(dbName)
 
 	metaData := struct {
@@ -190,6 +190,7 @@ func createAccountMetaData(dbName, org, space, region, issueRepo, grantClusterRe
 		Org              string `json:"org"`
 		Space            string `json:"space"`
 		Region           string `json:"region"`
+		AccessGroup      string `json:"accessGroup"`
 		IssueRepo        string `json:"issueRepo"`
 		GrantClusterRepo string `json:"grantClusterRepo"`
 		GithubUser       string `json:"githubUser"`
@@ -199,6 +200,7 @@ func createAccountMetaData(dbName, org, space, region, issueRepo, grantClusterRe
 		Org:              org,
 		Space:            space,
 		Region:           region,
+		AccessGroup:      accessGroup,
 		IssueRepo:        issueRepo,
 		GrantClusterRepo: grantClusterRepo,
 		GithubUser:       githubUser,
@@ -213,12 +215,12 @@ func createAccountMetaData(dbName, org, space, region, issueRepo, grantClusterRe
 	return nil
 }
 
-func UpdateAccountMetadata(accountID, org, space, region, issueRepo, grantClusterRepo, githubUser, githubToken string) error {
+func UpdateAccountMetadata(accountID, org, space, region, accessGroup, issueRepo, grantClusterRepo, githubUser, githubToken string) error {
 	dbName := "db-" + accountID
-	return updateAccountMetaData(dbName, org, space, region, issueRepo, grantClusterRepo, githubUser, githubToken)
+	return updateAccountMetaData(dbName, org, space, region, accessGroup, issueRepo, grantClusterRepo, githubUser, githubToken)
 }
 
-func updateAccountMetaData(dbName, org, space, region, issueRepo, grantClusterRepo, githubUser, githubToken string) error {
+func updateAccountMetaData(dbName, org, space, region, accessGroup, issueRepo, grantClusterRepo, githubUser, githubToken string) error {
 	db := getDB(dbName)
 
 	metadata, err := getAccountMetaData(dbName)
@@ -230,6 +232,7 @@ func updateAccountMetaData(dbName, org, space, region, issueRepo, grantClusterRe
 	metadata.Space = space
 	metadata.Region = region
 	metadata.IssueRepo = issueRepo
+	metadata.AccessGroup = accessGroup
 	metadata.GrantClusterRepo = grantClusterRepo
 	metadata.GithubUser = githubUser
 	metadata.GithubToken = githubToken

@@ -300,7 +300,7 @@ func (s *Session) GetAccountMetaData(accountID string) (*AccountMetaData, error)
 	return GetAccountMetaData(accountID)
 }
 
-func (s *Session) CreateAccountMetaData(accountID, org, space, region, issueRepo, grantClusterRepo, githubUser, githubToken string) error {
+func (s *Session) CreateAccountMetaData(accountID, org, space, region, accessGroup, issueRepo, grantClusterRepo, githubUser, githubToken string) error {
 	if !s.IsValid() {
 		log.Println("Access token expired.")
 		token, err := upgradeToken(endpoints.TokenEndpoint, s.Token.RefreshToken, accountID)
@@ -310,10 +310,10 @@ func (s *Session) CreateAccountMetaData(accountID, org, space, region, issueRepo
 		log.Println("Token Refreshed.")
 		s.Token = token
 	}
-	return CreateAccountMetadata(accountID, org, space, region, issueRepo, grantClusterRepo, githubUser, githubToken)
+	return CreateAccountMetadata(accountID, org, space, region, accessGroup, issueRepo, grantClusterRepo, githubUser, githubToken)
 }
 
-func (s *Session) UpdateAccountMetaData(accountID, org, space, region, issueRepo, grantClusterRepo, githubUser, githubToken string) error {
+func (s *Session) UpdateAccountMetaData(accountID, org, space, region, accessGroup, issueRepo, grantClusterRepo, githubUser, githubToken string) error {
 	if !s.IsValid() {
 		log.Println("Access token expired.")
 		token, err := upgradeToken(endpoints.TokenEndpoint, s.Token.RefreshToken, accountID)
@@ -323,7 +323,7 @@ func (s *Session) UpdateAccountMetaData(accountID, org, space, region, issueRepo
 		log.Println("Token Refreshed.")
 		s.Token = token
 	}
-	return UpdateAccountMetadata(accountID, org, space, region, issueRepo, grantClusterRepo, githubUser, githubToken)
+	return UpdateAccountMetadata(accountID, org, space, region, accessGroup, issueRepo, grantClusterRepo, githubUser, githubToken)
 }
 
 func (s *Session) GetDocument(accountID string) ([]Schedule, error) {

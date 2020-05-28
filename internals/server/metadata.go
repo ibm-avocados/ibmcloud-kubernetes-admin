@@ -79,6 +79,14 @@ func (s *Server) UpdateMetaDataHandler(w http.ResponseWriter, r *http.Request) {
 
 	region := fmt.Sprintf("%v", _region)
 
+	_accessGroup, ok := body["accessGroup"]
+	if !ok {
+		handleError(w, http.StatusBadRequest, "accessGroup not found", err.Error())
+		return
+	}
+
+	accessGroup := fmt.Sprintf("%v", _accessGroup)
+
 	_issueRepo, ok := body["issueRepo"]
 	if !ok {
 		handleError(w, http.StatusBadRequest, "issueRepo not found", err.Error())
@@ -111,7 +119,7 @@ func (s *Server) UpdateMetaDataHandler(w http.ResponseWriter, r *http.Request) {
 
 	githubToken := fmt.Sprintf("%v", _githubToken)
 
-	if err := session.UpdateAccountMetaData(accountID, org, space, region, issueRepo, grantClusterRepo, githubUser, githubToken); err != nil {
+	if err := session.UpdateAccountMetaData(accountID, org, space, region, accessGroup, issueRepo, grantClusterRepo, githubUser, githubToken); err != nil {
 		handleError(w, http.StatusUnauthorized, "could not create record", err.Error())
 		return
 	}
@@ -167,6 +175,14 @@ func (s *Server) CreateMetaDataHandler(w http.ResponseWriter, r *http.Request) {
 
 	region := fmt.Sprintf("%v", _region)
 
+	_accessGroup, ok := body["accessGroup"]
+	if !ok {
+		handleError(w, http.StatusBadRequest, "accessGroup not found", err.Error())
+		return
+	}
+
+	accessGroup := fmt.Sprintf("%v", _accessGroup)
+
 	_issueRepo, ok := body["issueRepo"]
 	if !ok {
 		handleError(w, http.StatusBadRequest, "issueRepo not found", err.Error())
@@ -199,7 +215,7 @@ func (s *Server) CreateMetaDataHandler(w http.ResponseWriter, r *http.Request) {
 
 	githubToken := fmt.Sprintf("%v", _githubToken)
 
-	if err := session.CreateAccountMetaData(accountID, org, space, region, issueRepo, grantClusterRepo, githubUser, githubToken); err != nil {
+	if err := session.CreateAccountMetaData(accountID, org, space, region, accessGroup, issueRepo, grantClusterRepo, githubUser, githubToken); err != nil {
 		handleError(w, http.StatusUnauthorized, "could not create record", err.Error())
 		return
 	}
