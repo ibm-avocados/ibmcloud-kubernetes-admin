@@ -2,10 +2,10 @@
 
 Key: `{{ .Password }}`
 
-Region: {{ .CreateClusterRequest.ClusterRequest.DataCenter }}
+Region: {{ .CreateRequest.ClusterRequest.DataCenter }}
 Clusters: {{ .Count }}
-Workers: {{ .CreateClusterRequest.ClusterRequest.WorkerNum }} x {{ .CreateClusterRequest.ClusterRequest.MachineType }}
-K8s Version: {{ .CreateClusterRequest.ClusterRequest.MasterVersion }}
+Workers: {{ .CreateRequest.ClusterRequest.WorkerNum }} x {{ $.CreateRequest.ClusterRequest.MachineType }}
+K8s Version: {{ .CreateRequest.ClusterRequest.MasterVersion }}
 
 ## Note
 - Please be sure to click: `Prefill Cache` button on the URL before your lab

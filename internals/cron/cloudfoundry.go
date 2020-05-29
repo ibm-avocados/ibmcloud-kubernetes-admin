@@ -2,6 +2,7 @@ package cron
 
 import (
 	"bytes"
+	"encoding/base64"
 	"fmt"
 	"log"
 	"os"
@@ -51,21 +52,23 @@ func deploy(apikey string, metadata *ibmcloud.AccountMetaData, schedule ibmcloud
 		return err
 	}
 
-	comment, err := getCommentString(schedule)
+	comment, err := getCommentString(schedule, "templates/message.gotmpl")
 	if err != nil {
 		log.Println("could not get comment string")
 		return err
 	}
 
-	if err := notification.CreateComment(metadata.GithubToken, processURL(metadata.IssueRepo), schedule.GithubIssueNumber, comment); err != nil {
+	token := base64.StdEncoding.EncodeToString([]byte(metadata.GithubUser + ":" + metadata.GithubToken))
+
+	if err := notification.CreateComment(token, processURL(metadata.IssueRepo), schedule.GithubIssueNumber, comment); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func getCommentString(schedule ibmcloud.Schedule) (string, error) {
-	tmpl, err := template.ParseFiles("templates/messages.gotmpl")
+func getCommentString(schedule ibmcloud.Schedule, filename string) (string, error) {
+	tmpl, err := template.ParseFiles(filename)
 	if err != nil {
 		log.Println("could not parse template files")
 		return "", err
@@ -75,7 +78,7 @@ func getCommentString(schedule ibmcloud.Schedule) (string, error) {
 	buf := new(bytes.Buffer)
 
 	if err := commentTemplate.Execute(buf, schedule); err != nil {
-		log.Println("error executing comment template")
+		log.Println("error executing comment template", err)
 		return "", err
 	}
 

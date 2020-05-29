@@ -408,7 +408,7 @@ func createCluster(token string, request CreateClusterRequest) (*CreateClusterRe
 	err = postBody(clusterEndpoint, header, nil, body, &result)
 
 	if err != nil {
-		log.Println(err)
+		log.Println("error creating cluster : ", request.ClusterRequest.Name, err)
 		return nil, err
 	}
 	log.Println("cluster created. id :", result.ID)

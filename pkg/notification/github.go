@@ -14,7 +14,7 @@ func CreateComment(token, githubURL, issue, comment string) error {
 	endpoint := fmt.Sprintf("https://api.%s/issues/%s/comments", githubURL, issue)
 
 	header := map[string]string{
-		"Authorization": token,
+		"Authorization": "Basic " + token,
 	}
 
 	type Comment struct {

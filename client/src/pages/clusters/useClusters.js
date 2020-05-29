@@ -1,7 +1,7 @@
 import { useReducer, useEffect } from 'react';
 import produce from 'immer';
 
-const WAIT_FOR_ALL = false;
+const WAIT_FOR_ALL = true;
 
 // Takes an array of objects and tranforms it into a map of objects, with ID
 // being the key and the object being the value.
@@ -304,31 +304,6 @@ const useClusters = (accountID) => {
         //   });
         // }
 
-        const workerPromises = Object.keys(clusters).map(async (id) => {
-          try {
-            const workers = await grab(`/api/v1/clusters/${id}/workers`, {
-              signal,
-              method: 'GET',
-            });
-            if (!WAIT_FOR_ALL && !cancelled) {
-              dispatch({
-                type: 'UPDATE_WORKERS',
-                id,
-                workers,
-              });
-            }
-            return { id, workers };
-          } catch {
-            return undefined;
-          }
-        });
-        if (WAIT_FOR_ALL) {
-          Promise.all(workerPromises).then((workers) => {
-            if (!cancelled) {
-              dispatch({ type: 'UPDATE_ALL_WORKERS', workers });
-            }
-          });
-        }
       }
     } catch {
       if (!cancelled) {
@@ -336,6 +311,34 @@ const useClusters = (accountID) => {
       }
     }
   };
+
+  const getWorkers = (clusters) => {
+    const workerPromises = Object.keys(clusters).map(async (id) => {
+      try {
+        const workers = await grab(`/api/v1/clusters/${id}/workers`, {
+          signal,
+          method: 'GET',
+        });
+        if (!WAIT_FOR_ALL && !cancelled) {
+          dispatch({
+            type: 'UPDATE_WORKERS',
+            id,
+            workers,
+          });
+        }
+        return { id, workers };
+      } catch {
+        return undefined;
+      }
+    });
+    if (WAIT_FOR_ALL) {
+      Promise.all(workerPromises).then((workers) => {
+        if (!cancelled) {
+          dispatch({ type: 'UPDATE_ALL_WORKERS', workers });
+        }
+      });
+    }
+  }
 
   const getBilling = (clusters) => {
     const costPromises = Object.keys(clusters).map(async (id) => {
@@ -458,6 +461,7 @@ const useClusters = (accountID) => {
       setTag,
       reload,
       getBilling,
+      getWorkers,
     },
   ];
 };

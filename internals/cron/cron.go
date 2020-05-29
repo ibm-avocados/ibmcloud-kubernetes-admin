@@ -222,7 +222,8 @@ func checkCloudant() {
 					var createRequest ibmcloud.CreateClusterRequest
 					copier.Copy(&createRequest, &schedule.CreateRequest)
 					createRequest.ClusterRequest.Name = name + suffix
-					response, err := session.CreateCluster(schedule.CreateRequest)
+					log.Println("trying to create cluster with name : ", createRequest.ClusterRequest.Name)
+					response, err := session.CreateCluster(createRequest)
 					if err != nil {
 						log.Println("error creating cluster. investigate : ", createRequest.ClusterRequest.Name, err)
 						hasErrors = true
@@ -234,7 +235,7 @@ func checkCloudant() {
 						continue
 					}
 
-					log.Println("created cluster :", response.ID)
+					log.Println("created cluster. ID : ", response.ID, " Name : ", createRequest.ClusterRequest.Name)
 
 					schedule.Clusters = append(schedule.Clusters, response.ID)
 
@@ -293,7 +294,7 @@ func checkCloudant() {
 				log.Println("could not get account metadata")
 				continue
 			}
-			setEnvs(accountID, metadata, schedule)
+			setEnvs(accountID, apikey, metadata, schedule)
 			// if the schedule is created we deploy the app
 			// probably will deploy even if there was minor errors
 			if schedule.Status == "created" {
