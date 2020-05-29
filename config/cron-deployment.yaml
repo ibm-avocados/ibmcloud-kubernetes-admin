@@ -1,15 +1,15 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name:  admin
+  name:  cron
   labels:
-    run:  admin
+    run:  cron
     version: v1
 spec:
   replicas: 1
   selector:
     matchLabels:
-      run:  admin
+      run:  cron
   strategy:
     rollingUpdate:
       maxSurge: 25%
@@ -18,7 +18,7 @@ spec:
   template:
     metadata:
       labels:
-        run:  admin
+        run:  cron
     spec:
       containers:
       - image:  moficodes/ibmcloud-kubernetes-cron:v0.2.1

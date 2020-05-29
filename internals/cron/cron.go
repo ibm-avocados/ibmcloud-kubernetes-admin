@@ -87,7 +87,9 @@ func checkCloudant() {
 		// basically means cloudant is not there or can not be connected to
 		// no way to recover
 		// only sane option is to contact admin
-		notification.EmailAdmin("Cloudant Not Available", "<strong>Check cloudant database</strong>")
+		if err := notification.EmailAdmin("Cloudant Not Available", "<strong>Check cloudant database</strong>"); err != nil {
+			log.Println(err)
+		}
 		log.Println("error getting accounts")
 	}
 

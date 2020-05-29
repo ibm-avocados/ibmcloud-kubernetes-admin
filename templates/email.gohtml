@@ -8,6 +8,11 @@
   <body>
     <h1>{{ .Schedule.Count }} clusters {{ .Schedule.Status }}</h1>
     <p>Data Center : {{.Schedule.CreateRequest.ClusterRequest.DataCenter}} </p>
+    <p>Name : {{.Schedule.CreateRequest.ClusterRequest.Name}} </p>
+    <p>Public Vlan : {{.Schedule.CreateRequest.ClusterRequest.PublicVlan}} </p>
+    <p>Private Vlan : {{.Schedule.CreateRequest.ClusterRequest.PrivateVlan}} </p>
+    <p>Machine Type : {{.Schedule.CreateRequest.ClusterRequest.MachineType}}</p>
+    <p>Worker Count : {{.Schedule.CreateRequest.ClusterRequest.WorkerCount}}</p>
     {{ if .Errors }}
       <ol>
         {{range .Errors}}

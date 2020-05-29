@@ -602,6 +602,7 @@ func getAllDbs() ([]string, error) {
 
 	err := fetch(url, header, nil, &result)
 	if err != nil {
+		log.Println("error getting all dbs")
 		return nil, err
 	}
 
