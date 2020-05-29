@@ -12,7 +12,7 @@
     <p>Public Vlan : {{.Schedule.CreateRequest.ClusterRequest.PublicVlan}} </p>
     <p>Private Vlan : {{.Schedule.CreateRequest.ClusterRequest.PrivateVlan}} </p>
     <p>Machine Type : {{.Schedule.CreateRequest.ClusterRequest.MachineType}}</p>
-    <p>Worker Count : {{.Schedule.CreateRequest.ClusterRequest.WorkerCount}}</p>
+    <p>Worker Count : {{.Schedule.CreateRequest.ClusterRequest.WorkerNum}}</p>
     {{ if .Errors }}
       <ol>
         {{range .Errors}}
