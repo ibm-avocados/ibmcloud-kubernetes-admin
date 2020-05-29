@@ -2,7 +2,6 @@ package cron
 
 import (
 	"bytes"
-	"encoding/base64"
 	"fmt"
 	"log"
 	"os"
@@ -11,7 +10,6 @@ import (
 	"text/template"
 
 	"github.com/moficodes/ibmcloud-kubernetes-admin/pkg/ibmcloud"
-	"github.com/moficodes/ibmcloud-kubernetes-admin/pkg/notification"
 )
 
 func cloneGrantCluster(githubUser, githubToken, grantClusterURL string) error {
@@ -42,25 +40,13 @@ func deploy(apikey string, metadata *ibmcloud.AccountMetaData, schedule ibmcloud
 		return err
 	}
 
-	if err := cloneGrantCluster(metadata.GithubUser, metadata.GithubToken, processURL(metadata.GrantClusterRepo)); err != nil {
+	if err := cloneGrantCluster(metadata.GithubUser, metadata.GithubToken, stripHttps(metadata.GrantClusterRepo)); err != nil {
 		log.Println("could not clone grantcluster repo")
 		return err
 	}
 	defer cleanUpFiles("grant-cluster")
 
 	if err := cmd("./grant-cluster/scripts/deploy-app.sh"); err != nil {
-		return err
-	}
-
-	comment, err := getCommentString(schedule, "templates/message.gotmpl")
-	if err != nil {
-		log.Println("could not get comment string")
-		return err
-	}
-
-	token := base64.StdEncoding.EncodeToString([]byte(metadata.GithubUser + ":" + metadata.GithubToken))
-
-	if err := notification.CreateComment(token, processURL(metadata.IssueRepo), schedule.GithubIssueNumber, comment); err != nil {
 		return err
 	}
 
@@ -90,7 +76,7 @@ func cleanUp(apikey string, metadata *ibmcloud.AccountMetaData, schedule ibmclou
 		return err
 	}
 
-	if err := cloneGrantCluster(metadata.GithubUser, metadata.GithubToken, processURL(metadata.GrantClusterRepo)); err != nil {
+	if err := cloneGrantCluster(metadata.GithubUser, metadata.GithubToken, stripHttps(metadata.GrantClusterRepo)); err != nil {
 		return err
 	}
 	defer cleanUpFiles("grant-cluster")
@@ -135,7 +121,7 @@ func cmd(name string, args ...string) error {
 	return nil
 }
 
-func processURL(url string) string {
+func stripHttps(url string) string {
 	if strings.Contains(url, "https://") {
 		return strings.ReplaceAll(url, "https://", "")
 	} else if strings.Contains(url, "http://") {

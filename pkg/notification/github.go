@@ -10,8 +10,8 @@ import (
 	"time"
 )
 
-func CreateComment(token, githubURL, issue, comment string) error {
-	endpoint := fmt.Sprintf("https://api.%s/issues/%s/comments", githubURL, issue)
+func CreateComment(token, base, owner, repo, issue, comment string) error {
+	endpoint := fmt.Sprintf("https://api.%s/repos/%s/%s/issues/%s/comments", base, owner, repo, issue)
 
 	header := map[string]string{
 		"Authorization": "Basic " + token,
@@ -27,12 +27,14 @@ func CreateComment(token, githubURL, issue, comment string) error {
 
 	jsonValue, err := json.Marshal(c)
 	if err != nil {
+		log.Println("failed marshaling")
 		return err
 	}
 
 	var res interface{}
 
 	if err := postBody(endpoint, header, nil, jsonValue, res); err != nil {
+		log.Println("failed in post")
 		return err
 	}
 	return nil

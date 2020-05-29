@@ -302,6 +302,11 @@ func checkCloudant() {
 					log.Println("could not deploy cloud foundry application")
 					continue
 				}
+
+				if err := createComment(schedule, metadata, "templates/message.gotmpl"); err != nil {
+					log.Println("could not update comment on github")
+					continue
+				}
 			} else if schedule.Status == "completed" {
 				if err := cleanUp(apikey, metadata, schedule); err != nil {
 					log.Println("could not cleanup cloud foundry application")

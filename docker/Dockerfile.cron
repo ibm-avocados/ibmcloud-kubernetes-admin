@@ -1,0 +1,41 @@
+FROM ubuntu:xenial
+
+# RUN mkdir /user && \
+#     echo 'nobody:x:65534:65534:nobody:/:' > /user/passwd && \
+#     echo 'nobody:x:65534:' > /user/group
+
+RUN apt-get update && apt-get upgrade -y
+RUN apt-get install -y git && apt-get install -y curl && apt-get install wget
+RUN wget https://dl.google.com/go/go1.13.3.linux-amd64.tar.gz && \
+  tar -xvf go1.13.3.linux-amd64.tar.gz && \ 
+  mv go /usr/local
+
+RUN curl -fsSL https://clis.cloud.ibm.com/install/linux | bash
+
+# Set the working directory outside $GOPATH to enable the support for modules.
+WORKDIR /src
+
+# Fetch dependencies first; they are less susceptible to change on every build
+# and will therefore be cached for speeding up the next build
+COPY ./go.mod ./go.sum ./
+RUN /usr/local/go/bin/go mod download
+
+COPY pkg/ pkg/
+COPY cmd/ cmd/
+COPY internals/ internals/
+
+RUN CGO_ENABLED=0 /usr/local/go/bin/go build \
+    -installsuffix 'static' \
+    -o /app ./cmd/cron/main.go
+
+# Create a user group 'xyzgroup'
+RUN useradd appuser
+
+# Switch to 'appuser'
+USER appuser
+# # Perform any further action as an unprivileged user.
+# USER nobody:nobody
+
+# Run the compiled binary.
+ENTRYPOINT ["/app"]
+

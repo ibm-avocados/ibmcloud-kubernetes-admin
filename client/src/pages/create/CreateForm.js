@@ -518,7 +518,7 @@ const CreateForm = ({ accountID }) => {
       eventName: clusterNamePrefix,
       password: password,
       resourceGroupName: selectedGroup.name,
-      githubIssue: githubIssue,
+      githubIssueNumber: githubIssue,
       isWorkshop: isWorkshop,
     };
 
