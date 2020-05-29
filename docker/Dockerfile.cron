@@ -37,11 +37,6 @@ COPY --from=builder /app /app
 
 COPY templates/ templates/
 
-RUN useradd -U -m appuser
-
-# Switch to 'appuser'
-USER appuser
-
 # Run the compiled binary.
 ENTRYPOINT ["/app"]
 

@@ -21,7 +21,7 @@ spec:
         run:  cron
     spec:
       containers:
-      - image:  moficodes/ibmcloud-kubernetes-cron:v0.2.4
+      - image:  moficodes/ibmcloud-kubernetes-cron:v0.2.5
         imagePullPolicy: Always
         name:  cron
         env:
