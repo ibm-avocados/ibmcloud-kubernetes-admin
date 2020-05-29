@@ -1,11 +1,11 @@
-FROM ubuntu:xenial
+FROM ubuntu:xenial as builder
 
 # RUN mkdir /user && \
 #     echo 'nobody:x:65534:65534:nobody:/:' > /user/passwd && \
 #     echo 'nobody:x:65534:' > /user/group
 
 RUN apt-get update && apt-get upgrade -y
-RUN apt-get install -y git && apt-get install -y curl && apt-get install wget
+RUN apt-get install -y git curl wget
 RUN wget https://dl.google.com/go/go1.13.3.linux-amd64.tar.gz && \
   tar -xvf go1.13.3.linux-amd64.tar.gz && \ 
   mv go /usr/local
@@ -28,13 +28,16 @@ RUN CGO_ENABLED=0 /usr/local/go/bin/go build \
     -installsuffix 'static' \
     -o /app ./cmd/cron/main.go
 
-# Create a user group 'xyzgroup'
+FROM ubuntu:xenial
+
+COPY --from=builder /usr/bin/git /usr/bin/git
+COPY --from=builder /usr/local/bin/ibmcloud /usr/local/bin/ibmcloud
+COPY --from=builder /app /app
+
 RUN useradd appuser
 
 # Switch to 'appuser'
 USER appuser
-# # Perform any further action as an unprivileged user.
-# USER nobody:nobody
 
 # Run the compiled binary.
 ENTRYPOINT ["/app"]
