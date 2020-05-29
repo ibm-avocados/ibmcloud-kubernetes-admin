@@ -5,7 +5,7 @@ FROM ubuntu:xenial as builder
 #     echo 'nobody:x:65534:' > /user/group
 
 RUN apt-get update && apt-get upgrade -y
-RUN apt-get install -y git curl wget
+RUN apt-get install -y git curl wget ca-certificates
 RUN wget https://dl.google.com/go/go1.13.3.linux-amd64.tar.gz && \
   tar -xvf go1.13.3.linux-amd64.tar.gz && \ 
   mv go /usr/local
@@ -30,6 +30,7 @@ RUN CGO_ENABLED=0 /usr/local/go/bin/go build \
 
 FROM ubuntu:xenial
 
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crtca
 COPY --from=builder /usr/bin/git /usr/bin/git
 COPY --from=builder /usr/local/bin/ibmcloud /usr/local/bin/ibmcloud
 COPY --from=builder /app /app

@@ -21,7 +21,7 @@ spec:
         run:  cron
     spec:
       containers:
-      - image:  moficodes/ibmcloud-kubernetes-cron:v0.2.1
+      - image:  moficodes/ibmcloud-kubernetes-cron:v0.2.2
         imagePullPolicy: Always
         name:  cron
         env:
@@ -41,7 +41,7 @@ spec:
                 name: cloudant-secret
                 key: host
           - name: TICKER_PERIOD
-            value: "3600"
+            value: "10"
           - name: SENDGRID_API_KEY
             valueFrom:
               secretKeyRef:
