@@ -1,20 +1,33 @@
 import React from "react";
-import { Dropdown } from "carbon-components-react";
+import { Dropdown, Button } from "carbon-components-react";
 import styles from "./Navbar.module.css";
+import { Settings32 as Settings } from "@carbon/icons-react";
 // import Dropdown from "react-dropdown";
 import history from "../globalHistory";
 import "./Dropdown.css";
+import "./Navbar.css";
 
 const MenuItem = (props) => {
   return (
-    <>
-      <div
-        className={props.stylesx}
+    <div className={props.stylesx} onClick={props.onClickHandler}>
+      {props.label}
+    </div>
+  );
+};
+
+const MenuIcon = (props) => {
+  return (
+      <Button
+        className="menu-icon"
+        renderIcon={Settings}
+        iconDescription="Settings Page"
+        hasIconOnly
+        type="button"
+        tooltipPosition="bottom"
+        size="field"
+        kind={props.kind}
         onClick={props.onClickHandler}
-      >
-        {props.label}
-      </div>
-    </>
+      />
   );
 };
 
@@ -36,6 +49,9 @@ const Navbar = (props) => {
   const handleScheduleClick = () => {
     history.push("/schedule");
   };
+  const handleSettingsClick = () => {
+    history.push("/settings");
+  };
 
   const homeClick = () => {
     history.push("/");
@@ -47,8 +63,16 @@ const Navbar = (props) => {
         <div className={styles.title} onClick={homeClick}>
           <span className={styles.bold}>IBM</span> Cloud
         </div>
-        <MenuItem stylesx={props.path === "/create" ? styles.activeItem : styles.item} label="Create" onClickHandler={handleCreateClick} />
-        <MenuItem stylesx={props.path === "/schedule" ? styles.activeItem : styles.item}label="Schedule" onClickHandler={handleScheduleClick} />
+        <MenuItem
+          stylesx={props.path === "/create" ? styles.activeItem : styles.item}
+          label="Create"
+          onClickHandler={handleCreateClick}
+        />
+        <MenuItem
+          stylesx={props.path === "/schedule" ? styles.activeItem : styles.item}
+          label="Schedule"
+          onClickHandler={handleScheduleClick}
+        />
         <Dropdown
           disabled={props.accountsLoaded}
           className="navbar-dropdown"
@@ -59,6 +83,11 @@ const Navbar = (props) => {
           itemToString={itemToString}
           id="account-dropdown"
           light={false}
+        />
+        <MenuIcon
+          kind={props.path === "/settings" ? "primary":"secondary"}
+          label="Settings"
+          onClickHandler={handleSettingsClick}
         />
       </div>
     </>

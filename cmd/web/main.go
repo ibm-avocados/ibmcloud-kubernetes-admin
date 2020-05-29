@@ -8,15 +8,12 @@ import (
 
 	"github.com/gorilla/mux"
 	_ "github.com/joho/godotenv/autoload"
-	"github.com/moficodes/ibmcloud-kubernetes-admin/internals/cron"
 	"github.com/moficodes/ibmcloud-kubernetes-admin/internals/server"
 	"github.com/moficodes/ibmcloud-kubernetes-admin/pkg/ibmcloud"
 )
 
 func main() {
 	ibmcloud.SetupCloudant()
-
-	go cron.Start()
 
 	server := server.NewServer()
 	r := mux.NewRouter()
@@ -66,6 +63,10 @@ func main() {
 	// api.HandleFunc("/schedule/{accountID}", server.GetScheduleHandler).Methods(http.MethodGet)
 	api.HandleFunc("/schedule/{accountID}", server.UpdateScheduleHandler).Methods(http.MethodPut)
 	api.HandleFunc("/schedule/{accountID}", server.DeleteScheduleHandler).Methods(http.MethodDelete)
+
+	api.HandleFunc("/workshop/{accountID}/metadata", server.CreateMetaDataHandler).Methods(http.MethodPost)
+	api.HandleFunc("/workshop/{accountID}/metadata", server.UpdateMetaDataHandler).Methods(http.MethodPut)
+	api.HandleFunc("/workshop/{accountID}/metadata", server.GetMetaDataHandler).Methods(http.MethodGet)
 
 	api.HandleFunc("/notification/{accountID}/email", server.GetAdminEmails).Methods(http.MethodGet)
 	api.HandleFunc("/notification/email/create", server.CreateAdminEmails).Methods(http.MethodPost)

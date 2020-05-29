@@ -39,6 +39,15 @@ func setupDB(dbName string) error {
 	return err
 }
 
+func GetAPIKey(accountID string) (string, error) {
+	dbName := "db-" + accountID
+	apiKey, err := getAPIKey(dbName)
+	if err != nil {
+		return "", err
+	}
+	return apiKey.APIKey, nil
+}
+
 func CheckAPIKey(accountID string) error {
 	dbName := "db-" + accountID
 	return checkExistingAPIKey(dbName)
@@ -159,6 +168,96 @@ func getAPIKey(dbName string) (*ApiKey, error) {
 	}
 	var result ApiKey
 	url := fmt.Sprintf("https://%s/%s/api_key", host, dbName)
+
+	err := fetch(url, header, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return &result, nil
+}
+
+func CreateAccountMetadata(accountID, org, space, region, accessGroup, issueRepo, grantClusterRepo, githubUser, githubToken string) error {
+	dbName := "db-" + accountID
+	return createAccountMetaData(dbName, org, space, region, accessGroup, issueRepo, grantClusterRepo, githubUser, githubToken)
+}
+
+func createAccountMetaData(dbName, org, space, region, accessGroup, issueRepo, grantClusterRepo, githubUser, githubToken string) error {
+	db := getDB(dbName)
+
+	metaData := struct {
+		ID               string `json:"_id"`
+		Org              string `json:"org"`
+		Space            string `json:"space"`
+		Region           string `json:"region"`
+		AccessGroup      string `json:"accessGroup"`
+		IssueRepo        string `json:"issueRepo"`
+		GrantClusterRepo string `json:"grantClusterRepo"`
+		GithubUser       string `json:"githubUser"`
+		GithubToken      string `json:"githubToken"`
+	}{
+		ID:               "metadata",
+		Org:              org,
+		Space:            space,
+		Region:           region,
+		AccessGroup:      accessGroup,
+		IssueRepo:        issueRepo,
+		GrantClusterRepo: grantClusterRepo,
+		GithubUser:       githubUser,
+		GithubToken:      githubToken,
+	}
+
+	id, rev, err := db.CreateDocument(metaData)
+	if err != nil {
+		return err
+	}
+	log.Println(id, rev, "admin emails set")
+	return nil
+}
+
+func UpdateAccountMetadata(accountID, org, space, region, accessGroup, issueRepo, grantClusterRepo, githubUser, githubToken string) error {
+	dbName := "db-" + accountID
+	return updateAccountMetaData(dbName, org, space, region, accessGroup, issueRepo, grantClusterRepo, githubUser, githubToken)
+}
+
+func updateAccountMetaData(dbName, org, space, region, accessGroup, issueRepo, grantClusterRepo, githubUser, githubToken string) error {
+	db := getDB(dbName)
+
+	metadata, err := getAccountMetaData(dbName)
+	if err != nil {
+		return err
+	}
+
+	metadata.Org = org
+	metadata.Space = space
+	metadata.Region = region
+	metadata.IssueRepo = issueRepo
+	metadata.AccessGroup = accessGroup
+	metadata.GrantClusterRepo = grantClusterRepo
+	metadata.GithubUser = githubUser
+	metadata.GithubToken = githubToken
+
+	newRev, err := db.UpdateDocument(metadata.ID, metadata.Rev, metadata)
+	if err != nil {
+		return err
+	}
+	log.Println("metadata updated with rev : ", newRev)
+	return nil
+}
+
+func GetAccountMetaData(accountID string) (*AccountMetaData, error) {
+	dbName := "db-" + accountID
+	return getAccountMetaData(dbName)
+}
+
+func getAccountMetaData(dbName string) (*AccountMetaData, error) {
+	authEncoded := base64.StdEncoding.EncodeToString([]byte(username + ":" + password))
+
+	header := map[string]string{
+		"Authorization": "Basic " + authEncoded,
+	}
+	var result AccountMetaData
+	url := fmt.Sprintf("https://%s/%s/metadata", host, dbName)
 
 	err := fetch(url, header, nil, &result)
 	if err != nil {

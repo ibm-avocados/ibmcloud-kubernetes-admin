@@ -14,7 +14,7 @@ run:
 	./kubeadmin
 
 docker: 
-	DOCKER_BUILDKIT=1 docker build -t moficodes/ibm-kubernetes-admin:$(tag) .
+	DOCKER_BUILDKIT=1 docker build -t moficodes/ibm-kubernetes-admin:$(tag) -f docker/Dockerfile.web .
 
 push:
 	docker push moficodes/ibm-kubernetes-admin:$(tag)

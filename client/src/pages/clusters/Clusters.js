@@ -20,6 +20,7 @@ import {
   TagGroup16 as TagGroup,
   Reset16 as Reset,
   Money16 as Money,
+  VirtualMachine16 as VM,
 } from '@carbon/icons-react';
 
 import headers from '../../common/data/headers';
@@ -106,7 +107,7 @@ const Clusters = ({ accountID }) => {
   const [
     clusters,
     {
-      deleteClusters, deleteTag, setTag, reload, getBilling,
+      deleteClusters, deleteTag, setTag, reload, getBilling, getWorkers
     },
   ] = useClusters(accountID);
 
@@ -122,6 +123,12 @@ const Clusters = ({ accountID }) => {
     },
     [getBilling],
   );
+
+  const onGetWorkersClicked = useCallback(
+    (data) => {
+      getWorkers(data)
+    }
+  )
 
   const onSetTagClicked = useCallback(
     (clusters, tagText) => {
@@ -253,6 +260,16 @@ const Clusters = ({ accountID }) => {
             <TableToolbarSearch
               tabIndex={getBatchActionProps().shouldShowBatchActions ? -1 : 0}
               onChange={onInputChange}
+            />
+            <Button
+              renderIcon={VM}
+              iconDescription="Get Workers for Clusters"
+              hasIconOnly
+              kind="secondary"
+              size="field"
+              type="button"
+              tooltipPosition="right"
+              onClick={() => onGetWorkersClicked(clusters.data)}
             />
             <Button
               renderIcon={Money}

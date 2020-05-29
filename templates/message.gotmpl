@@ -1,0 +1,13 @@
+"URL: https://{{ .EventName }}.mybluemix.net
+
+Key: `{{ .Password }}`
+
+Region: {{ .CreateRequest.ClusterRequest.DataCenter }}
+Clusters: {{ .Count }}
+Workers: {{ .CreateRequest.ClusterRequest.WorkerNum }} x {{ $.CreateRequest.ClusterRequest.MachineType }}
+K8s Version: {{ .CreateRequest.ClusterRequest.MasterVersion }}
+
+## Note
+- Please be sure to click: `Prefill Cache` button on the URL before your lab
+- Don't forget you have your https://{{ .EventName }}.mybluemix.net/admin to see the status of the clusters too
+- If you need a `cloudshell` you can use https://shell.cloud.ibm.com/. It should be attached to the IBMid, that the student will have created for your workshop. If you have issues with it though please ask questions in  #cloudshell-users, we do not control it.

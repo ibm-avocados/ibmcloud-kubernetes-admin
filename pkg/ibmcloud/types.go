@@ -400,6 +400,19 @@ type AccountAdminEmails struct {
 	Emails []string `json:"emails"`
 }
 
+type AccountMetaData struct {
+	ID               string `json:"_id"`
+	Rev              string `json:"_rev"`
+	Org              string `json:"org"`
+	Space            string `json:"space"`
+	Region           string `json:"region"`
+	AccessGroup      string `json:"accessGroup"`
+	IssueRepo        string `json:"issueRepo"`
+	GrantClusterRepo string `json:"grantClusterRepo"`
+	GithubUser       string `json:"githubUser"`
+	GithubToken      string `json:"githubToken"`
+}
+
 // type Schedule struct {
 // 	ID              string                 `json:"_id" mapstructure:"_id"`
 // 	Rev             string                 `json:"_rev" mapstructure:"_rev"`
@@ -417,16 +430,21 @@ type CreateClusterRequest struct {
 }
 
 type Schedule struct {
-	ID            string               `json:"_id" mapstructure:"_id"`
-	Rev           string               `json:"_rev" mapstructure:"_rev"`
-	CreateAt      int                  `json:"createAt"`
-	DestroyAt     int                  `json:"destroyAt"`
-	Status        string               `json:"status"`
-	Tags          string               `json:"tags"`
-	Count         string               `json:"count"`
-	CreateRequest CreateClusterRequest `json:"createRequest"`
-	Clusters      []string             `json:"clusters"`
-	NotifyEmails  []string             `json:"notifyEmails"`
+	ID                string               `json:"_id" mapstructure:"_id"`
+	Rev               string               `json:"_rev" mapstructure:"_rev"`
+	CreateAt          int                  `json:"createAt"`
+	DestroyAt         int                  `json:"destroyAt"`
+	Status            string               `json:"status"`
+	Tags              string               `json:"tags"`
+	Count             string               `json:"count"`
+	CreateRequest     CreateClusterRequest `json:"createRequest"`
+	Clusters          []string             `json:"clusters"`
+	NotifyEmails      []string             `json:"notifyEmails"`
+	EventName         string               `json:"eventName"`
+	Password          string               `json:"password"`
+	ResourceGroupName string               `json:"resourceGroupName"`
+	GithubIssueNumber string               `json:"githubIssueNumber"`
+	IsWorkshop        bool                 `json:"isWorkshop"`
 }
 
 type Vlan struct {

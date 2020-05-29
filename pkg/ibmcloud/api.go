@@ -61,12 +61,6 @@ const (
 
 const basicAuth = "Basic Yng6Yng="
 
-var client *http.Client
-
-func init() {
-	client = &http.Client{Timeout: time.Duration(150 * time.Second)}
-}
-
 //// useful for loagging
 // bodyBytes, err := ioutil.ReadAll(resp.Body)
 // if err != nil {
@@ -414,7 +408,7 @@ func createCluster(token string, request CreateClusterRequest) (*CreateClusterRe
 	err = postBody(clusterEndpoint, header, nil, body, &result)
 
 	if err != nil {
-		log.Println(err)
+		log.Println("error creating cluster : ", request.ClusterRequest.Name, err)
 		return nil, err
 	}
 	log.Println("cluster created. id :", result.ID)

@@ -1,9 +1,7 @@
 package cron
 
 import (
-	"bytes"
 	"fmt"
-	"html/template"
 	"log"
 	"math/rand"
 	"os"
@@ -26,6 +24,7 @@ type EmailData struct {
 	Errors   []ScheduleError
 }
 
+// Start
 func Start() {
 	_period := os.Getenv("TICKER_PERIOD")
 	period, err := strconv.Atoi(_period)
@@ -223,7 +222,8 @@ func checkCloudant() {
 					var createRequest ibmcloud.CreateClusterRequest
 					copier.Copy(&createRequest, &schedule.CreateRequest)
 					createRequest.ClusterRequest.Name = name + suffix
-					response, err := session.CreateCluster(schedule.CreateRequest)
+					log.Println("trying to create cluster with name : ", createRequest.ClusterRequest.Name)
+					response, err := session.CreateCluster(createRequest)
 					if err != nil {
 						log.Println("error creating cluster. investigate : ", createRequest.ClusterRequest.Name, err)
 						hasErrors = true
@@ -235,7 +235,7 @@ func checkCloudant() {
 						continue
 					}
 
-					log.Println("created cluster :", response.ID)
+					log.Println("created cluster. ID : ", response.ID, " Name : ", createRequest.ClusterRequest.Name)
 
 					schedule.Clusters = append(schedule.Clusters, response.ID)
 
@@ -277,23 +277,42 @@ func checkCloudant() {
 			if err := notification.Email("IBMCloud Kubernetes Admin Schedule executed", emailBody, notifyEmails...); err != nil {
 				log.Println("error sending email")
 			}
+
+			// if its a workshop deploy cloud foundry and update github issue
+			if !schedule.IsWorkshop {
+				log.Println("Not a workshop")
+				continue
+			}
+
+			apikey, err := session.GetAPIKey(accountID)
+			if err != nil {
+				log.Println("could not get api key")
+				continue
+			}
+			metadata, err := session.GetAccountMetaData(accountID)
+			if err != nil {
+				log.Println("could not get account metadata")
+				continue
+			}
+			setEnvs(accountID, apikey, metadata, schedule)
+			// if the schedule is created we deploy the app
+			// probably will deploy even if there was minor errors
+			if schedule.Status == "created" {
+				if err := deploy(apikey, metadata, schedule); err != nil {
+					log.Println("could not deploy cloud foundry application")
+					continue
+				}
+
+				if err := createComment(schedule, metadata, "templates/message.gotmpl"); err != nil {
+					log.Println("could not update comment on github")
+					continue
+				}
+			} else if schedule.Status == "completed" {
+				if err := cleanUp(apikey, metadata, schedule); err != nil {
+					log.Println("could not cleanup cloud foundry application")
+					continue
+				}
+			}
 		}
 	}
-}
-
-func getEmailBody(data EmailData) (string, error) {
-	tmpl, err := template.ParseFiles("templates/email.gohtml")
-	if err != nil {
-		log.Println("could not parse file", err)
-		return "", err
-	}
-	htmlTemplate := template.Must(tmpl, err)
-	buf := new(bytes.Buffer)
-
-	if err := htmlTemplate.Execute(buf, data); err != nil {
-		log.Println("could not parse file", err)
-		return "", err
-	}
-
-	return buf.String(), nil
 }
