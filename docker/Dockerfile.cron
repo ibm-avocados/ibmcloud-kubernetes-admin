@@ -35,7 +35,9 @@ COPY --from=builder /usr/bin/git /usr/bin/git
 COPY --from=builder /usr/local/bin/ibmcloud /usr/local/bin/ibmcloud
 COPY --from=builder /app /app
 
-RUN useradd appuser
+COPY templates/ templates/
+
+RUN useradd -U -m appuser
 
 # Switch to 'appuser'
 USER appuser
