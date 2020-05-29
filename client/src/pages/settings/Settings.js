@@ -72,6 +72,7 @@ const Settings = ({ accountID }) => {
         setOrg(metadata.org);
         setSpace(metadata.space);
         setRegion(metadata.region);
+        setAccessGroup(metadata.accessGroup);
         setIssueRepo(metadata.issueRepo);
         setGrantClusterRepo(metadata.grantClusterRepo);
         setGithubUser(metadata.githubUser);

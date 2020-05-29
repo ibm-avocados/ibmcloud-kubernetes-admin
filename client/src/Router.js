@@ -1,12 +1,14 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState, Suspense } from "react";
 import { Router, Switch, Route } from "react-router-dom";
-import AppPage from "./pages/clusters/AppPage";
-import CreatePage from "./pages/create/CreatePage";
-import SchedulePage from "./pages/schedule/SchedulePage";
-import SettingsPage from "./pages/settings/SettingsPage";
-import Login from "./Login";
+import { Loading } from "carbon-components-react";
 import Navbar from "./common/Navbar";
 import history from "./globalHistory";
+
+const AppPage = React.lazy(() => import("./pages/clusters/AppPage"));
+const CreatePage = React.lazy(() => import("./pages/create/CreatePage"));
+const SchedulePage = React.lazy(() => import("./pages/schedule/SchedulePage"));
+const SettingsPage = React.lazy(() => import("./pages/settings/SettingsPage"));
+const Login = React.lazy(() => import("./Login"));
 
 const HolderThing = (props) => {
   const [isLoadingAccounts, setLoadingAccounts] = useState(true);
@@ -106,10 +108,12 @@ const AppRouter = () => {
 
   return (
     <Router history={history}>
-      <Switch>
-        <Route path="/login" exact component={Login} />
-        <Route path="/" component={HolderThing} />
-      </Switch>
+      <Suspense fallback={<Loading />}>
+        <Switch>
+          <Route path="/login" exact component={Login} />
+          <Route path="/" component={HolderThing} />
+        </Switch>
+      </Suspense>
     </Router>
   );
 };

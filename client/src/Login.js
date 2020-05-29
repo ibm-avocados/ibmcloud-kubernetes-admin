@@ -1,17 +1,11 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import Button from './common/Button';
-import TextInput from './common/TextInput';
-import styles from './pagestyles.module.css';
-import history from './globalHistory';
-
-const LoginPage = ({ onLoginClick }) => (
-  <div className={styles.wrapper}>
-    <Button label="Login with IBMId" onClickHandler={onLoginClick} />
-  </div>
-);
+import React, { useState, useCallback, useEffect } from "react";
+import Button from "./common/Button";
+import TextInput from "./common/TextInput";
+import styles from "./pagestyles.module.css";
+import history from "./globalHistory";
 
 const OneTimePasscodePage = ({ onSubmit }) => {
-  const [value, setValue] = useState('');
+  const [value, setValue] = useState("");
 
   const handleChange = useCallback((e) => {
     setValue(e.target.value);
@@ -19,13 +13,13 @@ const OneTimePasscodePage = ({ onSubmit }) => {
 
   const handleKeyDown = useCallback(
     (e) => {
-      if (e.key === 'Enter') {
+      if (e.key === "Enter") {
         e.preventDefault();
         e.stopPropagation();
         onSubmit(value);
       }
     },
-    [onSubmit, value],
+    [onSubmit, value]
   );
 
   return (
@@ -40,29 +34,28 @@ const OneTimePasscodePage = ({ onSubmit }) => {
   );
 };
 
-
 const Login = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [attemtedLogin, setAttemtedLogin] = useState(false);
+  const [identityEndpoint, setIdentityEndpoint] = useState(undefined);
 
   useEffect(() => {
-    fetch('/api/v1/login').then(({ status }) => {
+    fetch("/api/v1/login").then(({ status }) => {
       if (status === 200) {
         setIsLoggedIn(true);
       }
     });
-  }, []);
-
-  const handleLoginClick = useCallback(async () => {
-    setAttemtedLogin(true);
-    const response = await fetch('/api/v1/identity-endpoints');
-    const endpoints = await response.json();
-    window.open(endpoints.passcode_endpoint, '_blank');
+    fetch("/api/v1/identity-endpoints")
+      .then((r) => r.json())
+      .then(({ passcode_endpoint }) => {
+        console.log(passcode_endpoint);
+        setIdentityEndpoint(passcode_endpoint);
+      });
   }, []);
 
   const handleOTPSubmit = useCallback(async (otp) => {
-    const { status } = await fetch('/api/v1/authenticate', {
-      method: 'POST',
+    const { status } = await fetch("/api/v1/authenticate", {
+      method: "POST",
       body: JSON.stringify({
         otp,
       }),
@@ -77,11 +70,19 @@ const Login = () => {
   }, []);
 
   if (isLoggedIn) {
-    history.push('/');
+    history.push("/");
   } else if (attemtedLogin) {
-    return (<OneTimePasscodePage onSubmit={handleOTPSubmit} />);
+    return <OneTimePasscodePage onSubmit={handleOTPSubmit} />;
   }
-  return (<LoginPage onLoginClick={handleLoginClick} />);
+  return (
+    <div className={styles.wrapper}>
+      {identityEndpoint && (
+        <a href={identityEndpoint} onClick={() => setAttemtedLogin(true)} target="_blank" rel="noopener noreferrer">
+          Login with IBMId
+        </a>
+      )}
+    </div>
+  );
 };
 
 export default Login;
