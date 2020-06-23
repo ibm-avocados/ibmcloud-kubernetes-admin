@@ -95,6 +95,10 @@
   padding: 0;
 }
 
+.create-page-dropdown.bx--dropdown .bx--list-box__field {
+  display: flex;
+}
+
 .bx--row .bx--tile--is-selected .bx--dropdown {
   border: 1px solid var(--ui-05);
   border-top: 1px solid var(--ui-03);

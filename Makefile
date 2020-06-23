@@ -1,8 +1,10 @@
 build-frontend:
 	cd client; yarn run build; cd ..;
 
-build: 
+build-backend:
 	go build -o kubeadmin ./cmd/web/main.go
+
+build: build-frontend build-backend
 
 build-start: build-frontend build
 	./kubeadmin
@@ -20,4 +22,4 @@ push:
 	docker push moficodes/ibm-kubernetes-admin:$(tag)
 
 run-local:
-	go run ./cmd/web/main.go
+	go run ./cmd/web/main.go; 

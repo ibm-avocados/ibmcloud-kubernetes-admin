@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
@@ -34,11 +35,11 @@ func handleRequest(request *http.Request, header map[string]string, query map[st
 	defer resp.Body.Close()
 
 	if !(resp.StatusCode >= 200 && resp.StatusCode < 300) {
-		json, err := json.Marshal(resp.Body)
+		b, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			log.Println(err)
 		}
-		return errors.New(string(json))
+		return errors.New(string(b))
 	}
 
 	// b, _ := ioutil.ReadAll(resp.Body)

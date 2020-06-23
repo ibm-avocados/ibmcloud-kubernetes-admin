@@ -21,6 +21,9 @@
 .navbar-dropdown .bx--list-box__menu-icon > svg{
   fill: var(--ui-01);
 }
+.navbar-dropdown.bx--dropdown .bx--list-box__field {
+  display: flex;
+}
 
 .navbar-dropdown .bx--list-box__menu-item {
   display: flex;

@@ -36,14 +36,14 @@ const Divider = ({ width }) => <div style={{ marginRight: width }} />;
 
 const grab = async (url, options, retryCount = 0) => {
   const response = await fetch(url, options);
-  const data = await response.json();
   if (response.status !== 200) {
     if (retryCount > 0) {
+      console.log('failure in request. retrying again');
       return await grab(url, options, retryCount - 1);
     }
     throw Error(data);
   }
-
+  const data = await response.json();
   return data;
 };
 
@@ -335,18 +335,22 @@ const CreateForm = ({ accountID }) => {
 
     const request = getCreateRequest();
     const range = request.length;
-
+    let errors = [];
     for (let i = 0; i < range; i++) {
       setLoaderDescription(`Creating Cluster ${i + 1} of ${range}`);
       console.log("creating luster ", i);
 
       const CreateClusterRequest = request[i];
-
+      
       try {
-        const clusterResponse = await grab("/api/v1/clusters", {
-          method: "post",
-          body: JSON.stringify(CreateClusterRequest),
-        });
+        const clusterResponse = await grab(
+          "/api/v1/clusters",
+          {
+            method: "post",
+            body: JSON.stringify(CreateClusterRequest),
+          },
+          3
+        );
 
         console.log("cluster created with id : ", clusterResponse.id);
 
@@ -377,7 +381,8 @@ const CreateForm = ({ accountID }) => {
         const result = await Promise.all(tagPromises);
         console.log(result);
       } catch (e) {
-        console.log(e);
+        errors.push(e);
+        console.log("Error creating cluster", e);
       }
     }
 
@@ -385,7 +390,8 @@ const CreateForm = ({ accountID }) => {
       title: "Cluster Created",
       subtitle: `${clusterCount} ${
         kubernetesSelected ? "Kubernetes" : "Openshift"
-      } Clusters Created`,
+      } Cluster Creation Attempted. ${errors.length} Error` ,
+      kind: errors.length === 0 ? "success" : "error",
       caption: `Datacenter: ${selectedWorkerZone.display_name}, ${selectedRegion.display_name}`,
     });
     setCreateSuccess(true);
@@ -504,8 +510,8 @@ const CreateForm = ({ accountID }) => {
     );
     const destroyAt = endDate.getTime() / 1000;
 
-    const password = kubernetesSelected?"ikslab":"oslab";
-      
+    const password = kubernetesSelected ? "ikslab" : "oslab";
+
     const schedule = {
       createAt: createAt,
       destroyAt: destroyAt,
@@ -922,9 +928,9 @@ const CreateForm = ({ accountID }) => {
               <ToastNotification
                 title={toast.title}
                 subtitle={toast.subtitle}
-                kind="success"
+                kind={toast.kind}
                 caption={toast.caption}
-                timeout={10000}
+                timeout={0}
                 style={{
                   minWidth: "50rem",
                   marginBottom: ".5rem",

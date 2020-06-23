@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState } from "react";
 import {
   DataTable,
   DataTableSkeleton,
@@ -14,19 +14,19 @@ import {
   SkeletonText,
   TagSkeleton,
   StructuredListSkeleton,
-} from 'carbon-components-react';
+} from "carbon-components-react";
 import {
   Delete16 as Delete,
   TagGroup16 as TagGroup,
   Reset16 as Reset,
   Money16 as Money,
   VirtualMachine16 as VM,
-} from '@carbon/icons-react';
+} from "@carbon/icons-react";
 
-import headers from '../../common/data/headers';
+import headers from "../../common/data/headers";
 
-import './Cluster.css';
-import useClusters from './useClusters';
+import "./Cluster.css";
+import useClusters from "./useClusters";
 
 const {
   TableContainer,
@@ -47,7 +47,7 @@ const {
   TableBatchAction,
 } = DataTable;
 
-const CustomExpandedRow = ({ name, dateCreated, workers }) => (
+const CustomExpandedRow = ({ name, dateCreated, workers, workersLoading, ownerEmail }) => (
   <>
     <h1>
       Cluster Name:
@@ -57,13 +57,16 @@ const CustomExpandedRow = ({ name, dateCreated, workers }) => (
       Date Created:
       {dateCreated}
     </h5>
+    <h5>Owner Email: {ownerEmail}</h5>
     {workers ? <h3>Workers</h3> : <></>}
     {workers ? (
       <WorkerDetails workers={workers} />
-    ) : (
-      <div style={{ width: '500px' }}>
+    ) : workersLoading ? (
+      <div style={{ width: "500px" }}>
         <StructuredListSkeleton rowCount={3} />
       </div>
+    ) : (
+      <div>Click on Load Workers to load worker details</div>
     )}
   </>
 );
@@ -106,64 +109,62 @@ const WorkerDetails = ({ workers }) => (
 const Clusters = ({ accountID }) => {
   const [
     clusters,
-    {
-      deleteClusters, deleteTag, setTag, reload, getBilling, getWorkers
-    },
+    { deleteClusters, deleteTag, setTag, reload, getBilling, getWorkers },
   ] = useClusters(accountID);
 
-  // console.log(clusters);
+  console.log(clusters);
 
-  const [tagText, setTagText] = useState('');
-  const [billingLoading, setBittlingLoading] = useState(false);
+  const [tagText, setTagText] = useState("");
+  const [billingLoading, setBillingLoading] = useState(false);
+  const [workersLoading, setWorkersLoading] = useState(false);
 
   const onBillingClicked = useCallback(
     (data) => {
-      setBittlingLoading(true);
+      setBillingLoading(true);
       getBilling(data);
     },
-    [getBilling],
+    [getBilling]
   );
 
-  const onGetWorkersClicked = useCallback(
-    (data) => {
-      getWorkers(data)
-    }
-  )
+  const onGetWorkersClicked = useCallback((data) => {
+    setWorkersLoading(true);
+    getWorkers(data);
+  });
 
   const onSetTagClicked = useCallback(
     (clusters, tagText) => {
-      setTagText('');
+      setTagText("");
       setTag(clusters, tagText);
     },
-    [setTag],
+    [setTag]
   );
 
   const CustomCell = ({ cell, crn, id }) => {
     const { info, value } = cell;
     switch (info.header) {
-      case 'state':
+      case "state":
         return (
           <span className="oneline">
             <span className={`status ${value}`} />
             {value}
           </span>
         );
-      case 'masterKubeVersion':
+      case "masterKubeVersion":
         return (
           <span className="oneline">
             <img
               alt="logo"
               className="logo-image"
               src={
-                value.includes('openshift')
-                  ? 'https://cloud.ibm.com/kubernetes/img/openshift_logo-7825001afb.svg'
-                  : 'https://cloud.ibm.com/kubernetes/img/container-service-logo-7e87826329.svg'
+                value.includes("openshift")
+                  ? "https://i.ibb.co/tLktm91/os-icon.png"
+                  : "https://i.ibb.co/Hh2TzLH/k8s-icon.png"
               }
             />
             {value}
           </span>
         );
-      case 'tags':
+      case "tags":
         return (
           <>
             {value ? (
@@ -184,23 +185,18 @@ const Clusters = ({ accountID }) => {
             )}
           </>
         );
-      case 'cost':
+      case "cost":
         if (value) {
-          return (
-            <>
-              $
-              {value}
-            </>
-          );
+          return <>${value}</>;
         }
         return (
           <>
             {billingLoading ? (
-              <div style={{ width: '50px' }}>
+              <div style={{ width: "50px" }}>
                 <SkeletonText />
               </div>
             ) : (
-              '$'
+              "$"
             )}
           </>
         );
@@ -228,7 +224,9 @@ const Clusters = ({ accountID }) => {
             <TableBatchAction
               tabIndex={getBatchActionProps().shouldShowBatchActions ? 0 : -1}
               renderIcon={Delete}
-              onClick={() => deleteClusters(selectedRows.map((r) => clusters.data[r.id]))}
+              onClick={() =>
+                deleteClusters(selectedRows.map((r) => clusters.data[r.id]))
+              }
             >
               Delete
             </TableBatchAction>
@@ -250,10 +248,12 @@ const Clusters = ({ accountID }) => {
               size="default"
               type="button"
               tooltipPosition="right"
-              onClick={() => onSetTagClicked(
-                selectedRows.map((r) => clusters.data[r.id]),
-                tagText,
-              )}
+              onClick={() =>
+                onSetTagClicked(
+                  selectedRows.map((r) => clusters.data[r.id]),
+                  tagText
+                )
+              }
             />
           </TableBatchActions>
           <TableToolbarContent>
@@ -294,10 +294,7 @@ const Clusters = ({ accountID }) => {
         <Table>
           <TableHead>
             <TableRow>
-              <TableExpandHeader
-                enableExpando
-                {...getExpandHeaderProps()}
-              />
+              <TableExpandHeader enableExpando {...getExpandHeaderProps()} />
               <TableSelectAll {...getSelectionProps()} />
               {headers.map((header) => (
                 <TableHeader {...getHeaderProps({ header })}>
@@ -314,15 +311,17 @@ const Clusters = ({ accountID }) => {
                   {row.cells.map((cell) => (
                     <TableCell key={cell.id}>
                       <CustomCell
-                          cell={cell}
-                          crn={clusters.data[row.id].crn}
-                          id={row.id}
-                        />
+                        cell={cell}
+                        crn={clusters.data[row.id].crn}
+                        id={row.id}
+                      />
                     </TableCell>
                   ))}
                 </TableExpandRow>
                 <TableExpandedRow colSpan={headers.length + 2}>
                   <CustomExpandedRow
+                    ownerEmail={clusters.data[row.id].ownerEmail}
+                    workersLoading={workersLoading}
                     name={clusters.data[row.id].name}
                     dateCreated={clusters.data[row.id].createdDate}
                     workers={clusters.data[row.id].workers}
@@ -341,7 +340,7 @@ const Clusters = ({ accountID }) => {
       onSetTagClicked,
       reload,
       tagText,
-    ],
+    ]
   );
 
   if (clusters.isLoading) {
