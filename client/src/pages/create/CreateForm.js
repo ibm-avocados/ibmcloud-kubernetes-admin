@@ -548,6 +548,7 @@ const CreateForm = ({ accountID }) => {
       subtitle: `${clusterCount} ${
         kubernetesSelected ? "Kubernetes" : "Openshift"
       } Clusters Scheduled`,
+      kind: 'success',
       caption: `Create At : ${startDate.toLocaleString()} Delete At : ${endDate.toLocaleString()}`,
     });
     setScheduleSuccess(true);
