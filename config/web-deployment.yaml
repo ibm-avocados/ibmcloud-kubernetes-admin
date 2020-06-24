@@ -6,7 +6,7 @@ metadata:
     run:  admin
     version: v1
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       run:  admin
@@ -21,7 +21,7 @@ spec:
         run:  admin
     spec:
       containers:
-      - image:  moficodes/ibmcloud-kubernetes-admin:v0.2.9
+      - image:  moficodes/ibmcloud-kubernetes-admin:v0.2.10
         imagePullPolicy: Always
         name:  kubeadmin
         env:

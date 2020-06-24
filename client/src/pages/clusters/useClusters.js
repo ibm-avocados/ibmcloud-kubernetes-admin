@@ -92,7 +92,7 @@ function clusterReducer(state, action) {
 
     case 'DELETE_ALL_CLUSTERS': {
       const nextState = produce(state.data, (draftState) => {
-        action.ids.forEach((id) => {
+        action.ids.forEach(({id}) => {
           draftState[id].state = 'deleting';
         });
       });
