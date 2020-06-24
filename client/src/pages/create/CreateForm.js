@@ -356,12 +356,13 @@ const CreateForm = ({ accountID }) => {
 
         console.log("Sleeping 3s before trying to set tags");
         setLoaderDescription(`Preparing to Tag Cluster ${i + 1} of ${range}`);
-        await sleep(3000);
+        await sleep(15000);
         setLoaderDescription(`Tagging Cluster ${i + 1} of ${range}`);
 
         // comma separated tags.
         const tagPromises = tags.split(",").map(async (tag) => {
           try {
+            await sleep(3000);
             const tagRequest = await grab(
               `/api/v1/clusters/${clusterResponse.id}/settag`,
               {
