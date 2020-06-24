@@ -1,5 +1,5 @@
-import React from "react";
-import { Loading } from "carbon-components-react";
+import React from 'react';
+import { Loading } from 'carbon-components-react';
 import Settings from './Settings';
 
 const SettingsPage = ({ hasChosenAccount, tokenUpgraded, accountID }) => {

@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 import {
   Form,
   Grid,
@@ -8,11 +8,11 @@ import {
   Tooltip,
   TextInput,
   Button,
-} from "carbon-components-react";
+} from 'carbon-components-react';
 
 const Spacer = ({ height }) => <div style={{ marginTop: height }} />;
 
-const TOKEN_MESSAGE = "github-token-saved-and-hidden";
+const TOKEN_MESSAGE = 'github-token-saved-and-hidden';
 
 const grab = async (url, options, retryCount = 0) => {
   const response = await fetch(url, options);
@@ -29,31 +29,31 @@ const grab = async (url, options, retryCount = 0) => {
 
 const Settings = ({ accountID }) => {
   const [apiKeyValid, setApiKeyValid] = React.useState(false);
-  const [apiKey, setApiKey] = React.useState("");
-  const [org, setOrg] = React.useState("");
-  const [space, setSpace] = React.useState("");
-  const [region, setRegion] = React.useState("");
-  const [accessGroup, setAccessGroup] = React.useState("");
-  const [issueRepo, setIssueRepo] = React.useState("");
-  const [grantClusterRepo, setGrantClusterRepo] = React.useState("");
-  const [githubUser, setGithubUser] = React.useState("");
-  const [githubToken, setGithubToken] = React.useState("");
-  const [method, setMethod] = React.useState("put");
+  const [apiKey, setApiKey] = React.useState('');
+  const [org, setOrg] = React.useState('');
+  const [space, setSpace] = React.useState('');
+  const [region, setRegion] = React.useState('');
+  const [accessGroup, setAccessGroup] = React.useState('');
+  const [issueRepo, setIssueRepo] = React.useState('');
+  const [grantClusterRepo, setGrantClusterRepo] = React.useState('');
+  const [githubUser, setGithubUser] = React.useState('');
+  const [githubToken, setGithubToken] = React.useState('');
+  const [method, setMethod] = React.useState('put');
   const [data, setData] = React.useState(null);
 
   React.useEffect(() => {
     loadMetaData();
     const checkAPIKey = async () => {
       try {
-        const apiKey = await fetch("/api/v1/schedule/api", {
-          method: "post",
+        const apiKey = await fetch('/api/v1/schedule/api', {
+          method: 'post',
           body: JSON.stringify({
             accountID: accountID,
           }),
         });
         if (apiKey.status === 200) {
           setApiKeyValid(true);
-          setApiKey("your-api-key-will-be-pulled-from-db");
+          setApiKey('your-api-key-will-be-pulled-from-db');
         }
       } catch (e) {
         console.log(e);
@@ -66,7 +66,7 @@ const Settings = ({ accountID }) => {
     try {
       const metadata = await grab(`/api/v1/workshop/${accountID}/metadata`);
       if (metadata === null) {
-        setMethod("post");
+        setMethod('post');
       } else {
         setData(metadata);
         setOrg(metadata.org);
@@ -76,13 +76,13 @@ const Settings = ({ accountID }) => {
         setIssueRepo(metadata.issueRepo);
         setGrantClusterRepo(metadata.grantClusterRepo);
         setGithubUser(metadata.githubUser);
-        if (metadata.githubToken !== "") {
+        if (metadata.githubToken !== '') {
           setGithubToken(TOKEN_MESSAGE);
         }
       }
     } catch (e) {
       console.log(e);
-      setMethod("post");
+      setMethod('post');
     }
   };
 
@@ -101,14 +101,14 @@ const Settings = ({ accountID }) => {
     }
 
     return (
-      org === "" ||
-      space === "" ||
-      region === "" ||
-      accessGroup === "" ||
-      issueRepo === "" ||
-      grantClusterRepo === "" ||
-      githubUser === "" ||
-      githubToken === ""
+      org === '' ||
+      space === '' ||
+      region === '' ||
+      accessGroup === '' ||
+      issueRepo === '' ||
+      grantClusterRepo === '' ||
+      githubUser === '' ||
+      githubToken === ''
     );
   };
 
@@ -160,7 +160,7 @@ const Settings = ({ accountID }) => {
         {!apiKeyValid ? (
           <Button onClick={() => console.log(data)}>Save</Button>
         ) : (
-          <Button kind="danger" onClick={() => console.log("delete")}>
+          <Button kind="danger" onClick={() => console.log('delete')}>
             Delete
           </Button>
         )}

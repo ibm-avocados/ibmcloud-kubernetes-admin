@@ -11,7 +11,8 @@ const WAIT_FOR_ALL = true;
 //   a1: { id: 'a1', x: 'hello' },
 //   b2: { id: 'b2', x: 'world' }
 // }
-const arrayToMap = (arr) => arr.reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {});
+const arrayToMap = (arr) =>
+  arr.reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {});
 
 const grab = async (url, options) => {
   const response = await fetch(url, options);
@@ -58,7 +59,7 @@ function clusterReducer(state, action) {
       const nextState = produce(state.data, (draftState) => {
         draftState[action.id].tags = removeTagFromArray(
           draftState[action.id].tags,
-          action.tag,
+          action.tag
         );
       });
       return {
@@ -92,7 +93,7 @@ function clusterReducer(state, action) {
 
     case 'DELETE_ALL_CLUSTERS': {
       const nextState = produce(state.data, (draftState) => {
-        action.ids.forEach(({id}) => {
+        action.ids.forEach(({ id }) => {
           draftState[id].state = 'deleting';
         });
       });
@@ -303,7 +304,6 @@ const useClusters = (accountID) => {
         //     }
         //   });
         // }
-
       }
     } catch {
       if (!cancelled) {
@@ -338,7 +338,7 @@ const useClusters = (accountID) => {
         }
       });
     }
-  }
+  };
 
   const getBilling = (clusters) => {
     const costPromises = Object.keys(clusters).map(async (id) => {
@@ -403,7 +403,9 @@ const useClusters = (accountID) => {
       return;
     }
     try {
-      const resources = clusters.map((cluster) => ({ resource_id: cluster.crn }));
+      const resources = clusters.map((cluster) => ({
+        resource_id: cluster.crn,
+      }));
 
       await grab('/api/v1/clusters/settag', {
         method: 'POST',
@@ -431,22 +433,16 @@ const useClusters = (accountID) => {
           }),
         });
 
-        if (!WAIT_FOR_ALL) {
-          dispatch({
-            type: 'DELETE_CLUSTER',
-            id,
-          });
-        }
+        dispatch({
+          type: 'DELETE_CLUSTER',
+          id,
+        });
+
         return { id };
       } catch {
         return undefined;
       }
     });
-    if (WAIT_FOR_ALL) {
-      Promise.all(clusterDeletePromise).then((ids) => {
-        dispatch({ type: 'DELETE_ALL_CLUSTERS', ids });
-      });
-    }
   };
 
   const reload = () => {

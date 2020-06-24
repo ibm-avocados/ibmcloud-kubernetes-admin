@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState } from 'react';
 import {
   DataTable,
   DataTableSkeleton,
@@ -14,19 +14,19 @@ import {
   SkeletonText,
   TagSkeleton,
   StructuredListSkeleton,
-} from "carbon-components-react";
+} from 'carbon-components-react';
 import {
   Delete16 as Delete,
   TagGroup16 as TagGroup,
   Reset16 as Reset,
   Money16 as Money,
   VirtualMachine16 as VM,
-} from "@carbon/icons-react";
+} from '@carbon/icons-react';
 
-import headers from "../../common/data/headers";
+import headers from '../../common/data/headers';
 
-import "./Cluster.css";
-import useClusters from "./useClusters";
+import './Cluster.css';
+import useClusters from './useClusters';
 
 const {
   TableContainer,
@@ -62,7 +62,7 @@ const CustomExpandedRow = ({ name, dateCreated, workers, workersLoading, ownerEm
     {workers ? (
       <WorkerDetails workers={workers} />
     ) : workersLoading ? (
-      <div style={{ width: "500px" }}>
+      <div style={{ width: '500px' }}>
         <StructuredListSkeleton rowCount={3} />
       </div>
     ) : (
@@ -114,7 +114,7 @@ const Clusters = ({ accountID }) => {
 
   console.log(clusters);
 
-  const [tagText, setTagText] = useState("");
+  const [tagText, setTagText] = useState('');
   const [billingLoading, setBillingLoading] = useState(false);
   const [workersLoading, setWorkersLoading] = useState(false);
 
@@ -133,7 +133,7 @@ const Clusters = ({ accountID }) => {
 
   const onSetTagClicked = useCallback(
     (clusters, tagText) => {
-      setTagText("");
+      setTagText('');
       setTag(clusters, tagText);
     },
     [setTag]
@@ -142,29 +142,29 @@ const Clusters = ({ accountID }) => {
   const CustomCell = ({ cell, crn, id }) => {
     const { info, value } = cell;
     switch (info.header) {
-      case "state":
+      case 'state':
         return (
           <span className="oneline">
             <span className={`status ${value}`} />
             {value}
           </span>
         );
-      case "masterKubeVersion":
+      case 'masterKubeVersion':
         return (
           <span className="oneline">
             <img
               alt="logo"
               className="logo-image"
               src={
-                value.includes("openshift")
-                  ? "https://i.ibb.co/tLktm91/os-icon.png"
-                  : "https://i.ibb.co/Hh2TzLH/k8s-icon.png"
+                value.includes('openshift')
+                  ? 'https://i.ibb.co/tLktm91/os-icon.png'
+                  : 'https://i.ibb.co/Hh2TzLH/k8s-icon.png'
               }
             />
             {value}
           </span>
         );
-      case "tags":
+      case 'tags':
         return (
           <>
             {value ? (
@@ -185,18 +185,18 @@ const Clusters = ({ accountID }) => {
             )}
           </>
         );
-      case "cost":
+      case 'cost':
         if (value) {
           return <>${value}</>;
         }
         return (
           <>
             {billingLoading ? (
-              <div style={{ width: "50px" }}>
+              <div style={{ width: '50px' }}>
                 <SkeletonText />
               </div>
             ) : (
-              "$"
+              '$'
             )}
           </>
         );
@@ -296,8 +296,8 @@ const Clusters = ({ accountID }) => {
             <TableRow>
               <TableExpandHeader enableExpando {...getExpandHeaderProps()} />
               <TableSelectAll {...getSelectionProps()} />
-              {headers.map((header) => (
-                <TableHeader {...getHeaderProps({ header })}>
+              {headers.map((header, i) => (
+                <TableHeader key={i} {...getHeaderProps({ header })}>
                   {header.header}
                 </TableHeader>
               ))}

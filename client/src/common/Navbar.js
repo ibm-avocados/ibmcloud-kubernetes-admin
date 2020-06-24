@@ -1,11 +1,11 @@
-import React from "react";
-import { Dropdown, Button } from "carbon-components-react";
-import styles from "./Navbar.module.css";
-import { Settings32 as Settings } from "@carbon/icons-react";
+import React from 'react';
+import { Dropdown, Button } from 'carbon-components-react';
+import styles from './Navbar.module.css';
+import { Settings32 as Settings } from '@carbon/icons-react';
 // import Dropdown from "react-dropdown";
-import history from "../globalHistory";
-import "./Dropdown.css";
-import "./Navbar.css";
+import history from '../globalHistory';
+import './Dropdown.css';
+import './Navbar.css';
 
 const MenuItem = (props) => {
   return (
@@ -36,25 +36,25 @@ const Navbar = (props) => {
     if (item) {
       const { name } = item.entity;
       const softlayerAccountId =
-        item.entity.bluemix_subscriptions[0].softlayer_account_id || "";
+        item.entity.bluemix_subscriptions[0].softlayer_account_id || '';
 
       return `${name} ${softlayerAccountId}`;
     }
-    return "Unknown";
+    return 'Unknown';
   };
 
   const handleCreateClick = () => {
-    history.push("/create");
+    history.push('/create');
   };
   const handleScheduleClick = () => {
-    history.push("/schedule");
+    history.push('/schedule');
   };
   const handleSettingsClick = () => {
-    history.push("/settings");
+    history.push('/settings');
   };
 
   const homeClick = () => {
-    history.push("/");
+    history.push('/');
   };
 
   return (
@@ -64,12 +64,12 @@ const Navbar = (props) => {
           <span className={styles.bold}>IBM</span> Cloud
         </div>
         <MenuItem
-          stylesx={props.path === "/create" ? styles.activeItem : styles.item}
+          stylesx={props.path === '/create' ? styles.activeItem : styles.item}
           label="Create"
           onClickHandler={handleCreateClick}
         />
         <MenuItem
-          stylesx={props.path === "/schedule" ? styles.activeItem : styles.item}
+          stylesx={props.path === '/schedule' ? styles.activeItem : styles.item}
           label="Schedule"
           onClickHandler={handleScheduleClick}
         />
@@ -85,7 +85,7 @@ const Navbar = (props) => {
           light={false}
         />
         <MenuIcon
-          kind={props.path === "/settings" ? "primary":"secondary"}
+          kind={props.path === '/settings' ? 'primary':'secondary'}
           label="Settings"
           onClickHandler={handleSettingsClick}
         />

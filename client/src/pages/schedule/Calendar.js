@@ -1,9 +1,9 @@
-import React from "react";
-import FullCalendar from "@fullcalendar/react";
-import dayGridPlugin from "@fullcalendar/daygrid";
-import timeGridPlugin from "@fullcalendar/timegrid";
+import React from 'react';
+import FullCalendar from '@fullcalendar/react';
+import dayGridPlugin from '@fullcalendar/daygrid';
+import timeGridPlugin from '@fullcalendar/timegrid';
 
-import "./main.scss"; // webpack must be configured to do this
+import './main.scss'; // webpack must be configured to do this
 
 const grab = async (url, options, retryCount = 0) => {
   const response = await fetch(url, options);
@@ -40,30 +40,30 @@ const ScheduleCalendar = ({ accountID }) => {
     const loadEvents = async () => {
       try {
         const data = await grab(`/api/v1/schedule/${accountID}/all`);
-        console.log("Data :", data);
+        console.log('Data :', data);
         const events = data.map((schedule, i) => {
-          const start = new Date(schedule["createAt"] * 1000).toISOString();
-          const end = new Date(schedule["destroyAt"] * 1000).toISOString();
-          let _title = schedule["createRequest"]["clusterRequest"]["name"];
+          const start = new Date(schedule['createAt'] * 1000).toISOString();
+          const end = new Date(schedule['destroyAt'] * 1000).toISOString();
+          let _title = schedule['createRequest']['clusterRequest']['name'];
           const title = _title.substring(0, _title.length-4);
 
 
-          const id = schedule["_id"];
+          const id = schedule['_id'];
 
-          const status = schedule["status"];
-          let bg = "#0f62fe";
+          const status = schedule['status'];
+          let bg = '#0f62fe';
           switch(status) {
-            case "scheduled":
-              bg = "#0f62fe";
+            case 'scheduled':
+              bg = '#0f62fe';
               break;
-            case "created":
-              bg = "#24a148";
+            case 'created':
+              bg = '#24a148';
               break;
-            case "completed":
-              bg = "#525252";
+            case 'completed':
+              bg = '#525252';
               break;
             default:
-              bg = "#0f62fe";
+              bg = '#0f62fe';
               break;
           }
           return {
@@ -74,7 +74,7 @@ const ScheduleCalendar = ({ accountID }) => {
             backgroundColor: bg,
           }
         })
-        console.log("Events : ", events);
+        console.log('Events : ', events);
         setEvents(events);
       } catch (e) {
         console.log(e);
@@ -83,17 +83,17 @@ const ScheduleCalendar = ({ accountID }) => {
 
     loadEvents();
 
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, [accountID]);
   return (
     <FullCalendar
       schedulerLicenseKey="GPL-My-Project-Is-Open-Source"
       height={windowDimensions.height - 100}
       header={{
-        left: "prev,next today",
-        center: "title",
-        right: "dayGridMonth,timeGridWeek",
+        left: 'prev,next today',
+        center: 'title',
+        right: 'dayGridMonth,timeGridWeek',
       }}
       events={events}
       defaultView="dayGridMonth"

@@ -1,7 +1,7 @@
-import React from "react";
-import { ContentSwitcher, Switch } from "carbon-components-react";
+import React from 'react';
+import { ContentSwitcher, Switch } from 'carbon-components-react';
 
-const Calendar = React.lazy(() => import("./Calendar"));
+const Calendar = React.lazy(() => import('./Calendar'));
 
 const ScheduleContentSwitcher = ({ accountID }) => {
   const [selected, setSelected] = React.useState(0);

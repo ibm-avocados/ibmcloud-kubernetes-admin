@@ -1,5 +1,5 @@
-import React from "react";
-import { TextInput, Button, MultiSelect } from "carbon-components-react";
+import React from 'react';
+import { TextInput, Button, MultiSelect } from 'carbon-components-react';
 
 const Spacer = ({ height }) => <div style={{ marginTop: height }} />;
 
@@ -19,8 +19,8 @@ const grab = async (url, options, retryCount = 0) => {
 const NotificationEmail = ({ accountID, setSelectedEmails }) => {
   const [emailAvailable, setEmailAvailable] = React.useState(false);
   const [emails, setEmails] = React.useState([]);
-  const [emailText, setEmailText] = React.useState("");
-  const [updateEmailText, setUpdateEmailText] = React.useState("");
+  const [emailText, setEmailText] = React.useState('');
+  const [updateEmailText, setUpdateEmailText] = React.useState('');
 
   React.useEffect(() => {
     getAccountAdmins();
@@ -39,17 +39,17 @@ const NotificationEmail = ({ accountID, setSelectedEmails }) => {
   const onEmailSubmit = async () => {
     const emails = emailText
       .toLowerCase()
-      .split(",")
+      .split(',')
       .map((email) => email.trim());
     try {
-      const response = await grab("/api/v1/notification/email/create", {
-        method: "post",
+      const response = await grab('/api/v1/notification/email/create', {
+        method: 'post',
         body: JSON.stringify({
           email: emails,
           accountID: accountID,
         }),
       });
-      console.log("email submitted");
+      console.log('email submitted');
       setEmails(emails);
       setEmailAvailable(true);
     } catch (e) {
@@ -60,19 +60,19 @@ const NotificationEmail = ({ accountID, setSelectedEmails }) => {
   const onAddEmailSubmit = async () => {
     const emails = updateEmailText
       .toLowerCase()
-      .split(",")
+      .split(',')
       .map((email) => email.trim());
     try {
-      const response = await grab("/api/v1/notification/email/add", {
-        method: "put",
+      const response = await grab('/api/v1/notification/email/add', {
+        method: 'put',
         body: JSON.stringify({
           email: emails,
           accountID: accountID,
         }),
       });
-      console.log("email added");
+      console.log('email added');
       getAccountAdmins();
-      setUpdateEmailText("");
+      setUpdateEmailText('');
     } catch (e) {
       console.log(e);
     }
@@ -81,19 +81,19 @@ const NotificationEmail = ({ accountID, setSelectedEmails }) => {
   const onRemoveEmailSubmit = async () => {
     const emails = updateEmailText
       .toLowerCase()
-      .split(",")
+      .split(',')
       .map((email) => email.trim());
     try {
-      const response = await grab("/api/v1/notification/email/remove", {
-        method: "put",
+      const response = await grab('/api/v1/notification/email/remove', {
+        method: 'put',
         body: JSON.stringify({
           email: emails,
           accountID: accountID,
         }),
       });
-      console.log("email removed");
+      console.log('email removed');
       getAccountAdmins();
-      setUpdateEmailText("");
+      setUpdateEmailText('');
     } catch (e) {
       console.log(e);
     }

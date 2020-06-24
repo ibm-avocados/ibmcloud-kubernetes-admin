@@ -1,5 +1,5 @@
-import React from "react";
-import { Loading } from "carbon-components-react";
+import React from 'react';
+import { Loading } from 'carbon-components-react';
 import ScheduleContentSwitcher from './ScheduleContentSwitcher';
 
 const SchedulePage = ({ hasChosenAccount, tokenUpgraded, accountID }) => {

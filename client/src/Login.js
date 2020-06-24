@@ -1,11 +1,11 @@
-import React, { useState, useCallback, useEffect } from "react";
-import Button from "./common/Button";
-import TextInput from "./common/TextInput";
-import styles from "./pagestyles.module.css";
-import history from "./globalHistory";
+import React, { useState, useCallback, useEffect } from 'react';
+import Button from './common/Button';
+import TextInput from './common/TextInput';
+import styles from './pagestyles.module.css';
+import history from './globalHistory';
 
 const OneTimePasscodePage = ({ onSubmit }) => {
-  const [value, setValue] = useState("");
+  const [value, setValue] = useState('');
 
   const handleChange = useCallback((e) => {
     setValue(e.target.value);
@@ -13,7 +13,7 @@ const OneTimePasscodePage = ({ onSubmit }) => {
 
   const handleKeyDown = useCallback(
     (e) => {
-      if (e.key === "Enter") {
+      if (e.key === 'Enter') {
         e.preventDefault();
         e.stopPropagation();
         onSubmit(value);
@@ -40,12 +40,12 @@ const Login = () => {
   const [identityEndpoint, setIdentityEndpoint] = useState(undefined);
 
   useEffect(() => {
-    fetch("/api/v1/login").then(({ status }) => {
+    fetch('/api/v1/login').then(({ status }) => {
       if (status === 200) {
         setIsLoggedIn(true);
       }
     });
-    fetch("/api/v1/identity-endpoints")
+    fetch('/api/v1/identity-endpoints')
       .then((r) => r.json())
       .then(({ passcode_endpoint }) => {
         console.log(passcode_endpoint);
@@ -54,8 +54,8 @@ const Login = () => {
   }, []);
 
   const handleOTPSubmit = useCallback(async (otp) => {
-    const { status } = await fetch("/api/v1/authenticate", {
-      method: "POST",
+    const { status } = await fetch('/api/v1/authenticate', {
+      method: 'POST',
       body: JSON.stringify({
         otp,
       }),
@@ -70,7 +70,7 @@ const Login = () => {
   }, []);
 
   if (isLoggedIn) {
-    history.push("/");
+    history.push('/');
   } else if (attemtedLogin) {
     return <OneTimePasscodePage onSubmit={handleOTPSubmit} />;
   }
