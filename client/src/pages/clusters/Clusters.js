@@ -14,6 +14,7 @@ import {
   SkeletonText,
   TagSkeleton,
   StructuredListSkeleton,
+  PropTypes,
 } from 'carbon-components-react';
 import {
   Delete16 as Delete,
@@ -106,13 +107,11 @@ const WorkerDetails = ({ workers }) => (
   </StructuredListWrapper>
 );
 
-const Clusters = ({ accountID }) => {
+const Clusters = ({ query, accountID }) => {
   const [
     clusters,
     { deleteClusters, deleteTag, setTag, reload, getBilling, getWorkers },
-  ] = useClusters(accountID);
-
-  console.log(clusters);
+  ] = useClusters(accountID, query);
 
   const [tagText, setTagText] = useState('');
   const [billingLoading, setBillingLoading] = useState(false);
@@ -358,7 +357,16 @@ const Clusters = ({ accountID }) => {
       </>
     );
   }
-
+  // if (query.filter) {
+  //   return (
+  //     <DataTable
+  //       rows={Object.keys(clusters.data).filter((id) => clusters.data[id].name.includes(query.filter)).map((id) => clusters.data[id])}
+  //       headers={headers}
+  //       render={render}
+  //       isSortable
+  //     />
+  //   );
+  // }
   return (
     <DataTable
       rows={Object.keys(clusters.data).map((id) => clusters.data[id])}
@@ -367,6 +375,7 @@ const Clusters = ({ accountID }) => {
       isSortable
     />
   );
+
 };
 
 export default Clusters;

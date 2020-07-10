@@ -44,17 +44,33 @@ const Navbar = (props) => {
   };
 
   const handleCreateClick = () => {
-    history.push('/create');
+    if(props.selectedItem){
+      history.push('/create?account='+props.selectedItem.metadata.guid);
+    }else{
+      history.push('/create');
+    }
   };
   const handleScheduleClick = () => {
-    history.push('/schedule');
+    if(props.selectedItem){
+      history.push('/schedule?account='+props.selectedItem.metadata.guid);
+    }else{
+      history.push('/schedule');
+    }
   };
   const handleSettingsClick = () => {
-    history.push('/settings');
+    if(props.selectedItem){
+      history.push('/settings?account='+props.selectedItem.metadata.guid);
+    }else{
+      history.push('/settings');
+    }
   };
 
   const homeClick = () => {
-    history.push('/');
+    if(props.selectedItem){
+      history.push('/?account='+props.selectedItem.metadata.guid);
+    }else{
+      history.push('/');
+    }
   };
 
   return (
@@ -80,6 +96,7 @@ const Navbar = (props) => {
           label="Select Account"
           items={props.items || []}
           onChange={props.accountSelected}
+          selectedItem={props.selectedItem}
           itemToString={itemToString}
           id="account-dropdown"
           light={false}

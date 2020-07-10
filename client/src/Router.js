@@ -3,6 +3,7 @@ import { Router, Switch, Route } from 'react-router-dom';
 import { Loading } from 'carbon-components-react';
 import Navbar from './common/Navbar';
 import history from './globalHistory';
+import queryString from 'query-string';
 
 const AppPage = React.lazy(() => import('./pages/clusters/AppPage'));
 const CreatePage = React.lazy(() => import('./pages/create/CreatePage'));
@@ -10,11 +11,12 @@ const SchedulePage = React.lazy(() => import('./pages/schedule/SchedulePage'));
 const SettingsPage = React.lazy(() => import('./pages/settings/SettingsPage'));
 const Login = React.lazy(() => import('./Login'));
 
-const HolderThing = (props) => {
+const ApplicationRouter = (props) => {
+  const query = queryString.parse(props.location.search);
   const [isLoadingAccounts, setLoadingAccounts] = useState(true);
   const [accounts, setAccounts] = useState([]);
   const [accountID, setSelectedAccountID] = useState();
-
+  const [selectedAccount, setSelectedAccount] = useState();
   const [hasChosenAccount, setHasChosenAccount] = useState(false);
   const [tokenUpgraded, setTokenUpgraded] = useState(false);
 
@@ -36,7 +38,12 @@ const HolderThing = (props) => {
 
   const handleAccountChosen = useCallback(
     async ({ selectedItem }) => {
-      setAccountStuff(selectedItem.metadata.guid);
+      const {location} = props;
+
+      history.push(location.pathname + `?account=` + selectedItem.metadata.guid);
+      history.go();
+      // setSelectedAccount(selectedItem);
+      // setAccountStuff(selectedItem.metadata.guid);
     },
     [setAccountStuff]
   );
@@ -50,18 +57,26 @@ const HolderThing = (props) => {
         return;
       }
       const accounts = await response.json();
+      if(query.account){
+        const item = accounts.resources.find(account => account.metadata.guid === query.account);
+        if(item){
+          setSelectedAccount(item);
+          setAccountStuff(item.metadata.guid);
+        }
+      }
       setAccounts(accounts.resources);
       setLoadingAccounts(false);
     };
     loadAccounts();
   }, []);
-
+  
   return (
-    <>
+    <> 
       <Navbar
         path={props.location.pathname}
         isLoaded={!isLoadingAccounts}
         items={accounts}
+        selectedItem={selectedAccount}
         accountSelected={handleAccountChosen}
       />
       <Route path="/create" exact>
@@ -85,8 +100,9 @@ const HolderThing = (props) => {
           accountID={accountID}
         />
       </Route>
-      <Route path="/" exact>
+      <Route path="/">
         <AppPage
+          query={query}
           hasChosenAccount={hasChosenAccount}
           tokenUpgraded={tokenUpgraded}
           accountID={accountID}
@@ -111,7 +127,7 @@ const AppRouter = () => {
       <Suspense fallback={<Loading />}>
         <Switch>
           <Route path="/login" exact component={Login} />
-          <Route path="/" component={HolderThing} />
+          <Route path="/" component={ApplicationRouter} />
         </Switch>
       </Suspense>
     </Router>
