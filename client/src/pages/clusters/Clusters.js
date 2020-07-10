@@ -29,6 +29,8 @@ import headers from '../../common/data/headers';
 import './Cluster.css';
 import useClusters from './useClusters';
 
+import history from '../../globalHistory';
+
 const {
   TableContainer,
   Table,
@@ -117,6 +119,11 @@ const Clusters = ({ query, accountID }) => {
   const [billingLoading, setBillingLoading] = useState(false);
   const [workersLoading, setWorkersLoading] = useState(false);
 
+  const filterByTag = (tag) => {
+    history.push(`/?account=${accountID}&filter=${tag}`);
+    history.go();
+  }
+
   const onBillingClicked = useCallback(
     (data) => {
       setBillingLoading(true);
@@ -170,6 +177,7 @@ const Clusters = ({ query, accountID }) => {
               value.map((tag) => (
                 <Tag
                   onClose={() => deleteTag(id, tag, crn)}
+                  onClick={() => filterByTag(tag)}
                   filter
                   key={tag}
                   type="blue"
