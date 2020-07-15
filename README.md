@@ -7,7 +7,7 @@ This tool was made to manage large IBM Cloud accounts and the Kubernetes Cluster
 1. Local Development (Quick Changes)
 
 ```
-go run .
+go run cmd/web/main.go
 ```
 
 ```
@@ -28,7 +28,7 @@ cd ..
 From root of the project.
 
 ```
-go run .
+go run cmd/web/main.go
 ```
 
 This would start the project on port `9000` and go backend will serve the frontend.
