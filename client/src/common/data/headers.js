@@ -24,7 +24,7 @@ const headers = [
     header: 'Worker Count',
   },
   {
-    key: 'days',
+    key: 'createdDate',
     header: 'Days Since'
   },
   {

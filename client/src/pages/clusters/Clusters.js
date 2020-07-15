@@ -160,7 +160,7 @@ const Clusters = ({ query, accountID }) => {
     [setTag]
   );
 
-  const CustomCell = ({ cell, crn, id, ingressHost, ingressSecret, daysSince }) => {
+  const CustomCell = ({ cell, crn, id, ingressHost, ingressSecret }) => {
     const { info, value } = cell;
     switch (info.header) {
       case "state":
@@ -207,9 +207,9 @@ const Clusters = ({ query, accountID }) => {
             )}
           </>
         );
-      case "days":
+      case "createdDate":
         return (
-        <>{daysSince} Days</>
+        <>{calculateDays(value)} Days</>
         )
       case "ingress":
         return (
@@ -358,7 +358,6 @@ const Clusters = ({ query, accountID }) => {
                         id={row.id}
                         ingressHost={clusters.data[row.id].ingressHostName}
                         ingressSecret={clusters.data[row.id].ingressSecretName}
-                        daysSince={calculateDays(clusters.data[row.id].createdDate)}
                       />
                     </TableCell>
                   ))}
