@@ -42,6 +42,7 @@ const Settings = ({ accountID }) => {
   const [data, setData] = React.useState(null);
 
   React.useEffect(() => {
+    
     loadMetaData();
     const checkAPIKey = async () => {
       try {
@@ -62,7 +63,8 @@ const Settings = ({ accountID }) => {
     checkAPIKey();
   }, [accountID]);
 
-  const loadMetaData = async () => {
+  
+  const loadMetaData = React.useCallback(async () => {
     try {
       const metadata = await grab(`/api/v1/workshop/${accountID}/metadata`);
       if (metadata === null) {
@@ -84,7 +86,7 @@ const Settings = ({ accountID }) => {
       console.log(e);
       setMethod('post');
     }
-  };
+  },[accountID]);
 
   const shouldUpdateBeDisabled = () => {
     if (data) {

@@ -8,14 +8,12 @@ const headers = [
     header: 'State',
   },
   {
-    key: 'masterKubeVersion',
-    header: 'Master Version',
+    key: 'ingress',
+    header: 'Ingress',
   },
   {
-    // `key` is the name of the field on the row object itself for the header
-    key: 'location',
-    // `header` will be the name you want rendered in the Table Header
-    header: 'Location',
+    key: 'masterKubeVersion',
+    header: 'Master Version',
   },
   {
     key: 'dataCenter',
@@ -24,6 +22,10 @@ const headers = [
   {
     key: 'workerCount',
     header: 'Worker Count',
+  },
+  {
+    key: 'createdDate',
+    header: 'Days Since'
   },
   {
     key: 'tags',

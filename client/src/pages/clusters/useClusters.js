@@ -82,7 +82,6 @@ function clusterReducer(state, action) {
 
     case 'DELETE_CLUSTER': {
       const nextState = produce(state.data, (draftState) => {
-        // console.log(draftState);
         draftState[action.id].state = 'deleting';
       });
       return {
@@ -206,7 +205,7 @@ function clusterReducer(state, action) {
   }
 }
 
-const useClusters = (accountID) => {
+const useClusters = (accountID, query) => {
   const [state, dispatch] = useReducer(clusterReducer, {
     isLoading: false,
     isError: false,
@@ -228,8 +227,10 @@ const useClusters = (accountID) => {
   const loadData = async () => {
     dispatch({ type: 'FETCH_INIT' });
     try {
-      const _clusters = await grab('/api/v1/clusters', { signal });
-
+      let _clusters = await grab('/api/v1/clusters', { signal });
+      if(query.filter) {
+        _clusters = _clusters.filter(cluster => cluster.name.includes(query.filter));
+      }
       if (!cancelled) {
         const clusters = arrayToMap(_clusters);
         dispatch({ type: 'FETCH_SUCCESS', payload: clusters });

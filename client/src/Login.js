@@ -48,7 +48,6 @@ const Login = () => {
     fetch('/api/v1/identity-endpoints')
       .then((r) => r.json())
       .then(({ passcode_endpoint }) => {
-        console.log(passcode_endpoint);
         setIdentityEndpoint(passcode_endpoint);
       });
   }, []);

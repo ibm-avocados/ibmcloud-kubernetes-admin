@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState } from "react";
 import {
   DataTable,
   DataTableSkeleton,
@@ -14,19 +14,29 @@ import {
   SkeletonText,
   TagSkeleton,
   StructuredListSkeleton,
-} from 'carbon-components-react';
+  PropTypes,
+} from "carbon-components-react";
 import {
   Delete16 as Delete,
   TagGroup16 as TagGroup,
   Reset16 as Reset,
   Money16 as Money,
   VirtualMachine16 as VM,
-} from '@carbon/icons-react';
+} from "@carbon/icons-react";
 
-import headers from '../../common/data/headers';
+import headers from "../../common/data/headers";
 
-import './Cluster.css';
-import useClusters from './useClusters';
+import "./Cluster.css";
+import useClusters from "./useClusters";
+
+import history from "../../globalHistory";
+
+const calculateDays = (date) => {
+  const _dateSince = Date.parse(date);
+  const _today = new Date();
+
+  return Math.round((_today - _dateSince) / (1000 * 3600 * 24));
+}
 
 const {
   TableContainer,
@@ -47,7 +57,13 @@ const {
   TableBatchAction,
 } = DataTable;
 
-const CustomExpandedRow = ({ name, dateCreated, workers, workersLoading, ownerEmail }) => (
+const CustomExpandedRow = ({
+  name,
+  dateCreated,
+  workers,
+  workersLoading,
+  ownerEmail,
+}) => (
   <>
     <h1>
       Cluster Name:
@@ -62,7 +78,7 @@ const CustomExpandedRow = ({ name, dateCreated, workers, workersLoading, ownerEm
     {workers ? (
       <WorkerDetails workers={workers} />
     ) : workersLoading ? (
-      <div style={{ width: '500px' }}>
+      <div style={{ width: "500px" }}>
         <StructuredListSkeleton rowCount={3} />
       </div>
     ) : (
@@ -106,17 +122,22 @@ const WorkerDetails = ({ workers }) => (
   </StructuredListWrapper>
 );
 
-const Clusters = ({ accountID }) => {
+const Clusters = ({ query, accountID }) => {
   const [
     clusters,
     { deleteClusters, deleteTag, setTag, reload, getBilling, getWorkers },
-  ] = useClusters(accountID);
+  ] = useClusters(accountID, query);
 
-  console.log(clusters);
+  console.log(clusters.data);
 
-  const [tagText, setTagText] = useState('');
+  const [tagText, setTagText] = useState("");
   const [billingLoading, setBillingLoading] = useState(false);
   const [workersLoading, setWorkersLoading] = useState(false);
+
+  const filterByTag = (tag) => {
+    history.push(`/?account=${accountID}&filter=${tag}`);
+    history.go();
+  };
 
   const onBillingClicked = useCallback(
     (data) => {
@@ -133,44 +154,45 @@ const Clusters = ({ accountID }) => {
 
   const onSetTagClicked = useCallback(
     (clusters, tagText) => {
-      setTagText('');
+      setTagText("");
       setTag(clusters, tagText);
     },
     [setTag]
   );
 
-  const CustomCell = ({ cell, crn, id }) => {
+  const CustomCell = ({ cell, crn, id, ingressHost, ingressSecret }) => {
     const { info, value } = cell;
     switch (info.header) {
-      case 'state':
+      case "state":
         return (
           <span className="oneline">
             <span className={`status ${value}`} />
             {value}
           </span>
         );
-      case 'masterKubeVersion':
+      case "masterKubeVersion":
         return (
           <span className="oneline">
             <img
               alt="logo"
               className="logo-image"
               src={
-                value.includes('openshift')
-                  ? 'https://i.ibb.co/tLktm91/os-icon.png'
-                  : 'https://i.ibb.co/Hh2TzLH/k8s-icon.png'
+                value.includes("openshift")
+                  ? "https://i.ibb.co/tLktm91/os-icon.png"
+                  : "https://i.ibb.co/Hh2TzLH/k8s-icon.png"
               }
             />
             {value}
           </span>
         );
-      case 'tags':
+      case "tags":
         return (
           <>
             {value ? (
               value.map((tag) => (
                 <Tag
                   onClose={() => deleteTag(id, tag, crn)}
+                  onClick={() => filterByTag(tag)}
                   filter
                   key={tag}
                   type="blue"
@@ -185,18 +207,38 @@ const Clusters = ({ accountID }) => {
             )}
           </>
         );
-      case 'cost':
+      case "createdDate":
+        return (
+        <>{calculateDays(value)} Days</>
+        )
+      case "ingress":
+        return (
+          <>
+            {ingressHost !== "" && ingressSecret !== "" ? (
+              <span className="oneline">
+                <span className={`status normal`} />
+                Ok
+              </span>
+            ) : (
+              <span className="oneline">
+                <span className={`status critical`} />
+                Error
+              </span>
+            )}
+          </>
+        );
+      case "cost":
         if (value) {
           return <>${value}</>;
         }
         return (
           <>
             {billingLoading ? (
-              <div style={{ width: '50px' }}>
+              <div style={{ width: "50px" }}>
                 <SkeletonText />
               </div>
             ) : (
-              '$'
+              "$"
             )}
           </>
         );
@@ -314,6 +356,8 @@ const Clusters = ({ accountID }) => {
                         cell={cell}
                         crn={clusters.data[row.id].crn}
                         id={row.id}
+                        ingressHost={clusters.data[row.id].ingressHostName}
+                        ingressSecret={clusters.data[row.id].ingressSecretName}
                       />
                     </TableCell>
                   ))}
@@ -358,7 +402,16 @@ const Clusters = ({ accountID }) => {
       </>
     );
   }
-
+  // if (query.filter) {
+  //   return (
+  //     <DataTable
+  //       rows={Object.keys(clusters.data).filter((id) => clusters.data[id].name.includes(query.filter)).map((id) => clusters.data[id])}
+  //       headers={headers}
+  //       render={render}
+  //       isSortable
+  //     />
+  //   );
+  // }
   return (
     <DataTable
       rows={Object.keys(clusters.data).map((id) => clusters.data[id])}
