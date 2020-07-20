@@ -3,6 +3,8 @@ import Button from './common/Button';
 import TextInput from './common/TextInput';
 import styles from './pagestyles.module.css';
 import history from './globalHistory';
+import queryString from 'query-string';
+
 
 const OneTimePasscodePage = ({ onSubmit }) => {
   const [value, setValue] = useState('');
@@ -34,7 +36,7 @@ const OneTimePasscodePage = ({ onSubmit }) => {
   );
 };
 
-const Login = () => {
+const Login = ({location}) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [attemtedLogin, setAttemtedLogin] = useState(false);
   const [identityEndpoint, setIdentityEndpoint] = useState(undefined);
@@ -69,7 +71,13 @@ const Login = () => {
   }, []);
 
   if (isLoggedIn) {
-    history.push('/');
+    // const queryData = queryString.stringify(query); 
+    const {search} = location;
+    const query = queryString.parse(search);
+
+    console.log(query);
+
+    history.push(query.state);
   } else if (attemtedLogin) {
     return <OneTimePasscodePage onSubmit={handleOTPSubmit} />;
   }
