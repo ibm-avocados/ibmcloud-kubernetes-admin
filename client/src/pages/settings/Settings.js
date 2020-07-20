@@ -139,6 +139,39 @@ const Settings = ({ accountID }) => {
     }
   };
 
+  const onSubmitAPIKeyClicked = async () => {
+    try {
+      const response = await grab('/api/v1/schedule/api/create', {
+        method: 'post',
+        body: JSON.stringify({
+          accountID: accountID,
+          apiKey: apiKey,
+        }),
+      });
+      console.log(response);
+      setApiKeyValid(true);
+      setApiKey('your-api-key-will-be-pulled-from-db');
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  const onDeleteAPIKeyClicked = async () => {
+    try {
+      const response = await grab('/api/v1/schedule/api', {
+        method: 'delete',
+        body: JSON.stringify({
+          accountID: accountID,
+        }),
+      });
+      console.log('api key removed');
+      setApiKey('');
+      setApiKeyValid(false);
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
   return (
     <Form>
       <Grid>
@@ -160,9 +193,9 @@ const Settings = ({ accountID }) => {
         </Row>
         <Spacer height="16px" />
         {!apiKeyValid ? (
-          <Button onClick={() => console.log(data)}>Save</Button>
+          <Button onClick={onSubmitAPIKeyClicked}>Save</Button>
         ) : (
-          <Button kind="danger" onClick={() => console.log('delete')}>
+          <Button kind="danger" onClick={onDeleteAPIKeyClicked}>
             Delete
           </Button>
         )}

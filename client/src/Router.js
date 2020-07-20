@@ -1,15 +1,15 @@
-import React, { useCallback, useEffect, useState, Suspense } from 'react';
-import { Router, Switch, Route } from 'react-router-dom';
-import { Loading } from 'carbon-components-react';
-import Navbar from './common/Navbar';
-import history from './globalHistory';
-import queryString from 'query-string';
+import React, { useCallback, useEffect, useState, Suspense } from "react";
+import { Router, Switch, Route } from "react-router-dom";
+import { Loading } from "carbon-components-react";
+import Navbar from "./common/Navbar";
+import history from "./globalHistory";
+import queryString from "query-string";
 
-const AppPage = React.lazy(() => import('./pages/clusters/AppPage'));
-const CreatePage = React.lazy(() => import('./pages/create/CreatePage'));
-const SchedulePage = React.lazy(() => import('./pages/schedule/SchedulePage'));
-const SettingsPage = React.lazy(() => import('./pages/settings/SettingsPage'));
-const Login = React.lazy(() => import('./Login'));
+const AppPage = React.lazy(() => import("./pages/clusters/AppPage"));
+const CreatePage = React.lazy(() => import("./pages/create/CreatePage"));
+const SchedulePage = React.lazy(() => import("./pages/schedule/SchedulePage"));
+const SettingsPage = React.lazy(() => import("./pages/settings/SettingsPage"));
+const Login = React.lazy(() => import("./Login"));
 
 const ApplicationRouter = (props) => {
   const query = queryString.parse(props.location.search);
@@ -21,12 +21,12 @@ const ApplicationRouter = (props) => {
   const [tokenUpgraded, setTokenUpgraded] = useState(false);
 
   const setAccountStuff = useCallback(async (guid) => {
-    localStorage.setItem('accountID', guid);
+    localStorage.setItem("accountID", guid);
     setSelectedAccountID(guid);
     setTokenUpgraded(false);
     setHasChosenAccount(true);
-    const { status } = await fetch('/api/v1/authenticate/account', {
-      method: 'POST',
+    const { status } = await fetch("/api/v1/authenticate/account", {
+      method: "POST",
       body: JSON.stringify({
         id: guid,
       }),
@@ -38,9 +38,11 @@ const ApplicationRouter = (props) => {
 
   const handleAccountChosen = useCallback(
     async ({ selectedItem }) => {
-      const {location} = props;
+      const { location } = props;
 
-      history.push(location.pathname + `?account=` + selectedItem.metadata.guid);
+      history.push(
+        location.pathname + `?account=` + selectedItem.metadata.guid
+      );
       history.go();
       // setSelectedAccount(selectedItem);
       // setAccountStuff(selectedItem.metadata.guid);
@@ -51,15 +53,17 @@ const ApplicationRouter = (props) => {
   useEffect(() => {
     const loadAccounts = async () => {
       setLoadingAccounts(true);
-      const response = await fetch('/api/v1/accounts');
+      const response = await fetch("/api/v1/accounts");
       if (response.status !== 200) {
         // Somehow did not get any account back.
         return;
       }
       const accounts = await response.json();
-      if(query.account){
-        const item = accounts.resources.find(account => account.metadata.guid === query.account);
-        if(item){
+      if (query.account) {
+        const item = accounts.resources.find(
+          (account) => account.metadata.guid === query.account
+        );
+        if (item) {
           setSelectedAccount(item);
           setAccountStuff(item.metadata.guid);
         }
@@ -69,9 +73,9 @@ const ApplicationRouter = (props) => {
     };
     loadAccounts();
   }, []);
-  
+
   return (
-    <> 
+    <>
       <Navbar
         path={props.location.pathname}
         isLoaded={!isLoadingAccounts}
@@ -100,7 +104,7 @@ const ApplicationRouter = (props) => {
           accountID={accountID}
         />
       </Route>
-      <Route path="/">
+      <Route path="/" exact>
         <AppPage
           query={query}
           hasChosenAccount={hasChosenAccount}
@@ -112,24 +116,36 @@ const ApplicationRouter = (props) => {
   );
 };
 
-const AppRouter = () => {
+const App = ({location}) => {
+  const {pathname, search} = location;
+  
   useEffect(() => {
-    fetch('/api/v1/login').then(({ status }) => {
+    fetch("/api/v1/login").then(({ status }) => {
       if (status !== 200) {
-        history.push('/login');
+        if (pathname !== "/login"){
+          history.push(`/login?state=${encodeURIComponent(pathname+search)}`)
+        } else {
+          history.push("/login");
+        }
       }
     });
   }, []);
   //style={path === “create” ? styles.activeItem : styles.item}
 
   return (
+    <Suspense fallback={<Loading />}>
+      <Switch>
+        <Route path="/login" exact component={Login}/>
+        <Route path="/" component={ApplicationRouter} />
+      </Switch>
+    </Suspense>
+  );
+};
+
+const AppRouter = () => {
+  return (
     <Router history={history}>
-      <Suspense fallback={<Loading />}>
-        <Switch>
-          <Route path="/login" exact component={Login} />
-          <Route path="/" component={ApplicationRouter} />
-        </Switch>
-      </Suspense>
+      <Route path="/" component={App}/>
     </Router>
   );
 };
