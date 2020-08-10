@@ -135,13 +135,13 @@ func checkCloudant() {
 				continue
 			}
 
-			name := schedule.CreateRequest.ClusterRequest.Name
+			name := schedule.ScheduleRequest.ScheduleRequest.Name
 			if schedule.Status == "created" {
 				log.Printf("deleting %d clusters", count)
 				if count == len(schedule.Clusters) {
 					for _, cluster := range schedule.Clusters {
-						if err := session.DeleteCluster(cluster, schedule.CreateRequest.ResourceGroup, "true"); err != nil {
-							log.Println("error deleting cluster, investigate : ", schedule.CreateRequest.ClusterRequest.Name, err)
+						if err := session.DeleteCluster(cluster, schedule.ScheduleRequest.ResourceGroup, "true"); err != nil {
+							log.Println("error deleting cluster, investigate : ", schedule.ScheduleRequest.ScheduleRequest.Name, err)
 							hasErrors = true
 							schedError := ScheduleError{
 								Error:   err,
@@ -156,7 +156,7 @@ func checkCloudant() {
 					for i := 1; i <= count; i++ {
 						suffix := fmt.Sprintf("-%03d", i)
 						clusterName := name + suffix
-						if err := session.DeleteCluster(clusterName, schedule.CreateRequest.ResourceGroup, "true"); err != nil {
+						if err := session.DeleteCluster(clusterName, schedule.ScheduleRequest.ResourceGroup, "true"); err != nil {
 							log.Println("error deleting cluster, investigate : ", clusterName, err)
 							hasErrors = true
 							schedError := ScheduleError{
@@ -179,50 +179,56 @@ func checkCloudant() {
 				// get tags out of the schedule
 				tags := strings.Split(schedule.Tags, ",")
 
-				vlans, err := session.GetDatacenterVlan(schedule.CreateRequest.ClusterRequest.DataCenter)
-				if err != nil {
-					// could not get vlan
-					// skip the scheduling
-					log.Println(err)
-					continue
-				}
-
-				privateVlans := make([]ibmcloud.Vlan, 0)
-				publicVlans := make([]ibmcloud.Vlan, 0)
-
-				for _, vlan := range vlans {
-					if vlan.Type == "private" {
-						privateVlans = append(privateVlans, vlan)
-					} else if vlan.Type == "public" {
-						publicVlans = append(publicVlans, vlan)
-					}
-				}
-
-				// at these point, ideally we have a list of private and public vlans
-				// if theres nothing in this list
-				// vlans got deleted
-				// and we can no longer create the clusters (?) [might be ok to set empty]
-				// at this situation email the account admins
-				if len(privateVlans) == 0 || len(publicVlans) == 0 {
-					notification.Email("No vlan available", "<h1>Add vlan for region</h1>", notifyEmails...)
-					continue
-				}
-
-				privateVlan, publicVlan := findMatchingVlan(privateVlans, publicVlans)
-
-				if privateVlan == "" || publicVlan == "" {
-					notification.Email("No matching vlan available", "<h1>Add vlan with same router for region</h1>", notifyEmails...)
-					continue
-				}
-
-				schedule.CreateRequest.ClusterRequest.PrivateVlan = privateVlan
-				schedule.CreateRequest.ClusterRequest.PublicVlan = publicVlan
-
 				// for each cluster loop through and create cluster, ignore error for now.
 				for i := 1; i <= count; i++ {
+					datacenters := schedule.ScheduleRequest.ScheduleRequest.DataCenters
+					vlans, err := session.GetDatacenterVlan()
+					if err != nil {
+						// could not get vlan
+						// skip the scheduling
+						log.Println(err)
+						continue
+					}
+
+					privateVlans := make([]ibmcloud.Vlan, 0)
+					publicVlans := make([]ibmcloud.Vlan, 0)
+
+					for _, vlan := range vlans {
+						if vlan.Type == "private" {
+							privateVlans = append(privateVlans, vlan)
+						} else if vlan.Type == "public" {
+							publicVlans = append(publicVlans, vlan)
+						}
+					}
+
+					// at these point, ideally we have a list of private and public vlans
+					// if theres nothing in this list
+					// vlans got deleted
+					// and we can no longer create the clusters (?) [might be ok to set empty]
+					// at this situation email the account admins
+					if len(privateVlans) == 0 || len(publicVlans) == 0 {
+						notification.Email("No vlan available", "<h1>Add vlan for region</h1>", notifyEmails...)
+						continue
+					}
+
+					privateVlan, publicVlan := findMatchingVlan(privateVlans, publicVlans)
+
+					if privateVlan == "" || publicVlan == "" {
+						notification.Email("No matching vlan available", "<h1>Add vlan with same router for region</h1>", notifyEmails...)
+						continue
+					}
+
 					suffix := fmt.Sprintf("-%03d", i)
+
+					var clusterRequest ibmcloud.ClusterRequest
+					copier.Copy(&clusterRequest, &schedule.ScheduleRequest.ScheduleRequest)
+
 					var createRequest ibmcloud.CreateClusterRequest
-					copier.Copy(&createRequest, &schedule.CreateRequest)
+					createRequest.ClusterRequest = clusterRequest
+					// TODO: set stuff
+					createRequest.ClusterRequest.DataCenter = ""
+					createRequest.ClusterRequest.PublicVlan = publicVlan
+					createRequest.ClusterRequest.PrivateVlan = privateVlan
 					createRequest.ClusterRequest.Name = name + suffix
 					log.Println("trying to create cluster with name : ", createRequest.ClusterRequest.Name)
 					response, err := session.CreateCluster(createRequest)

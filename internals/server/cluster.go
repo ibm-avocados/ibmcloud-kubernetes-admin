@@ -66,6 +66,52 @@ func (s *Server) ClusterCreateHandler(w http.ResponseWriter, r *http.Request) {
 	e.Encode(createResponse)
 }
 
+func (s *Server) LocationGeoEndpointInfoHandler(w http.ResponseWriter, r *http.Request) {
+	session, err := getCloudSessions(r)
+	if err != nil {
+		handleError(w, http.StatusUnauthorized, "could not get session", err.Error())
+		return
+	}
+	w.Header().Add("Content-Type", "application/json")
+
+	clusters, err := session.GetClusters("")
+	if err != nil {
+		handleError(w, http.StatusUnauthorized, "could not get clusters", err.Error())
+		return
+	}
+
+	res := make(map[string]int)
+
+	for _, c := range clusters {
+		if count, ok := res[c.DataCenter]; ok {
+			res[c.DataCenter] = count + 1
+		} else {
+			res[c.DataCenter] = 1
+		}
+	}
+	w.WriteHeader(http.StatusOK)
+	e := json.NewEncoder(w)
+	e.Encode(res)
+}
+
+func (s *Server) ClusterListHandler(w http.ResponseWriter, r *http.Request) {
+	session, err := getCloudSessions(r)
+	if err != nil {
+		handleError(w, http.StatusUnauthorized, "could not get session", err.Error())
+		return
+	}
+
+	clusters, err := session.GetClusters("")
+	if err != nil {
+		handleError(w, http.StatusUnauthorized, "could not get clusters", err.Error())
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	e := json.NewEncoder(w)
+	e.Encode(clusters)
+}
+
 func (s *Server) ClusterHandler(w http.ResponseWriter, r *http.Request) {
 	session, err := getCloudSessions(r)
 	if err != nil {
@@ -105,24 +151,6 @@ func (s *Server) ClusterHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	e := json.NewEncoder(w)
 	e.Encode(cluster)
-}
-
-func (s *Server) ClusterListHandler(w http.ResponseWriter, r *http.Request) {
-	session, err := getCloudSessions(r)
-	if err != nil {
-		handleError(w, http.StatusUnauthorized, "could not get session", err.Error())
-		return
-	}
-
-	clusters, err := session.GetClusters("")
-	if err != nil {
-		handleError(w, http.StatusUnauthorized, "could not get clusters", err.Error())
-		return
-	}
-
-	w.WriteHeader(http.StatusOK)
-	e := json.NewEncoder(w)
-	e.Encode(clusters)
 }
 
 func (s *Server) ClusterWorkerListHandler(w http.ResponseWriter, r *http.Request) {

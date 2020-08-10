@@ -34,6 +34,7 @@ func main() {
 	// public endpoints
 
 	api.HandleFunc("/clusters/versions", server.VersionEndpointHandler).Methods(http.MethodGet)
+	api.HandleFunc("/clusters/locations/info", server.LocationGeoEndpointInfoHandler).Methods(http.MethodGet)
 	api.HandleFunc("/clusters/locations", server.LocationEndpointHandler).Methods(http.MethodGet)
 	api.HandleFunc("/clusters/{geo}/locations", server.LocationGeoEndpointHandler).Methods(http.MethodGet)
 	api.HandleFunc("/clusters/zones", server.ZonesEndpointHandler).

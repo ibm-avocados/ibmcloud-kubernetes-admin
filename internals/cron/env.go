@@ -31,5 +31,11 @@ func setEnvs(accountID, apiKey string, metadata *ibmcloud.AccountMetaData, sched
 	if err := os.Setenv("ACCESS_GROUP_NAME", metadata.AccessGroup); err != nil {
 		return err
 	}
+	if err := os.Setenv("ADMIN_PAGE_ENABLED", "false"); err != nil {
+		return err
+	}
+	if err := os.Setenv("USERS_PER_CLUSTER", schedule.UserCount); err != nil {
+		return err
+	}
 	return nil
 }

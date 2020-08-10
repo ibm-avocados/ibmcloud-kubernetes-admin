@@ -1,13 +1,13 @@
-import React from 'react';
+import React from "react";
 import {
   TextInput,
   Checkbox,
   InlineLoading,
   InlineNotification,
   Button,
-} from 'carbon-components-react';
+} from "carbon-components-react";
 
-import history from '../../globalHistory';
+import history from "../../globalHistory";
 
 const Spacer = ({ height }) => <div style={{ marginTop: height }} />;
 
@@ -24,7 +24,15 @@ const grab = async (url, options, retryCount = 0) => {
   return data;
 };
 
-const WorkshopAccount = ({ accountID, githubIssue, setGithubIssue, isWorkshop, setIsWorkshop }) => {
+const WorkshopAccount = ({
+  accountID,
+  githubIssue,
+  setGithubIssue,
+  isWorkshop,
+  setIsWorkshop,
+  userPerCluster,
+  setUserPerCluster
+}) => {
   return (
     <>
       <Checkbox
@@ -37,6 +45,8 @@ const WorkshopAccount = ({ accountID, githubIssue, setGithubIssue, isWorkshop, s
           githubIssue={githubIssue}
           setGithubIssue={setGithubIssue}
           accountID={accountID}
+          userPerCluster={userPerCluster}
+          setUserPerCluster={setUserPerCluster}
         />
       ) : (
         <></>
@@ -45,13 +55,19 @@ const WorkshopAccount = ({ accountID, githubIssue, setGithubIssue, isWorkshop, s
   );
 };
 
-const WorkshopView = ({ accountID, setGithubIssue, githubIssue }) => {
+const WorkshopView = ({
+  accountID,
+  setGithubIssue,
+  githubIssue,
+  userPerCluster,
+  setUserPerCluster,
+}) => {
   const [loading, setLoading] = React.useState(false);
   const [metadataAvailable, setMetadataAvailable] = React.useState(false);
   const [apiKeyValid, setApiKeyValid] = React.useState(false);
 
   const onSettingsButtonClicked = () => {
-    history.push('/settings');
+    history.push("/settings");
   };
   React.useEffect(() => {
     const checkMetadata = async () => {
@@ -61,8 +77,8 @@ const WorkshopView = ({ accountID, setGithubIssue, githubIssue }) => {
         if (metadata !== null) {
           setMetadataAvailable(true);
         }
-        const apiKey = await fetch('/api/v1/schedule/api', {
-          method: 'post',
+        const apiKey = await fetch("/api/v1/schedule/api", {
+          method: "post",
           body: JSON.stringify({
             accountID: accountID,
           }),
@@ -93,14 +109,24 @@ const WorkshopView = ({ accountID, setGithubIssue, githubIssue }) => {
     );
   }
   return (
-    <TextInput
-      id="workshop_issue"
-      value={githubIssue}
-      invalid={isNaN(githubIssue) || githubIssue === ''}
-      invalidText="Must be a number"
-      onChange={(e) => setGithubIssue(e.target.value.trim())}
-      labelText="Github Issue Number"
-    />
+    <>
+      <TextInput
+        id="workshop_issue"
+        value={githubIssue}
+        invalid={isNaN(githubIssue) || githubIssue === ""}
+        invalidText="Must be a number"
+        onChange={(e) => setGithubIssue(e.target.value.trim())}
+        labelText="Github Issue Number"
+      />
+      <TextInput
+        id="user_per_cluster"
+        value={userPerCluster}
+        invalid={isNaN(userPerCluster) || userPerCluster === ""}
+        invalidText="Must be a number"
+        onChange={(e) => setUserPerCluster(e.target.value.trim())}
+        labelText="Users Per Cluster"
+      />
+    </>
   );
 };
 
