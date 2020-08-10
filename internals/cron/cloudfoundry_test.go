@@ -8,22 +8,22 @@ import (
 )
 
 func TestGetCommentString(t *testing.T) {
-	request := ibmcloud.ClusterRequest{
-		DataCenter:    "dal10",
+	request := ibmcloud.ScheduleRequest{
+		DataCenters:   []string{"dal10"},
 		MachineType:   "4X16",
 		MasterVersion: "iks16.7",
 		WorkerNum:     1,
 	}
 
-	createRequest := ibmcloud.CreateClusterRequest{
-		ClusterRequest: request,
+	scheduleRequest := ibmcloud.ScheduleClusterRequest{
+		ScheduleRequest: request,
 	}
 
 	schedule := ibmcloud.Schedule{
-		Count:         "5",
-		CreateRequest: createRequest,
-		EventName:     "mofisapp",
-		Password:      "ikslab",
+		Count:           "5",
+		ScheduleRequest: scheduleRequest,
+		EventName:       "mofisapp",
+		Password:        "ikslab",
 	}
 
 	comment, err := getCommentString(schedule, "../../templates/message.gotmpl")
