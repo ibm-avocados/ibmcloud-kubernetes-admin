@@ -57,8 +57,8 @@ const CreateForm = ({ accountID }) => {
   const [kuberntesVersions, setKubernetesVersions] = React.useState([]);
   const [openshiftVersions, setOpenshiftVersions] = React.useState([]);
   const [workerZones, setWorkerZones] = React.useState([]);
-  const [privateVlans, setPrivateVlans] = React.useState([]);
-  const [publicVlans, setPublicVlans] = React.useState([]);
+  // const [privateVlans, setPrivateVlans] = React.useState([]);
+  // const [publicVlans, setPublicVlans] = React.useState([]);
   const [clusterNamePrefix, setClusterNamePrefix] = React.useState("");
   const [clusterCount, setClusterCount] = React.useState("1");
   const [workerCount, setWorkerCount] = React.useState("1");
@@ -70,9 +70,10 @@ const CreateForm = ({ accountID }) => {
   const [selectedOpenshift, setSelectedOpenshift] = React.useState(null);
   const [selectedRegion, setSelectedRegion] = React.useState(null);
   const [selectedWorkerZones, setSelectedWorkerZones] = React.useState([]);
-  const [selectedWorkerZone, setSelectedWorkerZone] = React.useState(null);
-  const [selectedPrivateVlan, setSelecetedPrivateVlan] = React.useState(null);
-  const [selectedPublicVlan, setSelecetedPublicVlan] = React.useState(null);
+  // const [selectedWorkerZone, setSelectedWorkerZone] = React.useState(null);
+  // const [selectedPrivateVlan, setSelecetedPrivateVlan] = React.useState(null);
+  // const [selectedPublicVlan, setSelecetedPublicVlan] = React.useState(null);
+  const [zoneClusterCount, setZoneClusterCount] = React.useState(null);
   const [selectedFlavor, setSelectedFlavor] = React.useState(null);
   const [selectedGroup, setSelectedGroup] = React.useState(null);
   //scheduling helpers
@@ -146,6 +147,7 @@ const CreateForm = ({ accountID }) => {
       }
     };
     checkAPIKey();
+    getWorkerZoneClusterCount();
   }, [accountID]);
 
   const resetState = () => {
@@ -159,10 +161,10 @@ const CreateForm = ({ accountID }) => {
     setSelectedKuberetes(null);
     setSelectedOpenshift(null);
     setSelectedRegion(null);
-    setSelectedWorkerZone(null);
+    // setSelectedWorkerZone(null);
     setSelectedWorkerZones([]);
-    setSelecetedPrivateVlan(null);
-    setSelecetedPublicVlan(null);
+    // setSelecetedPrivateVlan(null);
+    // setSelecetedPublicVlan(null);
     setSelectedFlavor(null);
     setSelectedGroup(null);
   };
@@ -185,6 +187,20 @@ const CreateForm = ({ accountID }) => {
       console.log(e);
     }
   };
+
+  const getWorkerZoneClusterCount = async () => {
+    try {
+      const zoneCount = await grab(`/api/v1/clusters/locations/info`, {
+        Method: "GET",
+      });
+      if(zoneCount) {
+        console.log(zoneCount);
+        setZoneClusterCount(zoneCount);
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  }
 
   const getVlan = async (datacenter) => {
     try {
@@ -231,23 +247,23 @@ const CreateForm = ({ accountID }) => {
     return pairs[getRandomInt(pairs.length)];
   };
 
-  const getVlans = async (datacenter) => {
-    try {
-      const vlans = await grab(`/api/v1/clusters/${datacenter}/vlans`);
-      const privateVlans = vlans.filter((vlan) => vlan.type === "private");
-      if (privateVlans && privateVlans.length > 0) {
-        setPrivateVlans(privateVlans);
-        setSelecetedPrivateVlan(privateVlans[0]);
-      }
-      const publicVlans = vlans.filter((vlan) => vlan.type === "public");
-      if (publicVlans && publicVlans.length > 0) {
-        setPublicVlans(publicVlans);
-        setSelecetedPublicVlan(publicVlans[0]);
-      }
-    } catch (e) {
-      console.log(e);
-    }
-  };
+  // const getVlans = async (datacenter) => {
+  //   try {
+  //     const vlans = await grab(`/api/v1/clusters/${datacenter}/vlans`);
+  //     const privateVlans = vlans.filter((vlan) => vlan.type === "private");
+  //     if (privateVlans && privateVlans.length > 0) {
+  //       setPrivateVlans(privateVlans);
+  //       setSelecetedPrivateVlan(privateVlans[0]);
+  //     }
+  //     const publicVlans = vlans.filter((vlan) => vlan.type === "public");
+  //     if (publicVlans && publicVlans.length > 0) {
+  //       setPublicVlans(publicVlans);
+  //       setSelecetedPublicVlan(publicVlans[0]);
+  //     }
+  //   } catch (e) {
+  //     console.log(e);
+  //   }
+  // };
 
   const getFlavors = async (datacenter) => {
     try {
@@ -294,11 +310,12 @@ const CreateForm = ({ accountID }) => {
   const onGeoSelected = (geo) => {
     getWorkerZones(geo.id);
     setSelectedRegion(geo);
-    setSelectedWorkerZone(null);
-    setPrivateVlans([]);
-    setSelecetedPrivateVlan(null);
-    setPublicVlans([]);
-    setSelecetedPublicVlan(null);
+    setSelectedWorkerZones([]);
+    // setSelectedWorkerZone(null);
+    // setPrivateVlans([]);
+    // setSelecetedPrivateVlan(null);
+    // setPublicVlans([]);
+    // setSelecetedPublicVlan(null);
   };
 
   const onWorkerZonesSelected = ({ selectedItems }) => {
@@ -309,15 +326,15 @@ const CreateForm = ({ accountID }) => {
     }
   };
 
-  const onWorkerZoneSelected = (zone) => {
-    setSelectedWorkerZone(zone);
-    setPrivateVlans([]);
-    setSelecetedPrivateVlan(null);
-    setPublicVlans([]);
-    setSelecetedPublicVlan(null);
-    getVlans(zone.id);
-    getFlavors(zone.id);
-  };
+  // const onWorkerZoneSelected = (zone) => {
+  //   // setSelectedWorkerZone(zone);
+  //   // setPrivateVlans([]);
+  //   // setSelecetedPrivateVlan(null);
+  //   // setPublicVlans([]);
+  //   // setSelecetedPublicVlan(null);
+  //   // getVlans(zone.id);
+  //   getFlavors(zone.id);
+  // };
 
   const validTag = (tags) => {
     const re = /^[A-Za-z,0-9:_ .-]+$/;
@@ -371,7 +388,7 @@ const CreateForm = ({ accountID }) => {
         workerNum: Number(workerCount),
         diskEncryption: true,
         isolation: "public",
-        GatewayEnabled: false,
+        gatewayEnabled: false,
         privateSeviceEndpoint: false,
         publicServiceEndpoint: false,
       };
@@ -414,52 +431,52 @@ const CreateForm = ({ accountID }) => {
           CreateClusterRequest.clusterRequest.publicVlan = vlan[1];
         }
 
-        CreateClusterRequest.clusterRequest.workerZone = workerZone;
+        CreateClusterRequest.clusterRequest.dataCenter = workerZone;
 
         console.log(
-          `${CreateClusterRequest.clusterRequest.workerZone},
-          ${CreateClusterRequest.clusterRequest.privateVlan},
-          ${CreateClusterRequest.clusterRequest.publicVlan}`
+          `Worker Zone: ${CreateClusterRequest.clusterRequest.workerZone},\tPrivate Vlan: ${CreateClusterRequest.clusterRequest.privateVlan},\tPublic Vlan: ${CreateClusterRequest.clusterRequest.publicVlan}`
         );
 
-        // const clusterResponse = await grab(
-        //   "/api/v1/clusters",
-        //   {
-        //     method: "post",
-        //     body: JSON.stringify(CreateClusterRequest),
-        //   },
-        //   3
-        // );
+        console.log(CreateClusterRequest);
 
-        // console.log("cluster created with id : ", clusterResponse.id);
+        const clusterResponse = await grab(
+          "/api/v1/clusters",
+          {
+            method: "post",
+            body: JSON.stringify(CreateClusterRequest),
+          },
+          3
+        );
 
-        // console.log("Sleeping 3s before trying to set tags");
-        // setLoaderDescription(`Preparing to Tag Cluster ${i + 1} of ${range}`);
-        // await sleep(15000);
-        // setLoaderDescription(`Tagging Cluster ${i + 1} of ${range}`);
+        console.log("cluster created with id : ", clusterResponse.id);
 
-        // // comma separated tags.
-        // const tagPromises = tags.split(",").map(async (tag) => {
-        //   try {
-        //     await sleep(3000);
-        //     const tagRequest = await grab(
-        //       `/api/v1/clusters/${clusterResponse.id}/settag`,
-        //       {
-        //         method: "post",
-        //         body: JSON.stringify({
-        //           tag,
-        //           resourceGroup: selectedGroup.id,
-        //         }),
-        //       },
-        //       3
-        //     );
-        //     return tagRequest;
-        //   } catch (e) {
-        //     return undefined;
-        //   }
-        // });
-        // const result = await Promise.all(tagPromises);
-        // console.log(result);
+        console.log("Sleeping 3s before trying to set tags");
+        setLoaderDescription(`Preparing to Tag Cluster ${i + 1} of ${range}`);
+        await sleep(15000);
+        setLoaderDescription(`Tagging Cluster ${i + 1} of ${range}`);
+
+        // comma separated tags.
+        const tagPromises = tags.split(",").map(async (tag) => {
+          try {
+            await sleep(3000);
+            const tagRequest = await grab(
+              `/api/v1/clusters/${clusterResponse.id}/settag`,
+              {
+                method: "post",
+                body: JSON.stringify({
+                  tag,
+                  resourceGroup: selectedGroup.id,
+                }),
+              },
+              3
+            );
+            return tagRequest;
+          } catch (e) {
+            return undefined;
+          }
+        });
+        const result = await Promise.all(tagPromises);
+        console.log(result);
       } catch (e) {
         errors.push(e);
         console.log("Error creating cluster", e);
@@ -513,7 +530,9 @@ const CreateForm = ({ accountID }) => {
   };
 
   const shouldSchedulingBeDisabled = () => {
-    return shouldCreateBeDisabled();
+    return true;
+    //TODO: scheduler is broken right now. enable once fixed/
+    //return shouldCreateBeDisabled();
   };
 
   const shouldScheduleSubmitBeDisabled = () => {
@@ -545,11 +564,13 @@ const CreateForm = ({ accountID }) => {
     }
     const name = `${clusterNamePrefix}`;
 
-    const ClusterRequest = {
+    const workerZones = selectedWorkerZones.map(v => v.id);
+
+    const ScheduleRequest = {
       name: name,
       prefix: "",
       skipPermPrecheck: false,
-      dataCenter: selectedWorkerZone.id,
+      dataCenters: workerZones,
       defaultWorkerPoolName: "",
       defaultWorkerPoolEntitlement,
       disableAutoUpdate: true,
@@ -557,8 +578,6 @@ const CreateForm = ({ accountID }) => {
       podSubnet: "",
       serviceSubnet: "",
       machineType: selectedFlavor.name,
-      privateVlan: selectedPrivateVlan.id,
-      publicVlan: selectedPublicVlan.id,
       masterVersion: version,
       workerNum: Number(workerCount),
       diskEncryption: true,
@@ -568,8 +587,8 @@ const CreateForm = ({ accountID }) => {
       publicServiceEndpoint: false,
     };
 
-    const CreateClusterRequest = {
-      clusterRequest: ClusterRequest,
+    const ScheduleClusterRequest = {
+      scheduleRequest: ScheduleRequest,
       resourceGroup: selectedGroup.id,
     };
 
@@ -601,7 +620,7 @@ const CreateForm = ({ accountID }) => {
       tags: tags,
       count: clusterCount,
       userCount: userPerCluster,
-      createRequest: CreateClusterRequest,
+      scheduleRequest: ScheduleClusterRequest,
       clusters: [],
       notifyEmails: selectedEmails,
       eventName: clusterNamePrefix,
@@ -702,6 +721,11 @@ const CreateForm = ({ accountID }) => {
     d.setDate(d.getDate() + 60);
     return `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear}`;
   };
+
+  const getZoneText = (zone) => {
+    // (zone) => (zone ? zone.id + ` (${zoneClusterCount[zone.id]?zoneClusterCount[zone.id]:0})` : "")
+    return zone && zoneClusterCount ? `${zone.id} (${zoneClusterCount[zone.id]?zoneClusterCount[zone.id]:0})`:"";
+  }
 
   return (
     <>
@@ -822,9 +846,10 @@ const CreateForm = ({ accountID }) => {
                 </Tooltip>
               </FormLabel>
               <MultiSelect
-                itemToString={(zone) => (zone ? zone.id : "")}
+                id="workerzones-select"
+                itemToString={zone => getZoneText(zone)}
                 items={workerZones}
-                disabled={workerZones.length <= 0 || creating}
+                disabled={workerZones.length <= 0 || !zoneClusterCount || creating}
                 className="create-page-multiselect"
                 label="Select worker zone"
                 onChange={(selected) => onWorkerZonesSelected(selected)}
@@ -832,7 +857,7 @@ const CreateForm = ({ accountID }) => {
             </Column>
           </Row>
 
-          <Row>
+          {/* <Row>
             <Column lg={6}>
               <FormLabel>
                 <Tooltip triggerText="Worker zone">
@@ -895,7 +920,7 @@ const CreateForm = ({ accountID }) => {
                 }
               />
             </Column>
-          </Row>
+          </Row> */}
           <Spacer height="16px" />
 
           <Spacer height="16px" />

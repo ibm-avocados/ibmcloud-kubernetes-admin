@@ -235,6 +235,18 @@ type Location struct {
 	DisplayName    string `json:"display_name"`
 }
 
+type LocationWithClusterCount struct {
+	ID             string `json:"id"`
+	ClusterCount   int    `json:"clusterCount"`
+	Name           string `json:"name"`
+	Kind           string `json:"kind"`
+	Metro          string `json:"metro,omitempty"`
+	MultizoneMetro string `json:"multizone_metro,omitempty"`
+	Country        string `json:"country,omitempty"`
+	Geography      string `json:"geography,omitempty"`
+	DisplayName    string `json:"display_name"`
+}
+
 type Zone struct {
 	ID      string    `json:"id"`
 	Metro   string    `json:"metro"`
@@ -429,22 +441,28 @@ type CreateClusterRequest struct {
 	ResourceGroup  string         `json:"resourceGroup"`
 }
 
+type ScheduleClusterRequest struct {
+	ScheduleRequest ScheduleRequest `json:"clusterRequest"`
+	ResourceGroup   string          `json:"resourceGroup"`
+}
+
 type Schedule struct {
-	ID                string               `json:"_id" mapstructure:"_id"`
-	Rev               string               `json:"_rev" mapstructure:"_rev"`
-	CreateAt          int                  `json:"createAt"`
-	DestroyAt         int                  `json:"destroyAt"`
-	Status            string               `json:"status"`
-	Tags              string               `json:"tags"`
-	Count             string               `json:"count"`
-	CreateRequest     CreateClusterRequest `json:"createRequest"`
-	Clusters          []string             `json:"clusters"`
-	NotifyEmails      []string             `json:"notifyEmails"`
-	EventName         string               `json:"eventName"`
-	Password          string               `json:"password"`
-	ResourceGroupName string               `json:"resourceGroupName"`
-	GithubIssueNumber string               `json:"githubIssueNumber"`
-	IsWorkshop        bool                 `json:"isWorkshop"`
+	ID                string                 `json:"_id" mapstructure:"_id"`
+	Rev               string                 `json:"_rev" mapstructure:"_rev"`
+	CreateAt          int                    `json:"createAt"`
+	DestroyAt         int                    `json:"destroyAt"`
+	Status            string                 `json:"status"`
+	Tags              string                 `json:"tags"`
+	Count             string                 `json:"count"`
+	UserCount         string                 `json:"userCount"`
+	ScheduleRequest   ScheduleClusterRequest `json:"scheduleRequest"`
+	Clusters          []string               `json:"clusters"`
+	NotifyEmails      []string               `json:"notifyEmails"`
+	EventName         string                 `json:"eventName"`
+	Password          string                 `json:"password"`
+	ResourceGroupName string                 `json:"resourceGroupName"`
+	GithubIssueNumber string                 `json:"githubIssueNumber"`
+	IsWorkshop        bool                   `json:"isWorkshop"`
 }
 
 type Vlan struct {
@@ -518,6 +536,27 @@ type NonCriticalErrors struct {
 	Items      []ErrorItems `json:"items"`
 }
 
+type ScheduleRequest struct {
+	DataCenters                  []string `json:"dataCenters"`
+	DefaultWorkerPoolEntitlement string   `json:"defaultWorkerPoolEntitlement"`
+	DefaultWorkerPoolName        string   `json:"defaultWorkerPoolName"`
+	DisableAutoUpdate            bool     `json:"disableAutoUpdate"`
+	DiskEncryption               bool     `json:"diskEncryption"`
+	GatewayEnabled               bool     `json:"gatewayEnabled"`
+	Isolation                    string   `json:"isolation"`
+	MachineType                  string   `json:"machineType"`
+	MasterVersion                string   `json:"masterVersion"`
+	Name                         string   `json:"name"`
+	NoSubnet                     bool     `json:"noSubnet"`
+	PodSubnet                    string   `json:"podSubnet"`
+	Prefix                       string   `json:"prefix"`
+	PrivateSeviceEndpoint        bool     `json:"privateSeviceEndpoint"`
+	PublicServiceEndpoint        bool     `json:"publicServiceEndpoint"`
+	ServiceSubnet                string   `json:"serviceSubnet"`
+	SkipPermPrecheck             bool     `json:"skipPermPrecheck"`
+	WorkerNum                    int      `json:"workerNum"`
+}
+
 type ClusterRequest struct {
 	DataCenter                   string `json:"dataCenter"`
 	DefaultWorkerPoolEntitlement string `json:"defaultWorkerPoolEntitlement"`
@@ -539,32 +578,4 @@ type ClusterRequest struct {
 	ServiceSubnet                string `json:"serviceSubnet"`
 	SkipPermPrecheck             bool   `json:"skipPermPrecheck"`
 	WorkerNum                    int    `json:"workerNum"`
-}
-
-type ScheduleCloudant struct {
-	ID                           string `json:"_id"`
-	Rev                          string `json:"_rev"`
-	DataCenter                   string `json:"dataCenter"`
-	DefaultWorkerPoolEntitlement string `json:"defaultWorkerPoolEntitlement"`
-	DefaultWorkerPoolName        string `json:"defaultWorkerPoolName"`
-	DisableAutoUpdate            bool   `json:"disableAutoUpdate"`
-	DiskEncryption               bool   `json:"diskEncryption"`
-	GatewayEnabled               bool   `json:"gatewayEnabled"`
-	Isolation                    string `json:"isolation"`
-	MachineType                  string `json:"machineType"`
-	MasterVersion                string `json:"masterVersion"`
-	Name                         string `json:"name"`
-	NoSubnet                     bool   `json:"noSubnet"`
-	PodSubnet                    string `json:"podSubnet"`
-	Prefix                       string `json:"prefix"`
-	PrivateSeviceEndpoint        bool   `json:"privateSeviceEndpoint"`
-	PrivateVlan                  string `json:"privateVlan"`
-	PublicServiceEndpoint        bool   `json:"publicServiceEndpoint"`
-	PublicVlan                   string `json:"publicVlan"`
-	ServiceSubnet                string `json:"serviceSubnet"`
-	SkipPermPrecheck             bool   `json:"skipPermPrecheck"`
-	WorkerNum                    int    `json:"workerNum"`
-	CreateAt                     int    `json:"create_at"`
-	DestroyAt                    int    `json:"destroy_at"`
-	Status                       string `json:"status"`
 }
