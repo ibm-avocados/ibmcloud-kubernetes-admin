@@ -182,7 +182,8 @@ func checkCloudant() {
 				// for each cluster loop through and create cluster, ignore error for now.
 				for i := 1; i <= count; i++ {
 					datacenters := schedule.ScheduleRequest.ScheduleRequest.DataCenters
-					vlans, err := session.GetDatacenterVlan()
+					datacenter := datacenters[i%len(datacenters)]
+					vlans, err := session.GetDatacenterVlan(datacenter)
 					if err != nil {
 						// could not get vlan
 						// skip the scheduling
@@ -248,13 +249,13 @@ func checkCloudant() {
 					schedule.Clusters = append(schedule.Clusters, response.ID)
 
 					for _, tag := range tags {
-						_, err := session.SetClusterTag(tag, response.ID, schedule.CreateRequest.ResourceGroup)
+						_, err := session.SetClusterTag(tag, response.ID, schedule.ScheduleRequest.ResourceGroup)
 						if err != nil {
-							log.Println("error setting tag : investigate ", schedule.CreateRequest.ClusterRequest.Name, err)
+							log.Println("error setting tag : investigate ", schedule.ScheduleRequest.ScheduleRequest.Name, err)
 							hasErrors = true
 							schedError := ScheduleError{
 								Error:   err,
-								Message: fmt.Sprintf("Error creting tag %s for cluster %s", tag, schedule.CreateRequest.ClusterRequest.Name),
+								Message: fmt.Sprintf("Error creting tag %s for cluster %s", tag, schedule.ScheduleRequest.ScheduleRequest.Name),
 							}
 							emailData.Errors = append(emailData.Errors, schedError)
 							continue
