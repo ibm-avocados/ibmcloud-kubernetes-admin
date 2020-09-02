@@ -1,6 +1,31 @@
 .wrapper {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  min-height: 100vh;
+}
+
+.center {
+  display: flex;
+  flex-direction: column;
+}
+
+.button {
+  width: 300px;
+  padding: 16px;
+  text-decoration: none;
+  border: 1px solid #0062FF;
+  margin: 16px;
+}
+
+.button:hover {
+  background: #0062FF;
+  color: white;
+}
+
+.message {
+  font-size: 12px;
+  color: #444444;
 }
