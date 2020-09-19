@@ -75,6 +75,9 @@ func main() {
 	api.HandleFunc("/notification/email/remove", server.RemoveAdminEmails).Methods(http.MethodPut)
 	api.HandleFunc("/notification/email", server.DeleteAdminEmails).Methods(http.MethodDelete)
 
+	api.HandleFunc("/awx/workflowjobtemplate", server.GetAWXWorkflowJobTemplates).Methods(http.MethodGet)
+	api.HandleFunc("/awx/jobtemplate", server.GetAWXJobTemplates).Methods(http.MethodGet)
+
 	spa := spaHandler{staticPath: "client/build", indexPath: "index.html"}
 	r.PathPrefix("/").Handler(spa)
 

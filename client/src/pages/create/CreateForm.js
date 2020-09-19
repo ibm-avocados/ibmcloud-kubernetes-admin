@@ -99,8 +99,21 @@ const CreateForm = ({ accountID }) => {
   // notification specific states
 
   const [selectedEmails, setSelectedEmails] = React.useState([]);
+  const [awxWorkflowJobTemplates, setAWXWorkflowJobTemplates] = React.useState([]);
 
   React.useEffect(() => {
+    const loadWorkflowJobTemplate = async() => {
+      try {
+        const templates = await grab("/api/v1/awx/workflowjobtemplate?labels=kubernetes")
+        console.log(templates);
+        setAWXWorkflowJobTemplates(templates)
+      }
+      catch (e) {
+        console.log(e);
+      }
+    }
+    loadWorkflowJobTemplate()
+
     const loadVersions = async () => {
       try {
         const versions = await grab("/api/v1/clusters/versions");
@@ -1068,6 +1081,8 @@ const CreateForm = ({ accountID }) => {
           ) : (
             <></>
           )}
+
+          <div>{awxWorkflowJobTemplates && awxWorkflowJobTemplates.map((v, i) => (<p key={i}>{v.name}</p>))}</div>
 
           <Spacer height="16px" />
           <Row>
