@@ -296,3 +296,8 @@ type ResultsJobTemplate struct {
 	WebhookService        string        `json:"webhook_service"`
 	WebhookCredential     interface{}   `json:"webhook_credential"`
 }
+
+type WorkflowJobTeplatesLaunchBody struct {
+	ID        string `json:"id"`
+	ExtraVars string `json:"extra_vars"`
+}

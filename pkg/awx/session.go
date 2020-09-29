@@ -7,3 +7,7 @@ func GetWorkflowJobTemplates(token string) (*WorkflowJobTemplates, error) {
 func GetJobTemplates(token string) (*JobTemplates, error) {
 	return getJobTemplates(token)
 }
+
+func LaunchWorkflowJobTemplate(token string, body WorkflowJobTeplatesLaunchBody) (interface{}, error) {
+	return launchWorkflowJobTemplate(token, body)
+}
