@@ -77,9 +77,10 @@ func main() {
 
 	api.HandleFunc("/awx/workflowjobtemplate", server.GetAWXWorkflowJobTemplates).Methods(http.MethodGet)
 	api.HandleFunc("/awx/jobtemplate", server.GetAWXJobTemplates).Methods(http.MethodGet)
+	api.HandleFunc("/awx/workflowjobtemplate/launch", server.LaunchAWXWorkflowJobTemplate).Methods(http.MethodPost)
 
 	spa := spaHandler{staticPath: "client/build", indexPath: "index.html"}
-	r.PathPrefix("/").Handler(spa)
+	r.PathPrefix("/").Handler(spa).Methods(http.MethodGet)
 
 	port := ":9000"
 

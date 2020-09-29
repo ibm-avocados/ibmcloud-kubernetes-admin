@@ -53,3 +53,23 @@ func (s *Server) GetAWXJobTemplates(w http.ResponseWriter, r *http.Request) {
 	e := json.NewEncoder(w)
 	e.Encode(result)
 }
+
+func (s *Server) LaunchAWXWorkflowJobTemplate(w http.ResponseWriter, r *http.Request) {
+	token := os.Getenv("AWX_ACCESS_TOKEN")
+	var body awx.WorkflowJobTeplatesLaunchBody
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&body)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	res, err := awx.LaunchWorkflowJobTemplate(token, body)
+	if err != nil {
+		handleError(w, http.StatusUnauthorized, "token invalid", err.Error())
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	e := json.NewEncoder(w)
+	e.Encode(res)
+}
