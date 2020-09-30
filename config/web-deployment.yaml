@@ -21,7 +21,7 @@ spec:
         run:  admin
     spec:
       containers:
-      - image:  moficodes/ibmcloud-kubernetes-admin:v0.2.16
+      - image:  moficodes/ibmcloud-kubernetes-admin:v0.2.17
         imagePullPolicy: Always
         name:  kubeadmin
         env:
