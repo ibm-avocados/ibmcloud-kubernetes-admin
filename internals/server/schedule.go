@@ -2,13 +2,12 @@ package server
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
-	"github.com/gorilla/mux"
+	"github.com/labstack/echo/v4"
 )
 
-// func (s *Server) GetScheduleHandler(w http.ResponseWriter, r *http.Request) {
+// func  GetScheduleHandler(w http.ResponseWriter, r *http.Request) {
 // 	session, err := getCloudSessions(r)
 // 	if err != nil {
 // 		handleError(w, http.StatusUnauthorized, "could not get session", err.Error())
@@ -36,79 +35,57 @@ import (
 // 	return
 // }
 
-func (s *Server) SetScheduleHandler(w http.ResponseWriter, r *http.Request) {
-	session, err := getCloudSessions(r)
+func SetScheduleHandler(c echo.Context) error {
+	session, err := getCloudSessions(c)
 	if err != nil {
-		handleError(w, http.StatusUnauthorized, "could not get session", err.Error())
-		return
+		return err
 	}
 
 	var body map[string]interface{}
-	decoder := json.NewDecoder(r.Body)
+	decoder := json.NewDecoder(c.Request().Body)
 	err = decoder.Decode(&body)
 	if err != nil {
-		handleError(w, http.StatusBadRequest, "could not decode", err.Error())
-		return
+		return err
 	}
 
-	vars := mux.Vars(r)
-
-	accountID, ok := vars["accountID"]
-
-	if !ok {
-		handleError(w, http.StatusBadRequest, "could not get accountID")
-		return
-	}
+	accountID := c.Param("accountID")
 
 	if err := session.CreateDocument(accountID, body); err != nil {
-		handleError(w, http.StatusUnauthorized, "could not create record", err.Error())
-		return
+		return err
 	}
 
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, statusOkMessage)
+	return c.JSON(http.StatusOK, StatusOK{Message: "success"})
 }
 
 // TODO: complete this
-func (s *Server) DeleteScheduleHandler(w http.ResponseWriter, r *http.Request) {
-	_, err := getCloudSessions(r)
+func DeleteScheduleHandler(c echo.Context) error {
+	_, err := getCloudSessions(c)
 	if err != nil {
-		handleError(w, http.StatusUnauthorized, "could not get session", err.Error())
-		return
+		return err
 	}
+	return nil
 }
 
-func (s *Server) UpdateScheduleHandler(w http.ResponseWriter, r *http.Request) {
-	_, err := getCloudSessions(r)
+func UpdateScheduleHandler(c echo.Context) error {
+	_, err := getCloudSessions(c)
 	if err != nil {
-		handleError(w, http.StatusUnauthorized, "could not get session", err.Error())
-		return
+		return err
 	}
+	return nil
 }
 
-func (s *Server) GetAllScheduleHandler(w http.ResponseWriter, r *http.Request) {
-	session, err := getCloudSessions(r)
+func GetAllScheduleHandler(c echo.Context) error {
+	session, err := getCloudSessions(c)
 	if err != nil {
-		handleError(w, http.StatusUnauthorized, "could not get session", err.Error())
-		return
+		return err
 	}
 
-	vars := mux.Vars(r)
-
-	accountID, ok := vars["accountID"]
-
-	if !ok {
-		handleError(w, http.StatusBadRequest, "could not get accountID")
-		return
-	}
+	accountID := c.Param("accountID")
 
 	docs, err := session.GetAllDocument(accountID)
 	if err != nil {
-		handleError(w, http.StatusBadRequest, "could not get accountID")
-		return
+		return err
 	}
-	w.WriteHeader(http.StatusOK)
-	e := json.NewEncoder(w)
-	e.Encode(docs)
-	return
+
+	return c.JSON(http.StatusOK, docs)
 }

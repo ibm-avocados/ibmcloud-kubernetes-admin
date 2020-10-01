@@ -2,135 +2,104 @@ package server
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 
-	"github.com/gorilla/mux"
+	"github.com/labstack/echo/v4"
 )
 
-func (s *Server) CreateAdminEmails(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("Content-Type", "application/json")
-	session, err := getCloudSessions(r)
+func CreateAdminEmails(c echo.Context) error {
+	session, err := getCloudSessions(c)
 	if err != nil {
-		handleError(w, http.StatusUnauthorized, "could not get session", err.Error())
-		return
+		return err
 	}
 	var body AccountEmailBody
-	decoder := json.NewDecoder(r.Body)
+	decoder := json.NewDecoder(c.Request().Body)
 	err = decoder.Decode(&body)
 	if err != nil {
-		handleError(w, http.StatusBadRequest, "could not decode", err.Error())
-		return
+		return err
 	}
 
 	fmt.Println(body)
 	if err := session.CreateAdminEmails(body.AccountID, body.Email...); err != nil {
-		handleError(w, http.StatusInternalServerError, "could not create", err.Error())
-		return
+		return err
 	}
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprintln(w, statusOkMessage)
+	return c.JSON(http.StatusOK, StatusOK{Message: "success"})
 }
 
-func (s *Server) AddAdminEmails(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("Content-Type", "application/json")
-	session, err := getCloudSessions(r)
+func AddAdminEmails(c echo.Context) error {
+	session, err := getCloudSessions(c)
 	if err != nil {
-		handleError(w, http.StatusUnauthorized, "could not get session", err.Error())
-		return
+		return err
 	}
 	var body AccountEmailBody
-	decoder := json.NewDecoder(r.Body)
+	decoder := json.NewDecoder(c.Request().Body)
 	err = decoder.Decode(&body)
 	if err != nil {
-		handleError(w, http.StatusBadRequest, "could not decode", err.Error())
-		return
+		return err
 	}
 
 	if err := session.AddAdminEmails(body.AccountID, body.Email...); err != nil {
-		handleError(w, http.StatusInternalServerError, "could not add", err.Error())
-		return
+		return err
 	}
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprintln(w, statusOkMessage)
+	return c.JSON(http.StatusOK, StatusOK{Message: "success"})
 }
 
-func (s *Server) RemoveAdminEmails(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("Content-Type", "application/json")
-	session, err := getCloudSessions(r)
+func RemoveAdminEmails(c echo.Context) error {
+	session, err := getCloudSessions(c)
 	if err != nil {
-		handleError(w, http.StatusUnauthorized, "could not get session", err.Error())
-		return
+		return err
 	}
 	var body AccountEmailBody
-	decoder := json.NewDecoder(r.Body)
+	decoder := json.NewDecoder(c.Request().Body)
 	err = decoder.Decode(&body)
 	if err != nil {
-		handleError(w, http.StatusBadRequest, "could not decode", err.Error())
-		return
+		return err
 	}
 
 	if err := session.RemoveAdminEmails(body.AccountID, body.Email...); err != nil {
-		handleError(w, http.StatusInternalServerError, "could not delete", err.Error())
-		return
+		return err
 	}
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprintln(w, statusOkMessage)
+	return c.JSON(http.StatusOK, StatusOK{Message: "success"})
 }
 
-func (s *Server) DeleteAdminEmails(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("Content-Type", "application/json")
-	session, err := getCloudSessions(r)
+func DeleteAdminEmails(c echo.Context) error {
+	session, err := getCloudSessions(c)
 	if err != nil {
-		handleError(w, http.StatusUnauthorized, "could not get session", err.Error())
-		return
+		return err
 	}
 	var body map[string]interface{}
-	decoder := json.NewDecoder(r.Body)
+	decoder := json.NewDecoder(c.Request().Body)
 	err = decoder.Decode(&body)
 	if err != nil {
-		handleError(w, http.StatusBadRequest, "could not decode", err.Error())
-		return
+		return err
 	}
 
 	_accountID, ok := body["accountID"]
 	if !ok {
-		handleError(w, http.StatusBadRequest, "no accountID provided", err.Error())
-		return
+		return errors.New("no valid account ID")
 	}
 
 	accountID := fmt.Sprintf("%v", _accountID)
 
 	if err := session.DeleteAdminEmails(accountID); err != nil {
-		handleError(w, http.StatusInternalServerError, "could not delete", err.Error())
-		return
+		return err
 	}
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprintln(w, statusOkMessage)
+	return c.JSON(http.StatusOK, StatusOK{Message: "success"})
 }
 
-func (s *Server) GetAdminEmails(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("Content-Type", "application/json")
-	session, err := getCloudSessions(r)
+func GetAdminEmails(c echo.Context) error {
+	session, err := getCloudSessions(c)
 	if err != nil {
-		handleError(w, http.StatusUnauthorized, "could not get session", err.Error())
-		return
+		return err
 	}
 
-	vars := mux.Vars(r)
-
-	accountID, ok := vars["accountID"]
-	if !ok {
-		handleError(w, http.StatusBadRequest, "no accountID provided", err.Error())
-		return
-	}
+	accountID := c.Param("accountID")
 
 	emails, err := session.GetAccountAdminEmails(accountID)
 	if err != nil {
-		handleError(w, http.StatusNotFound, "could not get emails", err.Error())
-		return
+		return err
 	}
-	w.WriteHeader(http.StatusOK)
-	e := json.NewEncoder(w)
-	e.Encode(emails)
+	return c.JSON(http.StatusOK, emails)
 }

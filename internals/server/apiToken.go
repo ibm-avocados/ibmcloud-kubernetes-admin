@@ -2,30 +2,30 @@ package server
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
+
+	"github.com/labstack/echo/v4"
 )
 
-func (s *Server) SetAPITokenHandler(w http.ResponseWriter, r *http.Request) {
-	session, err := getCloudSessions(r)
+func SetAPITokenHandler(c echo.Context) error {
+	session, err := getCloudSessions(c)
 	if err != nil {
-		handleError(w, http.StatusUnauthorized, "could not get session", err.Error())
-		return
+		return err
 	}
 
 	var body map[string]interface{}
-	decoder := json.NewDecoder(r.Body)
+	decoder := json.NewDecoder(c.Request().Body)
 	err = decoder.Decode(&body)
 	if err != nil {
-		handleError(w, http.StatusBadRequest, "could not decode", err.Error())
-		return
+		return err
 	}
 
 	_accountID, ok := body["accountID"]
 	if !ok {
 		if err != nil {
-			handleError(w, http.StatusBadRequest, "could not get account id", err.Error())
-			return
+			return err
 		}
 	}
 	accountID := fmt.Sprintf("%v", _accountID)
@@ -33,122 +33,94 @@ func (s *Server) SetAPITokenHandler(w http.ResponseWriter, r *http.Request) {
 	_apiKey, ok := body["apiKey"]
 	if !ok {
 		if err != nil {
-			handleError(w, http.StatusBadRequest, "could not get apikey", err.Error())
-			return
+			return err
 		}
 	}
 	apiKey := fmt.Sprintf("%v", _apiKey)
 
 	if err := session.SetAPIKey(apiKey, accountID); err != nil {
-		handleError(w, http.StatusUnauthorized, "could not set apikey", err.Error())
-		return
+		return err
 	}
-
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, statusOkMessage)
+	return c.JSON(http.StatusOK, StatusOK{Message: "success"})
 }
 
-func (s *Server) CheckAPITokenHandler(w http.ResponseWriter, r *http.Request) {
-	session, err := getCloudSessions(r)
+func CheckAPITokenHandler(c echo.Context) error {
+	session, err := getCloudSessions(c)
 	if err != nil {
-		handleError(w, http.StatusUnauthorized, "could not get session", err.Error())
-		return
+		return err
 	}
 
 	var body map[string]interface{}
-	decoder := json.NewDecoder(r.Body)
+	decoder := json.NewDecoder(c.Request().Body)
 	if err := decoder.Decode(&body); err != nil {
-		handleError(w, http.StatusBadRequest, "could not decode", err.Error())
-		return
+		return err
 	}
 
 	_accountID, ok := body["accountID"]
 	if !ok {
-		handleError(w, http.StatusBadRequest, "could not get account id")
-		return
+		return err
 	}
 	accountID := fmt.Sprintf("%v", _accountID)
 
 	if err := session.CheckAPIKey(accountID); err != nil {
-		handleError(w, http.StatusUnauthorized, "error validating api key", err.Error())
-		return
+		return err
 	}
 
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, statusOkMessage)
+	return c.JSON(http.StatusOK, StatusOK{Message: "success"})
 }
 
-func (s *Server) UpdateAPITokenHandler(w http.ResponseWriter, r *http.Request) {
-	session, err := getCloudSessions(r)
+func UpdateAPITokenHandler(c echo.Context) error {
+	session, err := getCloudSessions(c)
 	if err != nil {
-		handleError(w, http.StatusUnauthorized, "could not get session", err.Error())
-		return
+		return err
 	}
 
 	var body map[string]interface{}
-	decoder := json.NewDecoder(r.Body)
+	decoder := json.NewDecoder(c.Request().Body)
 	err = decoder.Decode(&body)
 	if err != nil {
-		handleError(w, http.StatusBadRequest, "could not decode", err.Error())
-		return
+		return err
 	}
 
 	_accountID, ok := body["accountID"]
 	if !ok {
-		if err != nil {
-			handleError(w, http.StatusBadRequest, "could not get account id", err.Error())
-			return
-		}
+		return errors.New("No valid account ID")
 	}
 	accountID := fmt.Sprintf("%v", _accountID)
 
 	_apiKey, ok := body["apiKey"]
 	if !ok {
-		if err != nil {
-			handleError(w, http.StatusBadRequest, "could not get apikey", err.Error())
-			return
-		}
+		return errors.New("No valid apikey ID")
 	}
 	apiKey := fmt.Sprintf("%v", _apiKey)
 
 	if err := session.UpdateAPIKey(apiKey, accountID); err != nil {
-		handleError(w, http.StatusUnauthorized, "could not update apikey", err.Error())
-		return
+		return err
 	}
-
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, statusOkMessage)
+	return c.JSON(http.StatusOK, StatusOK{Message: "success"})
 }
 
-func (s *Server) DeleteAPITokenHandler(w http.ResponseWriter, r *http.Request) {
-	session, err := getCloudSessions(r)
+func DeleteAPITokenHandler(c echo.Context) error {
+	session, err := getCloudSessions(c)
 	if err != nil {
-		handleError(w, http.StatusUnauthorized, "could not get session", err.Error())
-		return
+		return err
 	}
 
 	var body map[string]interface{}
-	decoder := json.NewDecoder(r.Body)
+	decoder := json.NewDecoder(c.Request().Body)
 	err = decoder.Decode(&body)
 	if err != nil {
-		handleError(w, http.StatusBadRequest, "could not decode", err.Error())
-		return
+		return err
 	}
 
 	_accountID, ok := body["accountID"]
 	if !ok {
-		if err != nil {
-			handleError(w, http.StatusBadRequest, "could not get account id", err.Error())
-			return
-		}
+		return errors.New("No valid account ID")
 	}
 	accountID := fmt.Sprintf("%v", _accountID)
 
 	if err := session.DeleteAPIKey(accountID); err != nil {
-		handleError(w, http.StatusUnauthorized, "could not delete apikey", err.Error())
-		return
+		return err
 	}
-
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, statusOkMessage)
+	return c.JSON(http.StatusOK, StatusOK{Message: "success"})
 }

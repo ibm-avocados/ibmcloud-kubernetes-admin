@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/labstack/echo/v4"
 	"github.com/moficodes/ibmcloud-kubernetes-admin/pkg/ibmcloud"
 )
 
@@ -13,54 +14,74 @@ const (
 	errorMessageFormat = `{"msg": "error: %s"}`
 	statusOkMessage    = `{"status": "ok"}`
 	sessionName        = "cloud_session"
-	accessToken        = "access_token"
-	refreshToken       = "refresh_token"
+	accessTokenKey     = "access_token"
+	refreshTokenKey    = "refresh_token"
 	expiration         = "expiration"
 	cookiePath         = "/api/v1"
 )
 
-func (s *Server) NotFoundHandler(w http.ResponseWriter, r *http.Request) {
+func NotFoundHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "application/json")
 	handleError(w, http.StatusNotFound, "not found")
 }
 
-func setCookie(w http.ResponseWriter, session *ibmcloud.Session) {
-	accessTokenCookie := http.Cookie{Name: accessToken, Value: session.Token.AccessToken, Path: cookiePath}
-	http.SetCookie(w, &accessTokenCookie)
+func setCookie(c echo.Context, session *ibmcloud.Session) {
+	accessTokenCookie := &http.Cookie{Name: accessTokenKey, Value: session.Token.AccessToken, Path: cookiePath}
+	c.SetCookie(accessTokenCookie)
 
-	refreshTokenCookie := http.Cookie{Name: refreshToken, Value: session.Token.RefreshToken, Path: cookiePath}
-	http.SetCookie(w, &refreshTokenCookie)
+	refreshTokenCookie := &http.Cookie{Name: refreshTokenKey, Value: session.Token.RefreshToken, Path: cookiePath}
+	c.SetCookie(refreshTokenCookie)
 
 	expirationStr := strconv.Itoa(session.Token.Expiration)
 
-	expirationCookie := http.Cookie{Name: expiration, Value: expirationStr, Path: cookiePath}
-	http.SetCookie(w, &expirationCookie)
+	expirationCookie := &http.Cookie{Name: expiration, Value: expirationStr, Path: cookiePath}
+	c.SetCookie(expirationCookie)
 }
 
-func getCloudSessions(r *http.Request) (*ibmcloud.Session, error) {
-	accessTokenVal, err := r.Cookie(accessToken)
+func getCloudSessions(c echo.Context) (*ibmcloud.Session, error) {
+	var accessToken string
+	var refreshToken string
+	var expirationTime int
+	accessTokenVal, err := c.Cookie(accessTokenKey)
 	if err != nil {
-		return nil, err
-	}
-	refreshTokenVal, err := r.Cookie(refreshToken)
-	if err != nil {
-		return nil, err
-	}
-	expirationValStr, err := r.Cookie(expiration)
-	if err != nil {
-		return nil, err
+		bearerToken := c.Request().Header.Get("Authorization")
+		if bearerToken == "" {
+			return nil, err
+		}
+		parsedToken := strings.Split(bearerToken, " ")
+		if len(parsedToken) != 2 {
+			return nil, err
+		}
+		accessToken = parsedToken[1]
+	} else {
+		accessToken = accessTokenVal.Value
 	}
 
-	expirationVal, err := strconv.Atoi(expirationValStr.Value)
+	refreshTokenVal, err := c.Cookie(refreshTokenKey)
 	if err != nil {
-		return nil, err
+		refreshToken = c.Request().Header.Get("X-Auth-Refresh-Token")
+		if refreshToken == "" {
+			return nil, err
+		}
+	} else {
+		refreshToken = refreshTokenVal.Value
+	}
+
+	expirationValStr, err := c.Cookie(expiration)
+	if err != nil {
+		expirationTime = 0
+	} else {
+		expirationTime, err = strconv.Atoi(expirationValStr.Value)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	session := &ibmcloud.Session{
 		Token: &ibmcloud.Token{
-			AccessToken:  accessTokenVal.Value,
-			RefreshToken: refreshTokenVal.Value,
-			Expiration:   expirationVal,
+			AccessToken:  accessToken,
+			RefreshToken: refreshToken,
+			Expiration:   expirationTime,
 		},
 	}
 

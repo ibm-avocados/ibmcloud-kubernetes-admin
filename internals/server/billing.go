@@ -2,55 +2,51 @@ package server
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
+
+	"github.com/labstack/echo/v4"
 )
 
-func (s *Server) GetBillingHandler(w http.ResponseWriter, r *http.Request) {
-	session, err := getCloudSessions(r)
+func GetBillingHandler(c echo.Context) error {
+	session, err := getCloudSessions(c)
 	if err != nil {
-		handleError(w, http.StatusUnauthorized, "could not get session", err.Error())
-		return
+		return err
 	}
 
 	var body map[string]interface{}
-	decoder := json.NewDecoder(r.Body)
+	decoder := json.NewDecoder(c.Request().Body)
 	err = decoder.Decode(&body)
 	if err != nil {
-		handleError(w, http.StatusBadRequest, "could not decode", err.Error())
-		return
+		return err
 	}
 
 	crn, ok := body["crn"]
 	if !ok {
-		handleError(w, http.StatusBadRequest, "no crn attached to body", err.Error())
-		return
+		return errors.New("No valid CRN")
 	}
 
 	clusterCRN := fmt.Sprintf("%v", crn)
 
 	accnt, ok := body["accountID"]
 	if !ok {
-		handleError(w, http.StatusBadRequest, "no account id attached to body", err.Error())
-		return
+		return errors.New("No valid account ID")
 	}
 
 	accountID := fmt.Sprintf("%v", accnt)
 
 	clustr, ok := body["clusterID"]
 	if !ok {
-		handleError(w, http.StatusBadRequest, "no cluster id attached to body", err.Error())
-		return
+		return errors.New("No valid Cluster ID")
 	}
 
 	clusterID := fmt.Sprintf("%v", clustr)
 
 	billing, err := session.GetBillingData(accountID, clusterID, clusterCRN)
 	if err != nil {
-		handleError(w, http.StatusUnauthorized, "could not get billing info", err.Error())
+		return err
 	}
 
-	w.WriteHeader(http.StatusOK)
-
-	fmt.Fprintf(w, `{"bill": "%s"}`, billing)
+	return c.JSON(http.StatusOK, Bill{Bill: billing})
 }
