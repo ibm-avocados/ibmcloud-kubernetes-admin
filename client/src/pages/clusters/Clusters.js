@@ -14,7 +14,6 @@ import {
   SkeletonText,
   TagSkeleton,
   StructuredListSkeleton,
-  PropTypes,
 } from "carbon-components-react";
 import {
   Delete16 as Delete,
@@ -22,11 +21,13 @@ import {
   Reset16 as Reset,
   Money16 as Money,
   VirtualMachine16 as VM,
+  Deploy32 as Deploy
 } from "@carbon/icons-react";
 
 import headers from "../../common/data/headers";
 
 import "./Cluster.css";
+import styles from "./cluster.module.css";
 import useClusters from "./useClusters";
 
 import history from "../../globalHistory";
@@ -133,6 +134,7 @@ const Clusters = ({ query, accountID }) => {
   const [tagText, setTagText] = useState("");
   const [billingLoading, setBillingLoading] = useState(false);
   const [workersLoading, setWorkersLoading] = useState(false);
+  const [showModal, setShowModal] = useState(false);
 
   const filterByTag = (tag) => {
     history.push(`/?account=${accountID}&filter=${tag}`);
@@ -263,6 +265,12 @@ const Clusters = ({ query, accountID }) => {
         <TableToolbar>
           {/* pass in `onInputChange` change here to make filtering work */}
           <TableBatchActions {...getBatchActionProps()}>
+            <TableBatchAction 
+              renderIcon={Deploy}
+              onClick={() => {setShowModal(true)}}
+            >
+              Install
+            </TableBatchAction>
             <TableBatchAction
               tabIndex={getBatchActionProps().shouldShowBatchActions ? 0 : -1}
               renderIcon={Delete}
@@ -413,13 +421,32 @@ const Clusters = ({ query, accountID }) => {
   //   );
   // }
   return (
+    <>
     <DataTable
       rows={Object.keys(clusters.data).map((id) => clusters.data[id])}
       headers={headers}
       render={render}
       isSortable
     />
+    {showModal && <Modal />}
+    </>
   );
 };
+
+const Modal = () => {
+  return (
+    <div className={styles.modalWrapper}>
+      <div className={styles.modal}>
+        <div className={styles.form}>
+          <div className={styles.header}>Install</div>
+        </div>
+        <div className={styles.buttonGroup}> 
+          <Button className={styles.button}>Submit</Button>
+          <Button kind="danger" className={styles.button}>Close</Button>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 export default Clusters;

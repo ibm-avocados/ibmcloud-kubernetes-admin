@@ -1,54 +1,38 @@
 package server
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
 
-	"github.com/gorilla/mux"
+	"github.com/labstack/echo/v4"
 )
 
-func (s *Server) ResourceGroupHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("Content-Type", "application/json")
-	session, err := getCloudSessions(r)
+func ResourceGroupHandler(c echo.Context) error {
+	session, err := getCloudSessions(c)
 	if err != nil {
-		handleError(w, http.StatusUnauthorized, "could not get session", err.Error())
-		return
+		return err
 	}
-	vars := mux.Vars(r)
 
-	accountID, ok := vars["accountID"]
-
-	if !ok {
-		handleError(w, http.StatusBadRequest, "could not get clusterID")
-		return
-	}
+	accountID := c.Param("accountID")
 
 	accountResources, err := session.GetAccountResources(accountID)
 	if err != nil {
-		handleError(w, http.StatusUnauthorized, "could not account resources", err.Error())
-		return
+		return err
 	}
-	w.WriteHeader(http.StatusOK)
-	e := json.NewEncoder(w)
-	e.Encode(accountResources)
+	return c.JSON(http.StatusOK, accountResources)
 }
 
-func (s *Server) AccountListHandler(w http.ResponseWriter, r *http.Request) {
-	session, err := getCloudSessions(r)
+func AccountListHandler(c echo.Context) error {
+	session, err := getCloudSessions(c)
 	if err != nil {
 		log.Printf("could not get session %v\n", err)
-		handleError(w, http.StatusUnauthorized, "could not get session", err.Error())
-		return
+		return err
 	}
 
 	accounts, err := session.GetAccounts()
 	if err != nil {
 		log.Printf("could not get accounts using access token %v\n", err)
-		handleError(w, http.StatusUnauthorized, "could not get accounts using access token", err.Error())
-		return
+		return err
 	}
-	w.WriteHeader(http.StatusOK)
-	e := json.NewEncoder(w)
-	e.Encode(accounts)
+	return c.JSON(http.StatusOK, accounts)
 }

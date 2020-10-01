@@ -6,8 +6,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/gorilla/mux"
 	_ "github.com/joho/godotenv/autoload"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	"github.com/moficodes/ibmcloud-kubernetes-admin/internals/server"
 	"github.com/moficodes/ibmcloud-kubernetes-admin/pkg/ibmcloud"
 )
@@ -15,74 +16,84 @@ import (
 func main() {
 	ibmcloud.SetupCloudant()
 
-	server := server.NewServer()
-	r := mux.NewRouter()
+	e := echo.New()
+	e.Use(
+		middleware.CORS(),
+		middleware.GzipWithConfig(middleware.GzipConfig{
+			Level: 5,
+		}),
+	)
 
-	api := r.PathPrefix("/api/v1").Subrouter()
+	api := e.Group("/api/v1")
+	api.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
+		Format: "method=${method}, uri=${uri}, status=${status}, time=${latency_human}\n",
+	}))
+
+	api.GET("/clusters/versions", server.VersionEndpointHandler)
+	api.GET("/clusters/locations", server.LocationEndpointHandler)
+	api.GET("/clusters/:geo/locations", server.LocationGeoEndpointHandler)
+	api.GET("/clusters/zones", server.ZonesEndpointHandler)
+	api.GET("/clusters/{datacenter}/machine-types", server.MachineTypeHandler)
+
+	api.GET("/clusters/locations/info", server.LocationGeoEndpointInfoHandler)
 
 	///v1/resource_groups?account_id=9b13b857a32341b7167255de717172f5
-	api.HandleFunc("/identity-endpoints", server.TokenEndpointHandler).Methods(http.MethodGet)
-	api.HandleFunc("/authenticate/account", server.AuthenticationWithAccountHandler).Methods(http.MethodPost)
-	api.HandleFunc("/authenticate", server.AuthenticationHandler).Methods(http.MethodPost)
-	api.HandleFunc("/accounts", server.AccountListHandler).Methods(http.MethodGet)
-	api.HandleFunc("/login", server.LoginHandler).Methods(http.MethodGet)
-	api.HandleFunc("/clusters", server.ClusterListHandler).Methods(http.MethodGet)
-	api.HandleFunc("/clusters", server.ClusterCreateHandler).Methods(http.MethodPost)
-	api.HandleFunc("/clusters", server.ClusterDeleteHandler).Methods(http.MethodDelete)
-	api.HandleFunc("/resourcegroups/{accountID}", server.ResourceGroupHandler).Methods(http.MethodGet)
+	api.GET("/identity-endpoints", server.TokenEndpointHandler)
+	api.POST("/authenticate/account", server.AuthenticationWithAccountHandler)
+	api.POST("/authenticate", server.AuthenticationHandler)
+	api.GET("/accounts", server.AccountListHandler)
+	api.GET("/login", server.LoginHandler)
+	api.GET("/clusters", server.ClusterListHandler)
+	api.POST("/clusters", server.ClusterCreateHandler)
+	api.DELETE("/clusters", server.ClusterDeleteHandler)
+	api.GET("/resourcegroups/:accountID", server.ResourceGroupHandler)
 
-	// public endpoints
+	api.GET("/clusters/:datacenter/vlans", server.VlanEndpointHandler)
+	api.GET("/clusters/:clusterID", server.ClusterHandler)
+	api.GET("/clusters/:clusterID/workers", server.ClusterWorkerListHandler)
 
-	api.HandleFunc("/clusters/versions", server.VersionEndpointHandler).Methods(http.MethodGet)
-	api.HandleFunc("/clusters/locations/info", server.LocationGeoEndpointInfoHandler).Methods(http.MethodGet)
-	api.HandleFunc("/clusters/locations", server.LocationEndpointHandler).Methods(http.MethodGet)
-	api.HandleFunc("/clusters/{geo}/locations", server.LocationGeoEndpointHandler).Methods(http.MethodGet)
-	api.HandleFunc("/clusters/zones", server.ZonesEndpointHandler).
-		Queries("showFlavors", "{showFlavors}", "location", "{location}").
-		Methods(http.MethodGet)
-	api.HandleFunc("/clusters/{datacenter}/machine-types", server.MachineTypeHandler).
-		Queries("type", "{type}", "os", "{os}", "cpuLimit", "{cpuLimit}", "memoryLimit", "{memoryLimit}").
-		Methods(http.MethodGet)
-
-	api.HandleFunc("/clusters/{datacenter}/vlans", server.VlanEndpointHandler).Methods(http.MethodGet)
-	api.HandleFunc("/clusters/{clusterID}", server.ClusterHandler).Methods(http.MethodGet)
-	api.HandleFunc("/clusters/{clusterID}/workers", server.ClusterWorkerListHandler).Methods(http.MethodGet)
-
-	api.HandleFunc("/clusters/settag", server.SetTagHandler).Methods(http.MethodPost)
-	api.HandleFunc("/clusters/{clusterID}/settag", server.SetClusterTagHandler).Methods(http.MethodPost)
-	api.HandleFunc("/clusters/deletetag", server.DeleteTagHandler).Methods(http.MethodPost)
-	api.HandleFunc("/clusters/gettag", server.GetTagHandler).Methods(http.MethodPost)
-	api.HandleFunc("/billing", server.GetBillingHandler).Methods(http.MethodPost)
+	api.POST("/clusters/settag", server.SetTagHandler)
+	api.POST("/clusters/:clusterID/settag", server.SetClusterTagHandler)
+	api.POST("/clusters/deletetag", server.DeleteTagHandler)
+	api.POST("/clusters/gettag", server.GetTagHandler)
+	api.POST("/billing", server.GetBillingHandler)
 
 	// scheduling
-	api.HandleFunc("/schedule/api/create", server.SetAPITokenHandler).Methods(http.MethodPost)
-	api.HandleFunc("/schedule/api", server.DeleteAPITokenHandler).Methods(http.MethodDelete)
-	api.HandleFunc("/schedule/api", server.UpdateAPITokenHandler).Methods(http.MethodPut)
-	api.HandleFunc("/schedule/api", server.CheckAPITokenHandler).Methods(http.MethodPost)
-	api.HandleFunc("/schedule/{accountID}/create", server.SetScheduleHandler).Methods(http.MethodPost)
-	api.HandleFunc("/schedule/{accountID}/all", server.GetAllScheduleHandler).Methods(http.MethodGet)
-	// api.HandleFunc("/schedule/{accountID}", server.GetScheduleHandler).Methods(http.MethodGet)
-	api.HandleFunc("/schedule/{accountID}", server.UpdateScheduleHandler).Methods(http.MethodPut)
-	api.HandleFunc("/schedule/{accountID}", server.DeleteScheduleHandler).Methods(http.MethodDelete)
+	api.POST("/schedule/api/create", server.SetAPITokenHandler)
+	api.DELETE("/schedule/api", server.DeleteAPITokenHandler)
+	api.PUT("/schedule/api", server.UpdateAPITokenHandler)
+	api.POST("/schedule/api", server.CheckAPITokenHandler)
+	api.POST("/schedule/:accountID/create", server.SetScheduleHandler)
+	api.GET("/schedule/:accountID/all", server.GetAllScheduleHandler)
 
-	api.HandleFunc("/workshop/{accountID}/metadata", server.CreateMetaDataHandler).Methods(http.MethodPost)
-	api.HandleFunc("/workshop/{accountID}/metadata", server.UpdateMetaDataHandler).Methods(http.MethodPut)
-	api.HandleFunc("/workshop/{accountID}/metadata", server.GetMetaDataHandler).Methods(http.MethodGet)
+	// api.HandleFunc("/schedule/{accountID}", server.GetScheduleHandler)
+	api.PUT("/schedule/:accountID", server.UpdateScheduleHandler)
+	api.DELETE("/schedule/:accountID", server.DeleteScheduleHandler)
 
-	api.HandleFunc("/notification/{accountID}/email", server.GetAdminEmails).Methods(http.MethodGet)
-	api.HandleFunc("/notification/email/create", server.CreateAdminEmails).Methods(http.MethodPost)
-	api.HandleFunc("/notification/email/add", server.AddAdminEmails).Methods(http.MethodPut)
-	api.HandleFunc("/notification/email/remove", server.RemoveAdminEmails).Methods(http.MethodPut)
-	api.HandleFunc("/notification/email", server.DeleteAdminEmails).Methods(http.MethodDelete)
+	api.POST("/workshop/:accountID/metadata", server.CreateMetaDataHandler)
+	api.PUT("/workshop/:accountID/metadata", server.UpdateMetaDataHandler)
+	api.GET("/workshop/accountID/metadata", server.GetMetaDataHandler)
 
-	spa := spaHandler{staticPath: "client/build", indexPath: "index.html"}
-	r.PathPrefix("/").Handler(spa)
+	api.GET("/notification/:accountID/email", server.GetAdminEmails)
+	api.POST("/notification/email/create", server.CreateAdminEmails)
+	api.PUT("/notification/email/add", server.AddAdminEmails)
+	api.PUT("/notification/email/remove", server.RemoveAdminEmails)
+	api.DELETE("/notification/email", server.DeleteAdminEmails)
+
+	api.GET("/awx/workflowjobtemplate", server.GetAWXWorkflowJobTemplates)
+	api.GET("/awx/jobtemplate", server.GetAWXJobTemplates)
+	api.POST("/awx/workflowjobtemplate/launch", server.LaunchAWXWorkflowJobTemplate)
+
+	// spa := spaHandler{staticPath: "client/build", indexPath: "index.html"}
+	// r.PathPrefix("/").Handler(spa)
 
 	port := ":9000"
 
 	log.Println("starting server on port serving index", port)
 
-	log.Fatalln(http.ListenAndServe(port, r))
+	e.Static("/", "client/build")
+
+	e.Logger.Fatal(e.Start(port))
 }
 
 type spaHandler struct {

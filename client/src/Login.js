@@ -59,6 +59,9 @@ const Login = ({ location }) => {
       body: JSON.stringify({
         otp,
       }),
+      headers: {
+        'Content-Type': 'application/json'
+      },
     });
 
     if (status === 200) {

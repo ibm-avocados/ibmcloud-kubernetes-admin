@@ -1,100 +1,67 @@
 package server
 
 import (
-	"encoding/json"
 	"net/http"
 	"strconv"
 
-	"github.com/gorilla/mux"
+	"github.com/labstack/echo/v4"
 	"github.com/moficodes/ibmcloud-kubernetes-admin/pkg/ibmcloud"
 )
 
-func (s *Server) VersionEndpointHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("Content-Type", "application/json")
+func VersionEndpointHandler(c echo.Context) error {
 	versions, err := ibmcloud.GetVersions()
 	if err != nil {
-		handleError(w, http.StatusNotFound, "could not get locations")
+		return err
 	}
-	w.WriteHeader(http.StatusOK)
-	e := json.NewEncoder(w)
-	e.Encode(versions)
+	return c.JSON(http.StatusOK, versions)
 }
 
-func (s *Server) LocationEndpointHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("Content-Type", "application/json")
+func LocationEndpointHandler(c echo.Context) error {
 	locations, err := ibmcloud.GetLocations()
 	if err != nil {
-		handleError(w, http.StatusNotFound, "could not get locations")
+		return err
 	}
-	w.WriteHeader(http.StatusOK)
-	e := json.NewEncoder(w)
-	e.Encode(locations)
+	return c.JSON(http.StatusOK, locations)
 }
 
-func (s *Server) LocationGeoEndpointHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("Content-Type", "application/json")
-	vars := mux.Vars(r)
-
-	geo, ok := vars["geo"]
-
-	if !ok {
-		handleError(w, http.StatusBadRequest, "could not get clusterID")
-		return
-	}
-
+func LocationGeoEndpointHandler(c echo.Context) error {
+	geo := c.Param("geo")
 	locations, err := ibmcloud.GetGeoLocations(geo)
 	if err != nil {
-		handleError(w, http.StatusNotFound, "could not get locations")
+		return err
 	}
-	w.WriteHeader(http.StatusOK)
-	e := json.NewEncoder(w)
-	e.Encode(locations)
+	return c.JSON(http.StatusOK, locations)
 }
 
-func (s *Server) ZonesEndpointHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("Content-Type", "application/json")
-	showFlavors := r.FormValue("showFlavors")
-	location := r.FormValue("location")
+func ZonesEndpointHandler(c echo.Context) error {
+	showFlavors := c.QueryParam("showFlavors")
+	location := c.QueryParam("location")
 	zones, err := ibmcloud.GetZones(showFlavors, location)
 	if err != nil {
-		handleError(w, http.StatusNotFound, "could not load zones")
+		return err
 	}
-	w.WriteHeader(http.StatusOK)
-	e := json.NewEncoder(w)
-	e.Encode(zones)
+	return c.JSON(http.StatusOK, zones)
 }
 
-func (s *Server) MachineTypeHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("Content-Type", "application/json")
-
-	serverType := r.FormValue("type")
-	os := r.FormValue("os")
-	cpuLimitStr := r.FormValue("cpuLimit")
+func MachineTypeHandler(c echo.Context) error {
+	serverType := c.QueryParam("type")
+	os := c.QueryParam("os")
+	cpuLimitStr := c.QueryParam("cpuLimit")
 	cpuLimit, err := strconv.Atoi(cpuLimitStr)
 	if err != nil {
-		handleError(w, http.StatusBadRequest, "cpuLimit should be a number")
-		return
+		return err
 	}
-	memoryLimitStr := r.FormValue("memoryLimit")
+	memoryLimitStr := c.QueryParam("memoryLimit")
 	memoryLimit, err := strconv.Atoi(memoryLimitStr)
 	if err != nil {
-		handleError(w, http.StatusBadRequest, "memoryLimit should be a number")
-		return
+		return err
 	}
 
-	vars := mux.Vars(r)
+	datacenter := c.Param("datacenter")
 
-	datacenter, ok := vars["datacenter"]
-
-	if !ok {
-		handleError(w, http.StatusBadRequest, "could not get clusterID")
-		return
-	}
 	flavors, err := ibmcloud.GetMachineType(datacenter, serverType, os, cpuLimit, memoryLimit)
 	if err != nil {
-		handleError(w, http.StatusNotFound, "could not load flavor")
+		return err
 	}
-	w.WriteHeader(http.StatusOK)
-	e := json.NewEncoder(w)
-	e.Encode(flavors)
+	return c.JSON(http.StatusOK, flavors)
 }

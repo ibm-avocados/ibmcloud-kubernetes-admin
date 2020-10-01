@@ -1,0 +1,46 @@
+.modalWrapper {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  background: #000000AA;
+}
+
+.modal {
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  width: 800px;
+  height: 600px;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+}
+
+.buttonGroup {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  flex: 1;
+}
+
+.button {
+  height: 60px;
+  width: 50%;
+  align-self: flex-end;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 32px;
+  background: red;
+}
+
+.header {
+  font-size: 24px;
+}

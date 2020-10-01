@@ -2,26 +2,24 @@ package server
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 
-	"github.com/gorilla/mux"
+	"github.com/labstack/echo/v4"
 	"github.com/moficodes/ibmcloud-kubernetes-admin/pkg/ibmcloud"
 )
 
-func (s *Server) ClusterDeleteHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("Content-Type", "application/json")
-	session, err := getCloudSessions(r)
+func ClusterDeleteHandler(c echo.Context) error {
+	session, err := getCloudSessions(c)
 	if err != nil {
-		handleError(w, http.StatusUnauthorized, "could not get session", err.Error())
-		return
+		return err
 	}
 	var body map[string]interface{}
-	decoder := json.NewDecoder(r.Body)
+	decoder := json.NewDecoder(c.Request().Body)
 	err = decoder.Decode(&body)
 	if err != nil {
-		handleError(w, http.StatusBadRequest, "could not decode", err.Error())
-		return
+		return err
 	}
 
 	id := fmt.Sprintf("%v", body["id"])
@@ -29,55 +27,44 @@ func (s *Server) ClusterDeleteHandler(w http.ResponseWriter, r *http.Request) {
 	deleteResources := fmt.Sprintf("%v", body["deleteResources"])
 	err = session.DeleteCluster(id, resoueceGroup, deleteResources)
 	if err != nil {
-		handleError(w, http.StatusInternalServerError, "could not delete", err.Error())
-		return
+		return err
 	}
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprintln(w, statusOkMessage)
+	return c.JSON(http.StatusOK, StatusOK{Message: "success"})
 }
 
-func (s *Server) ClusterCreateHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("Content-Type", "application/json")
-	session, err := getCloudSessions(r)
+func ClusterCreateHandler(c echo.Context) error {
+	session, err := getCloudSessions(c)
 	if err != nil {
-		handleError(w, http.StatusUnauthorized, "could not get session", err.Error())
-		return
+		return err
 	}
 
 	var body ibmcloud.CreateClusterRequest
 
-	decoder := json.NewDecoder(r.Body)
+	decoder := json.NewDecoder(c.Request().Body)
 
 	err = decoder.Decode(&body)
 	if err != nil {
-		handleError(w, http.StatusBadRequest, "could not decode ", err.Error())
-		return
+		return err
 	}
 
 	createResponse, err := session.CreateCluster(body)
 
 	if err != nil {
-		handleError(w, http.StatusUnauthorized, "could not create cluster", err.Error())
-		return
+		return err
 	}
 
-	w.WriteHeader(http.StatusOK)
-	e := json.NewEncoder(w)
-	e.Encode(createResponse)
+	return c.JSON(http.StatusOK, createResponse)
 }
 
-func (s *Server) LocationGeoEndpointInfoHandler(w http.ResponseWriter, r *http.Request) {
-	session, err := getCloudSessions(r)
+func LocationGeoEndpointInfoHandler(c echo.Context) error {
+	session, err := getCloudSessions(c)
 	if err != nil {
-		handleError(w, http.StatusUnauthorized, "could not get session", err.Error())
-		return
+		return err
 	}
-	w.Header().Add("Content-Type", "application/json")
 
 	clusters, err := session.GetClusters("")
 	if err != nil {
-		handleError(w, http.StatusUnauthorized, "could not get clusters", err.Error())
-		return
+		return err
 	}
 
 	res := make(map[string]int)
@@ -89,119 +76,77 @@ func (s *Server) LocationGeoEndpointInfoHandler(w http.ResponseWriter, r *http.R
 			res[c.DataCenter] = 1
 		}
 	}
-	w.WriteHeader(http.StatusOK)
-	e := json.NewEncoder(w)
-	e.Encode(res)
+	return c.JSON(http.StatusOK, res)
 }
 
-func (s *Server) ClusterListHandler(w http.ResponseWriter, r *http.Request) {
-	session, err := getCloudSessions(r)
+func ClusterListHandler(c echo.Context) error {
+	session, err := getCloudSessions(c)
 	if err != nil {
-		handleError(w, http.StatusUnauthorized, "could not get session", err.Error())
-		return
+		return err
 	}
 
 	clusters, err := session.GetClusters("")
 	if err != nil {
-		handleError(w, http.StatusUnauthorized, "could not get clusters", err.Error())
-		return
+		return err
 	}
 
-	w.WriteHeader(http.StatusOK)
-	e := json.NewEncoder(w)
-	e.Encode(clusters)
+	return c.JSON(http.StatusOK, clusters)
 }
 
-func (s *Server) ClusterHandler(w http.ResponseWriter, r *http.Request) {
-	session, err := getCloudSessions(r)
+func ClusterHandler(c echo.Context) error {
+	session, err := getCloudSessions(c)
 	if err != nil {
-		handleError(w, http.StatusUnauthorized, "could not get session", err.Error())
-		return
+		return err
 	}
 
-	vars := mux.Vars(r)
-
-	clusterID, ok := vars["clusterID"]
-
-	if !ok {
-		handleError(w, http.StatusBadRequest, "could not get clusterID")
-		return
-	}
+	clusterID := c.Param("clusterID")
 
 	var body map[string]interface{}
-	decoder := json.NewDecoder(r.Body)
+	decoder := json.NewDecoder(c.Request().Body)
 	err = decoder.Decode(&body)
 	if err != nil {
-		handleError(w, http.StatusBadRequest, "could not decode", err.Error())
-		return
+		return err
 	}
 
 	resourceGroup, ok := body["resourceGroup"]
 	if !ok {
-		handleError(w, http.StatusBadRequest, "no tag attached to body", err.Error())
-		return
+		return errors.New("no resourceGroup attached to body")
 	}
 	clusterResourceGroup := fmt.Sprintf("%v", resourceGroup)
 	cluster, err := session.GetCluster(clusterID, clusterResourceGroup)
 	if err != nil {
-		handleError(w, http.StatusUnauthorized, "could not get cluster", err.Error())
-		return
+		return err
 	}
-
-	w.WriteHeader(http.StatusOK)
-	e := json.NewEncoder(w)
-	e.Encode(cluster)
+	return c.JSON(http.StatusOK, cluster)
 }
 
-func (s *Server) ClusterWorkerListHandler(w http.ResponseWriter, r *http.Request) {
-	session, err := getCloudSessions(r)
+func ClusterWorkerListHandler(c echo.Context) error {
+	session, err := getCloudSessions(c)
 	if err != nil {
-		handleError(w, http.StatusUnauthorized, "could not get session", err.Error())
-		return
+		return err
 	}
 
-	vars := mux.Vars(r)
-
-	clusterID, ok := vars["clusterID"]
-
-	if !ok {
-		handleError(w, http.StatusBadRequest, "could not get clusterID")
-		return
-	}
+	clusterID := c.Param("clusterID")
 
 	workers, err := session.GetWorkers(clusterID)
 
 	if err != nil {
-		handleError(w, http.StatusUnauthorized, "could not get workers for cluster : ", clusterID, err.Error())
-		return
+		return err
 	}
-
-	w.WriteHeader(http.StatusOK)
-	e := json.NewEncoder(w)
-	e.Encode(workers)
+	return c.JSON(http.StatusOK, workers)
 }
 
-func (s *Server) VlanEndpointHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("Content-Type", "application/json")
-	session, err := getCloudSessions(r)
+func VlanEndpointHandler(c echo.Context) error {
+	session, err := getCloudSessions(c)
 	if err != nil {
-		handleError(w, http.StatusUnauthorized, "could not get session", err.Error())
-		return
-	}
-	vars := mux.Vars(r)
-
-	datacenters, ok := vars["datacenter"]
-
-	if !ok {
-		handleError(w, http.StatusBadRequest, "could not get datacenter")
-		return
+		return err
 	}
 
-	vlans, err := session.GetDatacenterVlan(datacenters)
+	datacenter := c.Param("datacenter")
+
+	vlans, err := session.GetDatacenterVlan(datacenter)
 	if err != nil {
-		handleError(w, http.StatusNotFound, "could not get vlans")
+		return err
 	}
-	w.WriteHeader(http.StatusOK)
-	e := json.NewEncoder(w)
-	e.Encode(vlans)
+	return c.JSON(http.StatusOK, vlans)
 }

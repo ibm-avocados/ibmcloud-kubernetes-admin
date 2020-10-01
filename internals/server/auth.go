@@ -6,55 +6,43 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/labstack/echo/v4"
 	"github.com/moficodes/ibmcloud-kubernetes-admin/pkg/ibmcloud"
 )
 
-func (s *Server) AuthenticationHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("Content-Type", "application/json")
-
-	var body map[string]interface{}
-	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&body)
-	if err != nil {
-		handleError(w, http.StatusUnauthorized, "could not decode", err.Error())
-		return
+func AuthenticationHandler(c echo.Context) error {
+	accountLogin := new(AccountLogin)
+	if err := c.Bind(accountLogin); err != nil {
+		fmt.Println("1", err)
+		return err
 	}
 
-	otp := fmt.Sprintf("%v", body["otp"])
-
-	session, err := ibmcloud.Authenticate(otp)
+	session, err := ibmcloud.Authenticate(accountLogin.OTP)
 	if err != nil {
-		log.Println("could not authenticate with the otp provided")
-		log.Println(err.Error())
-		handleError(w, http.StatusUnauthorized, "could not authenticate with the otp provided", err.Error())
-		return
+		fmt.Println("2", err)
+		return err
 	}
 
-	setCookie(w, session)
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprintln(w, statusOkMessage)
+	setCookie(c, session)
+
+	return c.JSON(http.StatusOK, StatusOK{Message: "success"})
 }
 
-func (s *Server) AuthenticationWithAccountHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("Content-Type", "application/json")
-
-	session, err := getCloudSessions(r)
+func AuthenticationWithAccountHandler(c echo.Context) error {
+	session, err := getCloudSessions(c)
 	if err != nil {
-		handleError(w, http.StatusUnauthorized, "could not get session", err.Error())
-		return
+		return err
 	}
 
 	if !session.IsValid() {
-		handleError(w, http.StatusUnauthorized, "session not valid")
-		return
+		return err
 	}
 
 	var body map[string]interface{}
-	decoder := json.NewDecoder(r.Body)
+	decoder := json.NewDecoder(c.Request().Body)
 	err = decoder.Decode(&body)
 	if err != nil {
-		handleError(w, http.StatusBadRequest, "could not decode", err.Error())
-		return
+		return err
 	}
 
 	accountID := fmt.Sprintf("%v", body["id"])
@@ -63,41 +51,31 @@ func (s *Server) AuthenticationWithAccountHandler(w http.ResponseWriter, r *http
 
 	accountSession, err := session.BindAccountToToken(accountID)
 	if err != nil {
-		handleError(w, http.StatusUnauthorized, "could not bind account to token", err.Error())
-		return
+		return err
 	}
 
-	setCookie(w, accountSession)
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprintln(w, statusOkMessage)
+	setCookie(c, accountSession)
+	return c.JSON(http.StatusOK, StatusOK{Message: "success"})
 }
 
-func (s *Server) LoginHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("Content-Type", "application/json")
-
-	session, err := getCloudSessions(r)
+func LoginHandler(c echo.Context) error {
+	session, err := getCloudSessions(c)
 	if err != nil {
-		handleError(w, http.StatusUnauthorized, "could not get session", err.Error())
-		return
+		return err
 	}
 
 	if !session.IsValid() {
-		handleError(w, http.StatusUnauthorized, "session expired")
-		return
+		return err
 	}
 
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprintln(w, statusOkMessage)
+	return c.JSON(http.StatusOK, StatusOK{Message: "success"})
 }
 
-func (s *Server) TokenEndpointHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("Content-Type", "application/json")
+func TokenEndpointHandler(c echo.Context) error {
 	endpoints, err := ibmcloud.GetIdentityEndpoints()
 	if err != nil {
-		handleError(w, http.StatusInternalServerError, "could not get endpoints")
-		return
+		return err
 	}
-	w.WriteHeader(http.StatusOK)
-	e := json.NewEncoder(w)
-	e.Encode(endpoints)
+
+	return c.JSON(http.StatusOK, endpoints)
 }
