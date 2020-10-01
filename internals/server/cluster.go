@@ -150,17 +150,3 @@ func VlanEndpointHandler(c echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, vlans)
 }
-
-/*
----
-- name: pull down the newest image
-  docker_image:
-    name: quay.io/ibm-avocados/docker-kubectl
-    source: pull
-
-- name: run the container
-  docker_container:
-    name: install-tekton-{{ 99999999 | random | to_uuid }}
-    image: "quay.io/ibm-avocados/docker-kubectl:latest"
-    entrypoint: /scripts/run.sh {{ ibmcloud_api_key }} {{ cluster_id }} "https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml"
-*/
