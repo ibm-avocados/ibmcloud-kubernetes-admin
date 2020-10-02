@@ -24,6 +24,23 @@ func main() {
 		}),
 	)
 
+	e.Use(middleware.Secure())
+
+	e.Use(middleware.StaticWithConfig(middleware.StaticConfig{
+		Root:  "client/build",
+		HTML5: true,
+	}))
+
+	// Set cache control to a year on static directory. Filenames are hashed so
+	// they can safely be aggressively cached.
+	static := e.Group("/static", func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			c.Response().Header().Set("Cache-Control", "max-age=31536000")
+			return next(c)
+		}
+	})
+	static.Use(middleware.Static("client/build/static"))
+
 	auth := e.Group("/auth")
 
 	auth.GET("", server.AuthHandler)
@@ -95,10 +112,6 @@ func main() {
 	port := ":9000"
 
 	log.Println("starting server on port serving index", port)
-
-	e.Static("/", "client/build")
-
-	e.File("/*", "client/build/index.html")
 
 	e.Logger.Fatal(e.Start(port))
 }
