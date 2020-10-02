@@ -24,8 +24,6 @@ func main() {
 		}),
 	)
 
-	e.Use(middleware.Secure())
-
 	auth := e.Group("/auth")
 
 	auth.GET("", server.AuthHandler)

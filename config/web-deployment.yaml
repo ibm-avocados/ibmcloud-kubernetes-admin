@@ -21,7 +21,7 @@ spec:
         run:  admin
     spec:
       containers:
-      - image:  moficodes/ibmcloud-kubernetes-admin:v0.2.17
+      - image:  moficodes/ibmcloud-kubernetes-admin:v0.2.18
         imagePullPolicy: Always
         name:  kubeadmin
         env:
@@ -51,6 +51,28 @@ spec:
             value: iksadmin@ibm.com
           - name: ADMIN_TO_EMAIL
             value: "moficodes@ibm.com,awesome@ibm.com"
+          - name: IBM_REDIRECT_URI
+            value: https://kubernetes.admin.ibmdeveloper.net/auth/callback
+          - name: IBM_LOGIN_USER
+            valueFrom:
+              secretKeyRef:
+                name: ibmcloud-secret
+                key: ibm_login_user
+          - name: IBM_LOGIN_CLIENT_ID
+            valueFrom:
+              secretKeyRef:
+                name: ibmcloud-secret
+                key: ibm_login_client_id
+          - name: IBM_LOGIN_CLIENT_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: ibmcloud-secret
+                key: ibm_login_client_secret
+          - name: JWT_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: ibmcloud-secret
+                key: jwt_secret
         resources:
           limits:
             cpu: 1000m
