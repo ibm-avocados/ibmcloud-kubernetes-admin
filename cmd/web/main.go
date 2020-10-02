@@ -24,6 +24,13 @@ func main() {
 		}),
 	)
 
+	e.Use(middleware.Secure())
+
+	auth := e.Group("/auth")
+
+	auth.GET("", server.AuthHandler)
+	auth.GET("/callback", server.AuthDoneHandler)
+
 	api := e.Group("/api/v1")
 	api.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
 		Format: "method=${method}, uri=${uri}, status=${status}, time=${latency_human}\n",
@@ -33,7 +40,7 @@ func main() {
 	api.GET("/clusters/locations", server.LocationEndpointHandler)
 	api.GET("/clusters/:geo/locations", server.LocationGeoEndpointHandler)
 	api.GET("/clusters/zones", server.ZonesEndpointHandler)
-	api.GET("/clusters/{datacenter}/machine-types", server.MachineTypeHandler)
+	api.GET("/clusters/:datacenter/machine-types", server.MachineTypeHandler)
 
 	api.GET("/clusters/locations/info", server.LocationGeoEndpointInfoHandler)
 
@@ -92,6 +99,8 @@ func main() {
 	log.Println("starting server on port serving index", port)
 
 	e.Static("/", "client/build")
+
+	e.File("/*", "client/build/index.html")
 
 	e.Logger.Fatal(e.Start(port))
 }
