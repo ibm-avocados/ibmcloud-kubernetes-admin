@@ -86,4 +86,5 @@ packages/react-devtools-shell/dist
 
 cloudant-secret.yaml
 sendgrid-secret.yaml
+ibmcloud-secret.yaml
 env.sh
