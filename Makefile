@@ -6,12 +6,9 @@ build-backend:
 
 build: build-frontend build-backend
 
-build-start: build-frontend build
-	./kubeadmin
-
 start: build
 	./kubeadmin
-	
+
 run:
 	./kubeadmin
 

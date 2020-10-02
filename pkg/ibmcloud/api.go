@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -59,7 +60,7 @@ const (
 	refreshTokenGrantType = "refresh_token"
 )
 
-const basicAuth = "Basic Yng6Yng="
+var basicAuth = "Basic " + os.Getenv("IBM_LOGIN_USER")
 
 //// useful for loagging
 // bodyBytes, err := ioutil.ReadAll(resp.Body)
