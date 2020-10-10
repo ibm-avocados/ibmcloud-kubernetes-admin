@@ -1,6 +1,9 @@
 package awx
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"fmt"
+)
 
 const (
 	protocol    = "https://"
@@ -38,11 +41,14 @@ func launchWorkflowJobTemplate(token string, body WorkflowJobTeplatesLaunchBody)
 
 	b, err := json.Marshal(body)
 	if err != nil {
+		fmt.Println(":3", err)
 		return nil, err
 	}
 
 	err = postBody(endpont, header, nil, b, &res)
 	if err != nil {
+		fmt.Println(":4", err)
+
 		return nil, err
 	}
 	return res, nil

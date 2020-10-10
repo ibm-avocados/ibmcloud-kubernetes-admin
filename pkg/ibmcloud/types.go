@@ -579,3 +579,17 @@ type ClusterRequest struct {
 	SkipPermPrecheck             bool   `json:"skipPermPrecheck"`
 	WorkerNum                    int    `json:"workerNum"`
 }
+
+type ApiKeyDetails struct {
+	ID          string `json:"id"`
+	EntityTag   string `json:"entity_tag"`
+	Crn         string `json:"crn"`
+	Locked      bool   `json:"locked"`
+	CreatedAt   string `json:"created_at"`
+	CreatedBy   string `json:"created_by"`
+	ModifiedAt  string `json:"modified_at"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	IamID       string `json:"iam_id"`
+	AccountID   string `json:"account_id"`
+}
