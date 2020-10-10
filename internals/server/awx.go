@@ -20,7 +20,7 @@ func GetAWXWorkflowJobTemplates(c echo.Context) error {
 	query := c.QueryParam("labels")
 	fmt.Println("QUERY: ", query)
 
-	var result []awx.ResultsWorkflowTemplate
+	result := make([]awx.ResultsWorkflowTemplate, 0)
 	if query == "" {
 		result = templates.Results
 	} else {
@@ -55,11 +55,14 @@ func LaunchAWXWorkflowJobTemplate(c echo.Context) error {
 	decoder := json.NewDecoder(c.Request().Body)
 	err := decoder.Decode(&body)
 	if err != nil {
+		fmt.Println("1:", err)
 		return err
 	}
 
 	res, err := awx.LaunchWorkflowJobTemplate(token, body)
 	if err != nil {
+		fmt.Println("2:", err)
+
 		return err
 	}
 

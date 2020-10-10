@@ -158,6 +158,14 @@ func bindAccountToToken(refreshToken, accountID string) (*Session, error) {
 	return &Session{Token: token}, nil
 }
 
+func (s *Session) CheckToken(apikey string) (*ApiKeyDetails, error) {
+	apiKeyDetails, err := checkToken(s.Token.AccessToken, apikey)
+	if err != nil {
+		return nil, err
+	}
+	return apiKeyDetails, nil
+}
+
 // BindAccountToToken upgrades session with account
 func (s *Session) BindAccountToToken(accountID string) (*Session, error) {
 	session, err := bindAccountToToken(s.Token.RefreshToken, accountID)

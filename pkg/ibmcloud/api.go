@@ -43,6 +43,7 @@ const (
 	tagEndpoint          = protocol + subdomainTags + api + "/v3/tags"
 	billingEndpoint      = protocol + subdomainBilling + api + "/v4/accounts"
 	resourceEndoint      = protocol + subdomainResourceController + api + "/v1/resource_groups"
+	apikeyEndpoint       = protocol + subdomainIAM + api + "/v1/apikeys"
 )
 
 const (
@@ -118,6 +119,24 @@ func getToken(endpoint string, otp string) (*Token, error) {
 	}
 
 	return &result, nil
+}
+
+func checkToken(token, apikey string) (*ApiKeyDetails, error) {
+	header := map[string]string{
+		"Authorization": "Bearer " + token,
+		"IAM-Apikey":    apikey,
+	}
+
+	endpoint := apikeyEndpoint + "/details"
+
+	var res ApiKeyDetails
+	err := fetch(endpoint, header, nil, &res)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &res, nil
 }
 
 func getTokenFromIAM(endpoint string, apikey string) (*Token, error) {

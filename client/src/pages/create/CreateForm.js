@@ -70,9 +70,6 @@ const CreateForm = ({ accountID }) => {
   const [selectedOpenshift, setSelectedOpenshift] = React.useState(null);
   const [selectedRegion, setSelectedRegion] = React.useState(null);
   const [selectedWorkerZones, setSelectedWorkerZones] = React.useState([]);
-  // const [selectedWorkerZone, setSelectedWorkerZone] = React.useState(null);
-  // const [selectedPrivateVlan, setSelecetedPrivateVlan] = React.useState(null);
-  // const [selectedPublicVlan, setSelecetedPublicVlan] = React.useState(null);
   const [zoneClusterCount, setZoneClusterCount] = React.useState(null);
   const [selectedFlavor, setSelectedFlavor] = React.useState(null);
   const [selectedGroup, setSelectedGroup] = React.useState(null);
@@ -99,21 +96,15 @@ const CreateForm = ({ accountID }) => {
   // notification specific states
 
   const [selectedEmails, setSelectedEmails] = React.useState([]);
-  const [awxWorkflowJobTemplates, setAWXWorkflowJobTemplates] = React.useState([]);
+  const [awxWorkflowJobTemplates, setAWXWorkflowJobTemplates] = React.useState(
+    []
+  );
+
+  const [selectedWorkflowTemplate, setSelectedWorkflowTemplate] = React.useState({});
+
 
   React.useEffect(() => {
-    const loadWorkflowJobTemplate = async() => {
-      try {
-        const templates = await grab("/api/v1/awx/workflowjobtemplate?labels=kubernetes")
-        console.log(templates);
-        setAWXWorkflowJobTemplates(templates)
-      }
-      catch (e) {
-        console.log(e);
-      }
-    }
-    loadWorkflowJobTemplate()
-
+    loadWorkflowJobTemplate("kubernetes");
     const loadVersions = async () => {
       try {
         const versions = await grab("/api/v1/clusters/versions");
@@ -174,15 +165,56 @@ const CreateForm = ({ accountID }) => {
     setSelectedKuberetes(null);
     setSelectedOpenshift(null);
     setSelectedRegion(null);
-    // setSelectedWorkerZone(null);
     setSelectedWorkerZones([]);
-    // setSelecetedPrivateVlan(null);
-    // setSelecetedPublicVlan(null);
     setSelectedFlavor(null);
     setSelectedGroup(null);
+    setApiKey("")
+    setSelectedWorkflowTemplate(null);
+    setSelectedWorkerZones([]);
+  };
+
+  const validateApiKey = async (apikey) =>{
+    try {
+      setApiKey(apikey);
+      let data = await grab(
+        "/api/v1/auth/check",
+        {
+          method: "post",
+          body: JSON.stringify({apikey}),
+        }
+      );
+      if (data && data.account_id === accountID) {
+        setApiKeyValid(true);
+      } else {
+        setApiKeyValid(false);
+      }
+    } catch(e) {
+      setApiKeyValid(false);
+      console.log(e)
+    }
+  }
+
+  const loadWorkflowJobTemplate = async (label) => {
+
+    try {
+      const templates = await grab(
+        `/api/v1/awx/workflowjobtemplate?labels=${label}`
+      );
+      console.log(templates);
+      setAWXWorkflowJobTemplates(templates);
+    } catch (e) {
+      console.log(e);
+    }
   };
 
   const toggleRadio = () => {
+    let labels = "";
+    if(!kubernetesSelected){
+      labels = "kubernetes";
+    } else {
+      labels = "openshift";
+    }
+    loadWorkflowJobTemplate(labels);
     setKubernetesSelected(!kubernetesSelected);
     setOpenshiftSelected(!openshiftSelected);
     setFlavorOnClusterType(flavors, kubernetesSelected);
@@ -206,14 +238,14 @@ const CreateForm = ({ accountID }) => {
       const zoneCount = await grab(`/api/v1/clusters/locations/info`, {
         Method: "GET",
       });
-      if(zoneCount) {
+      if (zoneCount) {
         console.log(zoneCount);
         setZoneClusterCount(zoneCount);
       }
     } catch (e) {
       console.log(e);
     }
-  }
+  };
 
   const getVlan = async (datacenter) => {
     try {
@@ -259,24 +291,6 @@ const CreateForm = ({ accountID }) => {
 
     return pairs[getRandomInt(pairs.length)];
   };
-
-  // const getVlans = async (datacenter) => {
-  //   try {
-  //     const vlans = await grab(`/api/v1/clusters/${datacenter}/vlans`);
-  //     const privateVlans = vlans.filter((vlan) => vlan.type === "private");
-  //     if (privateVlans && privateVlans.length > 0) {
-  //       setPrivateVlans(privateVlans);
-  //       setSelecetedPrivateVlan(privateVlans[0]);
-  //     }
-  //     const publicVlans = vlans.filter((vlan) => vlan.type === "public");
-  //     if (publicVlans && publicVlans.length > 0) {
-  //       setPublicVlans(publicVlans);
-  //       setSelecetedPublicVlan(publicVlans[0]);
-  //     }
-  //   } catch (e) {
-  //     console.log(e);
-  //   }
-  // };
 
   const getFlavors = async (datacenter) => {
     try {
@@ -324,11 +338,6 @@ const CreateForm = ({ accountID }) => {
     getWorkerZones(geo.id);
     setSelectedRegion(geo);
     setSelectedWorkerZones([]);
-    // setSelectedWorkerZone(null);
-    // setPrivateVlans([]);
-    // setSelecetedPrivateVlan(null);
-    // setPublicVlans([]);
-    // setSelecetedPublicVlan(null);
   };
 
   const onWorkerZonesSelected = ({ selectedItems }) => {
@@ -338,16 +347,6 @@ const CreateForm = ({ accountID }) => {
       getFlavors(selectedItems[0].id);
     }
   };
-
-  // const onWorkerZoneSelected = (zone) => {
-  //   // setSelectedWorkerZone(zone);
-  //   // setPrivateVlans([]);
-  //   // setSelecetedPrivateVlan(null);
-  //   // setPublicVlans([]);
-  //   // setSelecetedPublicVlan(null);
-  //   // getVlans(zone.id);
-  //   getFlavors(zone.id);
-  // };
 
   const validTag = (tags) => {
     const re = /^[A-Za-z,0-9:_ .-]+$/;
@@ -361,6 +360,42 @@ const CreateForm = ({ accountID }) => {
   };
 
   const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+  const getAWXWorflowTemplateLaunchRequest = () => {
+    let version = "";
+    if (kubernetesSelected) {
+      const { major, minor, patch } = selectedKubernetes;
+      version = `${major}.${minor}.${patch}`;
+    } else {
+      const { major, minor } = selectedOpenshift;
+      version = `${major}.${minor}_openshift`;
+    }
+
+    let defaultWorkerPoolEntitlement = "";
+    if (openshiftSelected) {
+      defaultWorkerPoolEntitlement = "cloud_pak";
+    }
+
+    const range = Number(clusterCount);
+    let request = [];
+    for (let i = 1; i <= range; i++) {
+      const suffix = numToStr(i);
+      const name = `${clusterNamePrefix}-${suffix}`;
+      const ClusterRequest = {
+        ibmcloud_api_key: apiKey,
+        resource_id: selectedGroup.id,
+        cluster_name: name,
+        entitlement: defaultWorkerPoolEntitlement,
+        machine_type: selectedFlavor.name,
+        master_version: version,
+        default_pool_size: Number(workerCount),
+        tags: tags,
+      };
+
+      request.push(ClusterRequest);
+    }
+    return request;
+  }
 
   const getCreateRequest = () => {
     let version = "";
@@ -387,7 +422,6 @@ const CreateForm = ({ accountID }) => {
         name,
         prefix: "",
         skipPermPrecheck: false,
-        // dataCenter: selectedWorkerZone.id,
         defaultWorkerPoolName: "",
         defaultWorkerPoolEntitlement,
         disableAutoUpdate: true,
@@ -395,8 +429,6 @@ const CreateForm = ({ accountID }) => {
         podSubnet: "",
         serviceSubnet: "",
         machineType: selectedFlavor.name,
-        // privateVlan: selectedPrivateVlan.id,
-        // publicVlan: selectedPublicVlan.id,
         masterVersion: version,
         workerNum: Number(workerCount),
         diskEncryption: true,
@@ -414,6 +446,68 @@ const CreateForm = ({ accountID }) => {
     }
     return request;
   };
+
+  const onCreateWithAWXClicked = async () => {
+    console.log("creating cluster using awx");
+    setCreating(true);
+    setCreateSuccess(false);
+
+    const request = getAWXWorflowTemplateLaunchRequest()
+    const range = request.length;
+    let errors = [];
+    for (let i = 0; i < range; i++) {
+      setLoaderDescription(`Creating Cluster ${i + 1} of ${range}`);
+      console.log("creating cluster ", i);
+      const CreateClusterRequest = request[i];
+      try {
+        const workerZone =
+          selectedWorkerZones[i % selectedWorkerZones.length].id;
+        setLoaderDescription(`Getting Vlan for Cluster ${i + 1} of ${range}`);
+        const vlan = await getVlan(workerZone);
+        if (vlan.length !== 0) {
+          CreateClusterRequest.private_vlan = vlan[0];
+          CreateClusterRequest.public_vlan = vlan[1];
+        }
+        CreateClusterRequest.datacenter = workerZone;
+
+        console.log(CreateClusterRequest);
+
+        let workflowTemplateLaunchBody = {
+          id: selectedWorkflowTemplate.id.toString(),
+          extra_vars: JSON.stringify(CreateClusterRequest)
+        }
+
+        console.log(JSON.stringify(CreateClusterRequest));
+
+        const clusterResponse = await grab(
+          "/api/v1/awx/workflowjobtemplate/launch",
+          {
+            method: "post",
+            body: JSON.stringify(workflowTemplateLaunchBody),
+          },
+          3
+        );
+        console.log(clusterResponse);
+      } catch(e){
+        errors.push(e);
+        console.log("Error creating cluster", e);
+      }
+    }
+
+    const datacenters = selectedWorkerZones.map((v) => v.id).join(", ");
+
+    setToast({
+      title: "Cluster Created",
+      subtitle: `${clusterCount} ${
+        kubernetesSelected ? "Kubernetes" : "Openshift"
+      } Cluster Creation Attempted. ${errors.length} Error`,
+      kind: errors.length === 0 ? "success" : "error",
+      caption: `Datacenter(s): ${datacenters}`,
+    });
+    setCreateSuccess(true);
+    setCreating(false);
+    resetState();
+  }
 
   const onCreateClicked = async () => {
     console.log("creating clusters");
@@ -496,7 +590,7 @@ const CreateForm = ({ accountID }) => {
       }
     }
 
-    const datacenters = selectedWorkerZones.map(v => v.id).join(", ");
+    const datacenters = selectedWorkerZones.map((v) => v.id).join(", ");
 
     setToast({
       title: "Cluster Created",
@@ -523,11 +617,15 @@ const CreateForm = ({ accountID }) => {
     const geoSelected = !!selectedRegion;
     const zoneSelected = selectedWorkerZones.length > 0;
     const flavorSelected = !!selectedFlavor;
+    const postProvisionSelected = !!selectedWorkflowTemplate;
 
     const hasClusterCount = clusterCount && clusterCount !== "";
     const hasWorkerCount = workerCount && workerCount !== "";
     const hasNamePrefix = clusterNamePrefix && clusterNamePrefix !== "";
     const hasTags = tags && tags !== "";
+    const hasApiKey = apiKey && apiKey !== "";
+    
+
 
     return !(
       versionSelected &&
@@ -538,7 +636,10 @@ const CreateForm = ({ accountID }) => {
       hasClusterCount &&
       hasWorkerCount &&
       hasNamePrefix &&
-      hasTags
+      hasTags &&
+      hasApiKey &&
+      apiKeyValid && 
+      postProvisionSelected
     );
   };
 
@@ -577,7 +678,7 @@ const CreateForm = ({ accountID }) => {
     }
     const name = `${clusterNamePrefix}`;
 
-    const workerZones = selectedWorkerZones.map(v => v.id);
+    const workerZones = selectedWorkerZones.map((v) => v.id);
 
     const ScheduleRequest = {
       name: name,
@@ -737,8 +838,12 @@ const CreateForm = ({ accountID }) => {
 
   const getZoneText = (zone) => {
     // (zone) => (zone ? zone.id + ` (${zoneClusterCount[zone.id]?zoneClusterCount[zone.id]:0})` : "")
-    return zone && zoneClusterCount ? `${zone.id} (${zoneClusterCount[zone.id]?zoneClusterCount[zone.id]:0})`:"";
-  }
+    return zone && zoneClusterCount
+      ? `${zone.id} (${
+          zoneClusterCount[zone.id] ? zoneClusterCount[zone.id] : 0
+        })`
+      : "";
+  };
 
   return (
     <>
@@ -860,9 +965,11 @@ const CreateForm = ({ accountID }) => {
               </FormLabel>
               <MultiSelect
                 id="workerzones-select"
-                itemToString={zone => getZoneText(zone)}
+                itemToString={(zone) => getZoneText(zone)}
                 items={workerZones}
-                disabled={workerZones.length <= 0 || !zoneClusterCount || creating}
+                disabled={
+                  workerZones.length <= 0 || !zoneClusterCount || creating
+                }
                 className="create-page-multiselect"
                 label="Select worker zone"
                 onChange={(selected) => onWorkerZonesSelected(selected)}
@@ -1062,6 +1169,64 @@ const CreateForm = ({ accountID }) => {
           </Row>
           <Spacer height="16px" />
 
+
+          <Row>
+            <Column lg={6}>
+              <FormLabel>
+                <Tooltip triggerText="Post Provision Task">
+                  What to run post cluster create. Leave empty for vanilla K8s or Openshift
+                </Tooltip>
+              </FormLabel>
+              <Dropdown
+                id="post-provision"
+                className="create-page-dropdown"
+                label="Post Provision Task"
+                items={awxWorkflowJobTemplates}
+                disabled={awxWorkflowJobTemplates.length <= 0 || creating}
+                selectedItem={selectedWorkflowTemplate}
+                onChange={({ selectedItem }) => setSelectedWorkflowTemplate(selectedItem)}
+                itemToString={(item) => (item ? item.name : "no-name")}
+              />
+            </Column>
+          </Row>
+          <Spacer height="16px" />
+
+          <FormLabel>
+            <Tooltip triggerText="API Key">
+              API Key for creating infra resources
+            </Tooltip>
+          </FormLabel>
+          <Row>
+            <Column sm={4} mg={8} lg={6}>
+              <TextInput.PasswordInput
+                labelText=""
+                id="cluster_name"
+                placeholder="api-key"
+                value={apiKey}
+                onChange={(e) => validateApiKey(e.target.value.trim())}
+              />
+            </Column>
+          </Row>
+          {apiKey && !apiKeyValid ? (
+            <>
+              <Spacer height="16px" />
+              <ToastNotification
+                title="Invalid API Key"
+                subtitle="Check API Key"
+                caption=""
+                kind="error"
+                timeout={0}
+                style={{
+                  minWidth: "50rem",
+                  marginBottom: ".5rem",
+                }}
+              />
+              <Spacer height="16px" />
+            </>
+          ) : (
+            <></>
+          )}
+
           {createSuccess || scheduleSuccess ? (
             <>
               <Spacer height="16px" />
@@ -1082,8 +1247,6 @@ const CreateForm = ({ accountID }) => {
             <></>
           )}
 
-          <div>{awxWorkflowJobTemplates && awxWorkflowJobTemplates.map((v, i) => (<p key={i}>{v.name}</p>))}</div>
-
           <Spacer height="16px" />
           <Row>
             <Column>
@@ -1098,7 +1261,7 @@ const CreateForm = ({ accountID }) => {
                   <Button
                     style={{ width: "250px" }}
                     size="field"
-                    onClick={onCreateClicked}
+                    onClick={onCreateWithAWXClicked}
                     disabled={shouldCreateBeDisabled() || creating}
                     kind="primary"
                   >

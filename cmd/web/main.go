@@ -51,6 +51,8 @@ func main() {
 		Format: "method=${method}, uri=${uri}, status=${status}, time=${latency_human}\n",
 	}))
 
+	api.POST("/auth/check", server.CheckApiKeyHandler)
+
 	api.GET("/clusters/versions", server.VersionEndpointHandler)
 	api.GET("/clusters/locations", server.LocationEndpointHandler)
 	api.GET("/clusters/:geo/locations", server.LocationGeoEndpointHandler)
@@ -102,6 +104,7 @@ func main() {
 	api.PUT("/notification/email/remove", server.RemoveAdminEmails)
 	api.DELETE("/notification/email", server.DeleteAdminEmails)
 
+	// api.POST("/awx/cluster", server.CreateClusterWithAWX)
 	api.GET("/awx/workflowjobtemplate", server.GetAWXWorkflowJobTemplates)
 	api.GET("/awx/jobtemplate", server.GetAWXJobTemplates)
 	api.POST("/awx/workflowjobtemplate/launch", server.LaunchAWXWorkflowJobTemplate)
