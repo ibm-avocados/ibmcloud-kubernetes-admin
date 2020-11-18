@@ -71,6 +71,7 @@ func main() {
 	api.POST("/clusters", server.ClusterCreateHandler)
 	api.DELETE("/clusters", server.ClusterDeleteHandler)
 	api.GET("/resourcegroups/:accountID", server.ResourceGroupHandler)
+	api.GET("/iam/accessGroups/:accountID", server.AccessGroupsHandler)
 
 	api.GET("/clusters/:datacenter/vlans", server.VlanEndpointHandler)
 	api.GET("/clusters/:clusterID", server.ClusterHandler)

@@ -21,7 +21,7 @@ spec:
         run:  admin
     spec:
       containers:
-      - image:  moficodes/ibmcloud-kubernetes-admin:v0.2.20
+      - image:  moficodes/ibmcloud-kubernetes-admin:v0.2.21
         imagePullPolicy: Always
         name:  kubeadmin
         env:
@@ -42,6 +42,11 @@ spec:
                 key: host
           - name: TICKER_PERIOD
             value: "3600"
+          - name: AWX_ACCESS_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: awx-secret
+                key: apikey
           - name: SENDGRID_API_KEY
             valueFrom:
               secretKeyRef:

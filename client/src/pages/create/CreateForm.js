@@ -4,6 +4,7 @@ import NotificationEmail from "./NotificationEmail";
 
 import {
   Button,
+  Checkbox,
   Column,
   DatePicker,
   DatePickerInput,
@@ -65,6 +66,7 @@ const CreateForm = ({ accountID }) => {
   const [tags, setTags] = React.useState("");
   const [flavors, setFlavors] = React.useState([]);
   const [resourceGroups, setResourceGroups] = React.useState([]);
+  const [accessGroups, setAccessGroups] = React.useState([]);
   // selected values
   const [selectedKubernetes, setSelectedKuberetes] = React.useState(null);
   const [selectedOpenshift, setSelectedOpenshift] = React.useState(null);
@@ -73,6 +75,7 @@ const CreateForm = ({ accountID }) => {
   const [zoneClusterCount, setZoneClusterCount] = React.useState(null);
   const [selectedFlavor, setSelectedFlavor] = React.useState(null);
   const [selectedGroup, setSelectedGroup] = React.useState(null);
+  const [selectedAccessGroup, setSelectedAccessGroup] = React.useState(null);
   //scheduling helpers
   const [startTimeAMPM, setStartTimeAMPM] = React.useState("AM");
   const [endTimeAMPM, setEndTimeAMPM] = React.useState("AM");
@@ -85,7 +88,7 @@ const CreateForm = ({ accountID }) => {
   const [isWorkshop, setIsWorkshop] = React.useState(false);
   const [githubIssue, setGithubIssue] = React.useState("");
   const [userPerCluster, setUserPerCluster] = React.useState("1");
-
+  const [grantClusterPassword, setGrantClusterPassword] = React.useState("");
   // ui indicators
   const [creating, setCreating] = React.useState(false);
   const [loaderDescription, setLoaderDescription] = React.useState("");
@@ -95,13 +98,19 @@ const CreateForm = ({ accountID }) => {
 
   // notification specific states
 
+  const [githubUser, setGithubUser] = React.useState("");
+  const [githubToken, setGithubToken] = React.useState("");
+
   const [selectedEmails, setSelectedEmails] = React.useState([]);
   const [awxWorkflowJobTemplates, setAWXWorkflowJobTemplates] = React.useState(
     []
   );
 
-  const [selectedWorkflowTemplate, setSelectedWorkflowTemplate] = React.useState({});
-
+  const [
+    selectedWorkflowTemplate,
+    setSelectedWorkflowTemplate,
+  ] = React.useState({});
+  const [deployGrantCluster, setDeployGrantCluster] = React.useState(true);
 
   React.useEffect(() => {
     loadWorkflowJobTemplate("kubernetes");
@@ -117,6 +126,20 @@ const CreateForm = ({ accountID }) => {
       }
     };
     loadVersions();
+
+    const loadAccessGroups = async () => {
+      try {
+        const accessGroups = await grab(`api/v1/iam/accessGroups/${accountID}`);
+        if (accessGroups) {
+          setAccessGroups(accessGroups.groups);
+          console.log("ACCESS GROUPS", accessGroups);
+        }
+      } catch (e) {
+        console.log(e);
+      }
+    };
+
+    loadAccessGroups();
 
     const loadResourceGroups = async () => {
       try {
@@ -168,34 +191,30 @@ const CreateForm = ({ accountID }) => {
     setSelectedWorkerZones([]);
     setSelectedFlavor(null);
     setSelectedGroup(null);
-    setApiKey("")
+    setApiKey("");
     setSelectedWorkflowTemplate(null);
     setSelectedWorkerZones([]);
   };
 
-  const validateApiKey = async (apikey) =>{
+  const validateApiKey = async (apikey) => {
     try {
       setApiKey(apikey);
-      let data = await grab(
-        "/api/v1/auth/check",
-        {
-          method: "post",
-          body: JSON.stringify({apikey}),
-        }
-      );
+      let data = await grab("/api/v1/auth/check", {
+        method: "post",
+        body: JSON.stringify({ apikey }),
+      });
       if (data && data.account_id === accountID) {
         setApiKeyValid(true);
       } else {
         setApiKeyValid(false);
       }
-    } catch(e) {
+    } catch (e) {
       setApiKeyValid(false);
-      console.log(e)
+      console.log(e);
     }
-  }
+  };
 
   const loadWorkflowJobTemplate = async (label) => {
-
     try {
       const templates = await grab(
         `/api/v1/awx/workflowjobtemplate?labels=${label}`
@@ -209,7 +228,7 @@ const CreateForm = ({ accountID }) => {
 
   const toggleRadio = () => {
     let labels = "";
-    if(!kubernetesSelected){
+    if (!kubernetesSelected) {
       labels = "kubernetes";
     } else {
       labels = "openshift";
@@ -395,7 +414,7 @@ const CreateForm = ({ accountID }) => {
       request.push(ClusterRequest);
     }
     return request;
-  }
+  };
 
   const getCreateRequest = () => {
     let version = "";
@@ -447,12 +466,43 @@ const CreateForm = ({ accountID }) => {
     return request;
   };
 
+  const getGrantClusterReuqest = () => {
+    const data = {
+      access_group_id: selectedAccessGroup.id,
+      event_name: clusterNamePrefix,
+      event_password: grantClusterPassword,
+      filter_tag: clusterNamePrefix,
+      ghe_api_key: githubToken,
+      ghe_username: githubUser,
+      ibmcloud_api_key: apiKey,
+      account: accountID,
+    };
+    return {
+      id: "25",
+      extra_vars: JSON.stringify(data),
+    };
+  };
+
   const onCreateWithAWXClicked = async () => {
     console.log("creating cluster using awx");
+    console.log(`deploy grant cluster : ${deployGrantCluster}`);
     setCreating(true);
     setCreateSuccess(false);
 
-    const request = getAWXWorflowTemplateLaunchRequest()
+    if (deployGrantCluster) {
+      const grantClusterRequest = getGrantClusterReuqest();
+      const grantClusterResponse = await grab(
+        "/api/v1/awx/workflowjobtemplate/launch",
+        {
+          method: "post",
+          body: JSON.stringify(grantClusterRequest),
+        },
+        3
+      );
+      console.log(grantClusterResponse);
+    }
+
+    const request = getAWXWorflowTemplateLaunchRequest();
     const range = request.length;
     let errors = [];
     for (let i = 0; i < range; i++) {
@@ -474,8 +524,8 @@ const CreateForm = ({ accountID }) => {
 
         let workflowTemplateLaunchBody = {
           id: selectedWorkflowTemplate.id.toString(),
-          extra_vars: JSON.stringify(CreateClusterRequest)
-        }
+          extra_vars: JSON.stringify(CreateClusterRequest),
+        };
 
         console.log(JSON.stringify(CreateClusterRequest));
 
@@ -488,7 +538,7 @@ const CreateForm = ({ accountID }) => {
           3
         );
         console.log(clusterResponse);
-      } catch(e){
+      } catch (e) {
         errors.push(e);
         console.log("Error creating cluster", e);
       }
@@ -507,7 +557,7 @@ const CreateForm = ({ accountID }) => {
     setCreateSuccess(true);
     setCreating(false);
     resetState();
-  }
+  };
 
   const onCreateClicked = async () => {
     console.log("creating clusters");
@@ -613,6 +663,27 @@ const CreateForm = ({ accountID }) => {
       versionSelected = !!selectedOpenshift;
     }
 
+    let grantCluster;
+    if (!deployGrantCluster) {
+      grantCluster = true;
+    } else {
+      const accessGroupSelected = !!selectedAccessGroup;
+      const userPerClusterSelected =
+        userPerCluster !== "" && !isNaN(userPerCluster);
+      const hasPassword = grantClusterPassword && grantClusterPassword !== "";
+      const hasGithubUser = githubUser && githubUser !== "";
+      const hasGithubToken = githubToken && githubToken !== "";
+      const hasGithubIssue = githubIssue && githubIssue !== "";
+
+      grantCluster =
+        accessGroupSelected &&
+        userPerClusterSelected &&
+        hasPassword &&
+        hasGithubUser &&
+        hasGithubToken &&
+        hasGithubIssue;
+    }
+
     const groupSelected = !!selectedGroup;
     const geoSelected = !!selectedRegion;
     const zoneSelected = selectedWorkerZones.length > 0;
@@ -624,8 +695,6 @@ const CreateForm = ({ accountID }) => {
     const hasNamePrefix = clusterNamePrefix && clusterNamePrefix !== "";
     const hasTags = tags && tags !== "";
     const hasApiKey = apiKey && apiKey !== "";
-    
-
 
     return !(
       versionSelected &&
@@ -638,8 +707,8 @@ const CreateForm = ({ accountID }) => {
       hasNamePrefix &&
       hasTags &&
       hasApiKey &&
-      apiKeyValid && 
-      postProvisionSelected
+      apiKeyValid &&
+      postProvisionSelected && grantCluster
     );
   };
 
@@ -802,6 +871,14 @@ const CreateForm = ({ accountID }) => {
       setApiKeyValid(false);
     } catch (e) {
       console.log(e);
+    }
+  };
+
+  const onClusterNamePrefixChange = (e) => {
+    const prefix = e.target.value.trim();
+    setClusterNamePrefix(e.target.value.trim());
+    if (!tags.includes(prefix)) {
+      setTags(prefix);
     }
   };
 
@@ -1060,7 +1137,7 @@ const CreateForm = ({ accountID }) => {
               </FormLabel>
               <TextInput
                 value={clusterNamePrefix}
-                onChange={(e) => setClusterNamePrefix(e.target.value.trim())}
+                onChange={onClusterNamePrefixChange}
                 labelText=""
                 disabled={creating}
                 id="cluster_name"
@@ -1169,12 +1246,12 @@ const CreateForm = ({ accountID }) => {
           </Row>
           <Spacer height="16px" />
 
-
           <Row>
             <Column lg={6}>
               <FormLabel>
                 <Tooltip triggerText="Post Provision Task">
-                  What to run post cluster create. Leave empty for vanilla K8s or Openshift
+                  What to run post cluster create. Leave empty for vanilla K8s
+                  or Openshift
                 </Tooltip>
               </FormLabel>
               <Dropdown
@@ -1184,7 +1261,9 @@ const CreateForm = ({ accountID }) => {
                 items={awxWorkflowJobTemplates}
                 disabled={awxWorkflowJobTemplates.length <= 0 || creating}
                 selectedItem={selectedWorkflowTemplate}
-                onChange={({ selectedItem }) => setSelectedWorkflowTemplate(selectedItem)}
+                onChange={({ selectedItem }) =>
+                  setSelectedWorkflowTemplate(selectedItem)
+                }
                 itemToString={(item) => (item ? item.name : "no-name")}
               />
             </Column>
@@ -1221,6 +1300,122 @@ const CreateForm = ({ accountID }) => {
                   marginBottom: ".5rem",
                 }}
               />
+              <Spacer height="16px" />
+            </>
+          ) : (
+            <></>
+          )}
+
+          <Spacer height="16px" />
+          <Row>
+            <Column>
+              <Checkbox
+                checked={deployGrantCluster}
+                onChange={setDeployGrantCluster}
+                labelText="Deploy Grant Cluster"
+                id="deploy-grant-cluster"
+              />
+            </Column>
+          </Row>
+
+          {deployGrantCluster ? (
+            <>
+              <Spacer height="16px" />
+
+              <Row>
+                <Column md={4} lg={3}>
+                  <FormLabel>User Per Cluster</FormLabel>
+                  <TextInput
+                    value={userPerCluster}
+                    onChange={(e) => setUserPerCluster(e.target.value.trim())}
+                    labelText=""
+                    id="user-per-cluster"
+                    disabled={creating}
+                    placeholder="1"
+                    invalid={isNaN(userPerCluster) || userPerCluster === ""}
+                    invalidText="Should be a positive number"
+                  />
+                </Column>
+                <Column md={4} lg={3}>
+                  <FormLabel>Password</FormLabel>
+                  <TextInput
+                    value={grantClusterPassword}
+                    onChange={(e) =>
+                      setGrantClusterPassword(e.target.value.trim())
+                    }
+                    labelText=""
+                    id="grant-cluster-password"
+                    disabled={creating}
+                    placeholder={openshiftSelected ? "oslab" : "ikslab"}
+                    invalid={grantClusterPassword === ""}
+                    invalidText="needs some value"
+                  />
+                </Column>
+              </Row>
+
+              <Spacer height="16px" />
+              <Row>
+                <Column lg={6}>
+                  <FormLabel>
+                    <Tooltip triggerText="Access Group">
+                      Select access group to add new users in grant cluster.
+                    </Tooltip>
+                  </FormLabel>
+                  <Dropdown
+                    id="access-group"
+                    className="create-page-dropdown"
+                    label="Access Group"
+                    items={accessGroups}
+                    selectedItem={selectedAccessGroup}
+                    onChange={({ selectedItem }) =>
+                      setSelectedAccessGroup(selectedItem)
+                    }
+                    itemToString={(item) => (item ? item.name : "no-name")}
+                  />
+                </Column>
+              </Row>
+
+              <Row>
+                <Column lg={3}>
+                  <Spacer height="16px" />
+                  <TextInput
+                    labelText="Github Username"
+                    id="account_gituser"
+                    value={githubUser}
+                    onChange={(e) => setGithubUser(e.target.value.trim())}
+                  />
+                </Column>
+
+                <Column lg={3}>
+                  <Spacer height="16px" />
+                  <FormLabel>
+                    <Tooltip triggerText="Github Issue">
+                      Github issue in the Dev Advo account
+                    </Tooltip>
+                  </FormLabel>
+                  <TextInput
+                    labelText=""
+                    id="account_gitissue"
+                    value={githubIssue}
+                    onChange={(e) => setGithubIssue(e.target.value.trim())}
+                    invalid={isNaN(githubIssue)}
+                    invalidText="Should be a positive number"
+                  />
+                </Column>
+              </Row>
+              <Spacer height="16px" />
+              <Row>
+                <Column lg={6}>
+                  <TextInput.PasswordInput
+                    labelText="Github Token"
+                    id="account_github_token"
+                    placeholder="your-token-here"
+                    value={githubToken}
+                    onChange={(e) => setGithubToken(e.target.value.trim())}
+                  />
+                </Column>
+              </Row>
+
               <Spacer height="16px" />
             </>
           ) : (

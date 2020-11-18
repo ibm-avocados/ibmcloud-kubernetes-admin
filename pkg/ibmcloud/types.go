@@ -593,3 +593,28 @@ type ApiKeyDetails struct {
 	IamID       string `json:"iam_id"`
 	AccountID   string `json:"account_id"`
 }
+
+type AccessGroups struct {
+	Limit      int      `json:"limit"`
+	Offset     int      `json:"offset"`
+	TotalCount int      `json:"total_count"`
+	First      First    `json:"first"`
+	Last       Last     `json:"last"`
+	Groups     []Groups `json:"groups"`
+}
+type First struct {
+	Href string `json:"href"`
+}
+type Last struct {
+	Href string `json:"href"`
+}
+type Groups struct {
+	ID               string    `json:"id"`
+	Name             string    `json:"name"`
+	Description      string    `json:"description"`
+	CreatedAt        time.Time `json:"createdAt"`
+	CreatedByID      string    `json:"createdById"`
+	LastModifiedAt   time.Time `json:"lastModifiedAt"`
+	LastModifiedByID string    `json:"lastModifiedById"`
+	Href             string    `json:"href"`
+}

@@ -44,6 +44,7 @@ const (
 	billingEndpoint      = protocol + subdomainBilling + api + "/v4/accounts"
 	resourceEndoint      = protocol + subdomainResourceController + api + "/v1/resource_groups"
 	apikeyEndpoint       = protocol + subdomainIAM + api + "/v1/apikeys"
+	iamEndpoint          = protocol + subdomainIAM + api + "/v2/groups"
 )
 
 const (
@@ -212,6 +213,24 @@ func getZones(showFlavors, location string) ([]Zone, error) {
 		return nil, err
 	}
 	return result, nil
+}
+
+func getAccessGroups(token, accountID string) (*AccessGroups, error) {
+	var result AccessGroups
+	header := map[string]string{
+		"Authorization": "Bearer " + token,
+	}
+
+	query := map[string]string{
+		"account_id": accountID,
+	}
+
+	err := fetch(iamEndpoint, header, query, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return &result, nil
 }
 
 func getAccountResources(token, accountID string) (*AccountResources, error) {

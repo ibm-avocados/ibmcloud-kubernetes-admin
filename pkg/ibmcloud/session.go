@@ -136,6 +136,11 @@ func (s *Session) GetDatacenterVlan(datacenter string) ([]Vlan, error) {
 	return getDatacenterVlan(s.Token.AccessToken, s.Token.RefreshToken, datacenter)
 }
 
+// GetAccessGroups returns accessgroups list
+func (s *Session) GetAccessGroups(accountID string) (*AccessGroups, error) {
+	return getAccessGroups(s.Token.AccessToken, accountID)
+}
+
 // GetAccountResources return AccountResources
 func (s *Session) GetAccountResources(accountID string) (*AccountResources, error) {
 	return getAccountResources(s.Token.AccessToken, accountID)

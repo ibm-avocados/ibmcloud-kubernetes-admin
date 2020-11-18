@@ -181,7 +181,7 @@ const Settings = ({ accountID }) => {
           </Tooltip>
         </FormLabel>
         <Row>
-          <Column sm={4} mg={8} lg={6}>
+          <Column sm={4} md={8} lg={6}>
             <TextInput.PasswordInput
               labelText=""
               id="cluster_name"
