@@ -546,6 +546,40 @@ const CreateForm = ({ accountID }) => {
 
     const datacenters = selectedWorkerZones.map((v) => v.id).join(", ");
 
+    if (deployGrantCluster) {
+      const githubIssueBody = {
+        issueNumber: githubIssue,
+        eventName: clusterNamePrefix,
+        password: grantClusterPassword,
+        accountID: accountID,
+        githubUser: githubUser,
+        githubToken: githubToken,
+        clusterRequest: {
+          count: Number(clusterCount),
+          type: kubernetesSelected ? "Kubernetes" : "Openshift",
+          errorCount: errors.length,
+          regions: datacenters,
+        },
+      };
+
+      try {
+        const githubCommentResponse = await grab(
+          "/api/v1/github/comment",
+          {
+            method: "post",
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(githubIssueBody),
+          },
+          3
+        );
+        console.log(githubCommentResponse);
+      } catch(e) {
+        console.log(e)
+      }
+    }
+
     setToast({
       title: "Cluster Created",
       subtitle: `${clusterCount} ${
@@ -708,7 +742,8 @@ const CreateForm = ({ accountID }) => {
       hasTags &&
       hasApiKey &&
       apiKeyValid &&
-      postProvisionSelected && grantCluster
+      postProvisionSelected &&
+      grantCluster
     );
   };
 

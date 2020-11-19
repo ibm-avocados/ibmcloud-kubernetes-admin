@@ -1,13 +1,10 @@
-"URL: https://{{ .EventName }}.mybluemix.net
-
+URL: https://{{ .EventName }}.mybluemix.net
 Key: `{{ .Password }}`
 
-Region: {{ .ScheduleRequest.ScheduleRequest.DataCenters }}
-Clusters: {{ .Count }}
-Workers: {{ .ScheduleRequest.ScheduleRequest.WorkerNum }} x {{ $.ScheduleRequest.ScheduleRequest.MachineType }}
-K8s Version: {{ .ScheduleRequest.ScheduleRequest.MasterVersion }}
+Note
+Don't forget you have your https://kubernetes.admin.ibmdeveloper.net/?account={{ .AccountID }}&filter={{ .EventName }} to see the status of the clusters too
+If you need a cloudshell you can use https://shell.cloud.ibm.com/. It should be attached to the IBMid, that the student will have created for your workshop. If you have issues with it though please ask questions in #cloudshell-users, we do not control it.
 
-## Note
-- Please be sure to click: `Prefill Cache` button on the URL before your lab
-- Don't forget you have your https://{{ .EventName }}.mybluemix.net/admin to see the status of the clusters too
-- If you need a `cloudshell` you can use https://shell.cloud.ibm.com/. It should be attached to the IBMid, that the student will have created for your workshop. If you have issues with it though please ask questions in  #cloudshell-users, we do not control it.
+Cluster Created
+{{ .ClusterRequest.Count }} {{ .ClusterRequest.Type }} Cluster Creation Attempted. {{ .ClusterRequest.ErrorCount }} Error
+Datacenter(s): {{ .ClusterRequest.Regions }}

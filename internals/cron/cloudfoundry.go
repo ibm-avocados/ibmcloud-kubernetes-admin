@@ -53,7 +53,7 @@ func deploy(apikey string, metadata *ibmcloud.AccountMetaData, schedule ibmcloud
 	return nil
 }
 
-func getCommentString(schedule ibmcloud.Schedule, filename string) (string, error) {
+func getCommentString(comment ibmcloud.GithubIssueComment, filename string) (string, error) {
 	tmpl, err := template.ParseFiles(filename)
 	if err != nil {
 		log.Println("could not parse template files")
@@ -63,7 +63,7 @@ func getCommentString(schedule ibmcloud.Schedule, filename string) (string, erro
 	commentTemplate := template.Must(tmpl, err)
 	buf := new(bytes.Buffer)
 
-	if err := commentTemplate.Execute(buf, schedule); err != nil {
+	if err := commentTemplate.Execute(buf, comment); err != nil {
 		log.Println("error executing comment template", err)
 		return "", err
 	}

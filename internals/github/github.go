@@ -1,29 +1,31 @@
-package cron
+package github
 
 import (
 	"encoding/base64"
 	"fmt"
 	"log"
+	"os"
 	"strings"
 
 	"github.com/moficodes/ibmcloud-kubernetes-admin/pkg/ibmcloud"
 	"github.com/moficodes/ibmcloud-kubernetes-admin/pkg/notification"
 )
 
-func createComment(comment ibmcloud.GithubIssueComment, metadata *ibmcloud.AccountMetaData, templateFile string) error {
+func CreateComment(comment ibmcloud.GithubIssueComment, templateFile string) error {
 	c, err := getCommentString(comment, templateFile)
 	if err != nil {
 		log.Println("could not get comment string")
 		return err
 	}
 
-	token := base64Encode(metadata.GithubUser + ":" + metadata.GithubToken)
+	token := base64Encode(comment.GithubUser + ":" + comment.GithubToken)
 
-	base, owner, repo, err := processURL(metadata.IssueRepo)
+	issueRepo := os.Getenv("GITHUB_ISSUE_REPO")
+
+	base, owner, repo, err := processURL(issueRepo)
 	if err != nil {
 		return err
 	}
-	log.Println(base, owner, repo)
 
 	if err := notification.CreateComment(token, base, owner, repo, comment.IssueNumber, c); err != nil {
 		log.Println("error posting comment to github", err)

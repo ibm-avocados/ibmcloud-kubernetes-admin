@@ -8,27 +8,24 @@ import (
 )
 
 func TestGetCommentString(t *testing.T) {
-	request := ibmcloud.ScheduleRequest{
-		DataCenters:   []string{"dal10"},
-		MachineType:   "4X16",
-		MasterVersion: "iks16.7",
-		WorkerNum:     1,
+	request := ibmcloud.GithubIssueClusterRequest{
+		Count:      10,
+		ErrorCount: 0,
+		Regions:    "dal10,dal12",
+		Type:       "Openshift",
 	}
 
-	scheduleRequest := ibmcloud.ScheduleClusterRequest{
-		ScheduleRequest: request,
+	comment := ibmcloud.GithubIssueComment{
+		EventName:      "mofisapp",
+		Password:       "ikslab",
+		ClusterRequest: request,
+		AccountID:      "64cf1b006290",
+		IssueNumber:    "1234",
 	}
 
-	schedule := ibmcloud.Schedule{
-		Count:           "5",
-		ScheduleRequest: scheduleRequest,
-		EventName:       "mofisapp",
-		Password:        "ikslab",
-	}
-
-	comment, err := getCommentString(schedule, "../../templates/message.gotmpl")
+	c, err := getCommentString(comment, "../../templates/message.gotmpl")
 	if err != nil {
 		t.Errorf("there were error %v", err)
 	}
-	fmt.Println(comment)
+	fmt.Println(c)
 }

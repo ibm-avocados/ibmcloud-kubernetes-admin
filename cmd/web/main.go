@@ -99,6 +99,8 @@ func main() {
 	api.PUT("/workshop/:accountID/metadata", server.UpdateMetaDataHandler)
 	api.GET("/workshop/accountID/metadata", server.GetMetaDataHandler)
 
+	api.POST("/github/comment", server.GithubCommentHandler)
+
 	api.GET("/notification/:accountID/email", server.GetAdminEmails)
 	api.POST("/notification/email/create", server.CreateAdminEmails)
 	api.PUT("/notification/email/add", server.AddAdminEmails)
