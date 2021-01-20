@@ -2,38 +2,53 @@
 
 This tool was made to manage large IBM Cloud accounts and the Kubernetes Clusters in it.
 
+## Pre-Requisite
+
+To run this project we need access to a few variable. 
+
+```
+cp .env.example .env
+```
+
+Fill these variable with the proper information.
+
+```
+# Create a cloudant instance on IBM Cloud
+CLOUDANT_USER_NAME=
+CLOUDANT_PASSWORD=
+CLOUDANT_HOST=
+# Required for cron job. Currently under development. Any integer value is fine.
+TICKER_PERIOD=
+# Creata a sendgrid account. Used for sending email notification.
+SENDGRID_API_KEY=
+# used to send system notification to admins of deployment.
+ADMIN_FROM_EMAIL=
+ADMIN_TO_EMAIL=
+# Required for IBM Single Sign On
+IBM_LOGIN_USER=
+IBM_LOGIN_CLIENT_ID=
+IBM_LOGIN_CLIENT_SECRET=
+IBM_REDIRECT_URI=
+# Under development. Any string is fine.
+JWT_SECRET=
+# Required for Awx. Generate token on awx instance.
+AWX_ACCESS_TOKEN=
+# Required for posting comment to issue post provision.
+GITHUB_ISSUE_REPO=
+```
+
+
 ## Run
 
-1. Local Development (Quick Changes)
+1. Local Development (With prod build)
 
 ```
-go run cmd/web/main.go
-```
-
-```
-cd client
-yarn start
-```
-
-This would run the frontend on port `3000` and go backend on port `9000`
-
-2. Local Development (With prod build)
-
-```
-cd client
-yarn build
-cd ..
-```
-
-From root of the project.
-
-```
-go run cmd/web/main.go
+make start
 ```
 
 This would start the project on port `9000` and go backend will serve the frontend.
 
-3. Docker
+2. Docker
 
 ```
 docker build -t <image>:<version> .
@@ -43,12 +58,10 @@ docker build -t <image>:<version> .
 docker run -p 9000:9000 <image>:<version>
 ```
 
-## Development
-
-### Fronend
-
-This uses React
+## Local Development
 
 ### Backend
+**Runtime:** Go 1.15
 
-Backend is written in Go 1.13
+### Frontend
+**Runtime:** NodeJS 14
