@@ -69,7 +69,10 @@ func getCloudSessions(c echo.Context) (*ibmcloud.Session, error) {
 
 	expirationValStr, err := c.Cookie(expiration)
 	if err != nil {
-		expirationTime = 0
+		expiration := c.Request().Header.Get("Expiration")
+		if expiration == "" {
+			expirationTime = 0
+		}
 	} else {
 		expirationTime, err = strconv.Atoi(expirationValStr.Value)
 		if err != nil {

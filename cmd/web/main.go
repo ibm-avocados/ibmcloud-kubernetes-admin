@@ -51,6 +51,8 @@ func main() {
 		Format: "method=${method}, uri=${uri}, status=${status}, time=${latency_human}\n",
 	}))
 
+	api.Use()
+
 	api.POST("/auth/check", server.CheckApiKeyHandler)
 
 	api.GET("/clusters/versions", server.VersionEndpointHandler)

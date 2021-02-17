@@ -331,6 +331,27 @@ type User struct {
 	AccountID      string `json:"account_id"`
 }
 
+type UserInfo struct {
+	Active     bool     `json:"active"`
+	RealmID    string   `json:"realmId"`
+	Identifier string   `json:"identifier"`
+	IamID      string   `json:"iam_id"`
+	GivenName  string   `json:"given_name"`
+	FamilyName string   `json:"family_name"`
+	Name       string   `json:"name"`
+	Email      string   `json:"email"`
+	Sub        string   `json:"sub"`
+	Account    Account  `json:"account"`
+	Iat        int      `json:"iat"`
+	Exp        int      `json:"exp"`
+	Iss        string   `json:"iss"`
+	GrantType  string   `json:"grant_type"`
+	ClientID   string   `json:"client_id"`
+	Scope      string   `json:"scope"`
+	Acr        int      `json:"acr"`
+	Amr        []string `json:"amr"`
+}
+
 type ErrorMessage struct {
 	ErrorDescription string  `json:"error_description"`
 	Trace            string  `json:"trace"`

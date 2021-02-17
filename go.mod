@@ -4,6 +4,7 @@ go 1.14
 
 require (
 	github.com/IBM-Cloud/go-cloudant v0.0.0-20161013050022-0ded5c7f524e
+	github.com/confluentinc/confluent-kafka-go v1.5.2
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/elazarl/goproxy v0.0.0-20200809112317-0581fc3aee2d // indirect
 	github.com/jinzhu/copier v0.0.0-20190924061706-b57f9002281a

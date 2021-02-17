@@ -21,6 +21,7 @@ const protocol = "https://"
 // subdomains
 const (
 	subdomainIAM                = "iam."
+	subdomainUserManagement     = "user-management."
 	subdomainAccounts           = "accounts."
 	subdomainResourceController = "resource-controller."
 	subdomainClusters           = "containers."
@@ -34,17 +35,18 @@ const api = "cloud.ibm.com"
 
 // endpoints
 const (
-	identityEndpoint     = protocol + subdomainIAM + api + "/identity/.well-known/openid-configuration"
-	accountsEndpoint     = protocol + subdomainAccounts + api + "/coe/v2/accounts"
-	resourcesEndpoint    = protocol + subdomainResourceController + api + "/v2/resource_instances"
-	resourceKeysEndpoint = protocol + subdomainResourceController + api + "/v2/resource_keys"
-	containersEndpoint   = protocol + subdomainClusters + api + "/global/v1"
-	usersEndpoint        = protocol + subdomainUsers + api + "/v2"
-	tagEndpoint          = protocol + subdomainTags + api + "/v3/tags"
-	billingEndpoint      = protocol + subdomainBilling + api + "/v4/accounts"
-	resourceEndoint      = protocol + subdomainResourceController + api + "/v1/resource_groups"
-	apikeyEndpoint       = protocol + subdomainIAM + api + "/v1/apikeys"
-	iamEndpoint          = protocol + subdomainIAM + api + "/v2/groups"
+	identityEndpoint       = protocol + subdomainIAM + api + "/identity/.well-known/openid-configuration"
+	userPreferenceEndpoint = protocol + "user-preferences.ng.bluemix.net/v1/users/"
+	accountsEndpoint       = protocol + subdomainAccounts + api + "/coe/v2/accounts"
+	resourcesEndpoint      = protocol + subdomainResourceController + api + "/v2/resource_instances"
+	resourceKeysEndpoint   = protocol + subdomainResourceController + api + "/v2/resource_keys"
+	containersEndpoint     = protocol + subdomainClusters + api + "/global/v1"
+	usersEndpoint          = protocol + subdomainUsers + api + "/v2"
+	tagEndpoint            = protocol + subdomainTags + api + "/v3/tags"
+	billingEndpoint        = protocol + subdomainBilling + api + "/v4/accounts"
+	resourceEndoint        = protocol + subdomainResourceController + api + "/v1/resource_groups"
+	apikeyEndpoint         = protocol + subdomainIAM + api + "/v1/apikeys"
+	iamEndpoint            = protocol + subdomainIAM + api + "/v2/groups"
 )
 
 const (
@@ -177,6 +179,37 @@ func upgradeToken(endpoint string, refreshToken string, accountID string) (*Toke
 	}
 
 	return result, nil
+}
+
+func getUserInfo(endpoint string, token string) (*UserInfo, error) {
+	if endpoint == "" {
+		return nil, errors.New("endpoint cannot be empty")
+	}
+	header := map[string]string{
+		"Authorization": "Bearer " + token,
+	}
+	var result UserInfo
+	err := fetch(endpoint, header, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func getUserPreference(userID, token string) (*User, error) {
+	endpoint := userPreferenceEndpoint + userID
+
+	header := map[string]string{
+		"Authorization": "Bearer " + token,
+	}
+
+	var result User
+	err := fetch(endpoint, header, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return &result, nil
 }
 
 func getAccounts(endpoint *string, token string) (*Accounts, error) {

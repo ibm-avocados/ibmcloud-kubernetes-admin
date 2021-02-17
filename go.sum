@@ -1,5 +1,7 @@
 github.com/IBM-Cloud/go-cloudant v0.0.0-20161013050022-0ded5c7f524e h1:tSKw74tmcgVBjW7Aul5yKNFgqnnKPmbqNaxfX8rPvDA=
 github.com/IBM-Cloud/go-cloudant v0.0.0-20161013050022-0ded5c7f524e/go.mod h1:XCu6+KxTmOUZ+ryFhmEZ5AEziGvkMGHo2O15RMva7bM=
+github.com/confluentinc/confluent-kafka-go v1.5.2 h1:l+qt+a0Okmq0Bdr1P55IX4fiwFJyg0lZQmfHkAFkv7E=
+github.com/confluentinc/confluent-kafka-go v1.5.2/go.mod h1:u2zNLny2xq+5rWeTQjFHbDzzNuba4P1vo31r9r4uAdg=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/dgrijalva/jwt-go v3.2.0+incompatible h1:7qlOGliEKZXTDg6OTjfoBKDXWrumCAMpl/TFQ4/5kLM=

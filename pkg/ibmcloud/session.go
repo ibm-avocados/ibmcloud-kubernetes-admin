@@ -146,6 +146,35 @@ func (s *Session) GetAccountResources(accountID string) (*AccountResources, erro
 	return getAccountResources(s.Token.AccessToken, accountID)
 }
 
+func (s *Session) GetUserInfo() (*UserInfo, error) {
+	err := cacheIdentityEndpoints()
+	if err != nil {
+		return nil, err
+	}
+	if !s.IsValid() {
+		token, err := upgradeToken(endpoints.TokenEndpoint, s.Token.RefreshToken, "")
+		if err != nil {
+			return nil, err
+		}
+		log.Println("Token Refreshed.")
+		s.Token = token
+	}
+
+	return getUserInfo(endpoints.UserinfoEndpoint, s.Token.AccessToken)
+}
+
+func (s *Session) GetUserPreference(userID string) (*User, error) {
+	if !s.IsValid() {
+		token, err := upgradeToken(endpoints.TokenEndpoint, s.Token.RefreshToken, "")
+		if err != nil {
+			return nil, err
+		}
+		log.Println("Token Refreshed.")
+		s.Token = token
+	}
+	return getUserPreference(userID, s.Token.AccessToken)
+}
+
 // GetWorkers returns workers for a cluster
 func (s *Session) GetWorkers(clusterID string) ([]Worker, error) {
 	return getClusterWorkers(s.Token.AccessToken, clusterID)
