@@ -1,13 +1,13 @@
-import React, { useState, useCallback, useEffect } from "react";
-import styles from "./pagestyles.module.css";
-import history from "./globalHistory";
-import queryString from "query-string";
+import React, { useState, useCallback, useEffect } from 'react';
+import styles from './pagestyles.module.css';
+import history from './globalHistory';
+import queryString from 'query-string';
 
 const Login = ({ location }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    fetch("/api/v1/login").then(({ status }) => {
+    fetch('/api/v1/login').then(({ status }) => {
       if (status === 200) {
         setIsLoggedIn(true);
       }
@@ -26,16 +26,16 @@ const Login = ({ location }) => {
 
   const getQuery = () => {
     const { search } = location;
-    console.log("getquery", search);
+    console.log('getquery', search);
     const query = queryString.parse(search);
-    console.log("getquery", query.state);
+    console.log('getquery', query.state);
     let data = parseQuery(query.state);
-    console.log("getquery", data);
-    return "/auth?provider=ibm&login=true&" + data;
+    console.log('getquery', data);
+    return '/auth?provider=ibm&login=true&' + data;
   }
 
   const parseQuery = (data) => {
-    return data.split("/?")[1]
+    return data.split('/?')[1]
   }
 
   return (

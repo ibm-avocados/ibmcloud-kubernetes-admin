@@ -1,15 +1,14 @@
-import React, { useCallback, useEffect, useState, Suspense } from "react";
-import { Router, Switch, Route } from "react-router-dom";
-import { Loading } from "carbon-components-react";
-import Navbar from "./common/Navbar";
-import history from "./globalHistory";
-import queryString from "query-string";
+import React, { useCallback, useEffect, useState, Suspense } from 'react';
+import { Loading } from 'carbon-components-react';
+import Navbar from './common/Navbar';
+import history from './globalHistory';
+import queryString from 'query-string';
 
-const AppPage = React.lazy(() => import("./pages/clusters/AppPage"));
-const CreatePage = React.lazy(() => import("./pages/create/CreatePage"));
-const SchedulePage = React.lazy(() => import("./pages/schedule/SchedulePage"));
-const SettingsPage = React.lazy(() => import("./pages/settings/SettingsPage"));
-const Login = React.lazy(() => import("./Login"));
+const AppPage = React.lazy(() => import('./pages/clusters/AppPage'));
+const CreatePage = React.lazy(() => import('./pages/create/CreatePage'));
+const SchedulePage = React.lazy(() => import('./pages/schedule/SchedulePage'));
+const SettingsPage = React.lazy(() => import('./pages/settings/SettingsPage'));
+const Login = React.lazy(() => import('./Login'));
 
 const ApplicationRouter = (props) => {
   const query = queryString.parse(props.location.search);
@@ -21,12 +20,12 @@ const ApplicationRouter = (props) => {
   const [tokenUpgraded, setTokenUpgraded] = useState(false);
 
   const setAccountStuff = useCallback(async (guid) => {
-    localStorage.setItem("accountID", guid);
+    localStorage.setItem('accountID', guid);
     setSelectedAccountID(guid);
     setTokenUpgraded(false);
     setHasChosenAccount(true);
-    const { status } = await fetch("/api/v1/authenticate/account", {
-      method: "POST",
+    const { status } = await fetch('/api/v1/authenticate/account', {
+      method: 'POST',
       body: JSON.stringify({
         id: guid,
       }),
@@ -41,7 +40,7 @@ const ApplicationRouter = (props) => {
       const { location } = props;
 
       history.push(
-        location.pathname + `?account=` + selectedItem.metadata.guid
+        location.pathname + '?account=' + selectedItem.metadata.guid
       );
       history.go();
       // setSelectedAccount(selectedItem);
@@ -53,7 +52,7 @@ const ApplicationRouter = (props) => {
   useEffect(() => {
     const loadAccounts = async () => {
       setLoadingAccounts(true);
-      const response = await fetch("/api/v1/accounts");
+      const response = await fetch('/api/v1/accounts');
       if (response.status !== 200) {
         // Somehow did not get any account back.
         return;
@@ -120,12 +119,12 @@ const App = ({location}) => {
   const {pathname, search} = location;
   
   useEffect(() => {
-    fetch("/api/v1/login").then(({ status }) => {
+    fetch('/api/v1/login').then(({ status }) => {
       if (status !== 200) {
-        if (pathname !== "/login"){
+        if (pathname !== '/login'){
           history.push(`/login?state=${encodeURIComponent(pathname+search)}`)
         } else {
-          history.push("/login");
+          history.push('/login');
         }
       }
     });
