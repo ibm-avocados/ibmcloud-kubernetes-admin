@@ -1,6 +1,8 @@
 import React from 'react';
-import HomeHeader from '../../components/Header';
+import HomeHeader from '../../components/Header/Header';
 import {Button, Form, FormGroup, RadioButton, RadioButtonGroup} from 'carbon-components-react';
+
+import './Home.css';
 
 const Home = () => {
     return (

@@ -1,12 +1,16 @@
 import React from 'react';
-import { Router, Switch, Route } from 'react-router-dom';
+import {Router, Route, Switch} from 'react-router-dom';
 import Home from './pages/Home/Home';
+import Workshop from './pages/Workshop/Workshop';
+import history from './globalHistory';
 
 const AppRouter = () => {
-    return(
-        <Router>
-            <Route path="/" component={Home} />
-            <Router path="/:data" />
+    return (
+        <Router history={history}>
+            <Switch>
+                <Route path="/:workshop" component={Workshop}/>
+                <Route path="/" component={Home}/>
+            </Switch>
         </Router>
     )
 }

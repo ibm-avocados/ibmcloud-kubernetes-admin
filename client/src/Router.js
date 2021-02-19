@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useState, Suspense } from 'react';
-import { Loading } from 'carbon-components-react';
+import {Loading} from 'carbon-components-react';
 import Navbar from './common/Navbar';
 import history from './globalHistory';
 import queryString from 'query-string';
+import {Route, Router, Switch} from 'react-router-dom';
 
 const AppPage = React.lazy(() => import('./pages/clusters/AppPage'));
 const CreatePage = React.lazy(() => import('./pages/create/CreatePage'));

@@ -20,9 +20,13 @@ const Login = ({ location }) => {
     const query = queryString.parse(search);
 
     console.log(query);
-
-    history.push(query.state);
-  } 
+    if (query.state === null || query.state === undefined) {
+      history.push('/')
+    }
+    else {
+      history.push(query.state);
+    }
+  }
 
   const getQuery = () => {
     const { search } = location;
@@ -35,6 +39,9 @@ const Login = ({ location }) => {
   }
 
   const parseQuery = (data) => {
+    if (data === null || data === undefined) {
+      return '';
+    }
     return data.split('/?')[1]
   }
 

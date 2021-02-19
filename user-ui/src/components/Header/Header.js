@@ -3,6 +3,8 @@ import {Button, Header, HeaderName} from 'carbon-components-react';
 import HeaderGlobalBar from 'carbon-components-react/lib/components/UIShell/HeaderGlobalBar';
 import {UserAvatar20} from '@carbon/icons-react';
 
+import './Header.css';
+
 function HomeHeader() {
     return (
         <>

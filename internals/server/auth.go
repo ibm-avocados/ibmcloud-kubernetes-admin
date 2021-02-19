@@ -11,6 +11,7 @@ import (
 	"net/url"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/moficodes/ibmcloud-kubernetes-admin/internals/token"
 
@@ -30,13 +31,13 @@ var oauthSettings = map[string]OauthSettings{
 	},
 }
 
-func buildRedirect(provider string, login bool, account string, settings OauthSettings) (string, error) {
+func buildRedirect(provider string, login bool, extraData string, settings OauthSettings) (string, error) {
 	redirectURL, err := url.Parse(settings.authURL)
 	if err != nil {
 		return "", err
 	}
 
-	token, err := token.New(token.Claims{Provider: provider, Login: login, Account: account})
+	token, err := token.New(token.Claims{Provider: provider, Login: login, ExtraData: extraData})
 	if err != nil {
 		return "", err
 	}
@@ -55,15 +56,18 @@ func AuthHandler(c echo.Context) error {
 	provider := c.QueryParam("provider")
 	// We don't need to crash for bad bool parsing.
 	login, _ := strconv.ParseBool(c.QueryParam("login"))
-	account := c.QueryParam("account")
-	fmt.Println(account)
+	query := c.QueryString()
+	queries := strings.Split(query, "&")
+	extraData := strings.Join(queries[2:], "&")
 
+	account := c.QueryParam("account")
+	log.Println(account)
 	settings, ok := oauthSettings[provider]
 	if !ok {
 		return errors.New("Invalid provider")
 	}
 
-	redirectURL, err := buildRedirect(provider, login, account, settings)
+	redirectURL, err := buildRedirect(provider, login, extraData, settings)
 	if err != nil {
 		return err
 	}
@@ -125,7 +129,7 @@ func AuthDoneHandler(c echo.Context) error {
 	session := &ibmcloud.Session{Token: token}
 	setCookie(c, session)
 	fmt.Printf("%+v", claims)
-	return c.Redirect(http.StatusFound, "/?account="+claims.Account)
+	return c.Redirect(http.StatusFound, "/?" + claims.ExtraData)
 }
 
 func AuthenticationHandler(c echo.Context) error {
@@ -186,6 +190,11 @@ func LoginHandler(c echo.Context) error {
 		return err
 	}
 
+	return c.JSON(http.StatusOK, StatusOK{Message: "success"})
+}
+
+func LogoutHandler(c echo.Context) error {
+	deleteCookie(c)
 	return c.JSON(http.StatusOK, StatusOK{Message: "success"})
 }
 

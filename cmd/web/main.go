@@ -45,6 +45,7 @@ func main() {
 
 	auth.GET("", server.AuthHandler)
 	auth.GET("/callback", server.AuthDoneHandler)
+	auth.POST("/logout", server.LogoutHandler)
 
 	api := e.Group("/api/v1")
 	api.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{

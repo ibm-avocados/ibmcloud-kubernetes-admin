@@ -38,6 +38,17 @@ func setCookie(c echo.Context, session *ibmcloud.Session) {
 	c.SetCookie(expirationCookie)
 }
 
+func deleteCookie(c echo.Context) {
+	accessTokenCookie := &http.Cookie{Name: accessTokenKey, Value: "", Path: cookiePath}
+	c.SetCookie(accessTokenCookie)
+
+	refreshTokenCookie := &http.Cookie{Name: refreshTokenKey, Value: "", Path: cookiePath}
+	c.SetCookie(refreshTokenCookie)
+
+	expirationCookie := &http.Cookie{Name: expiration, Value: "", Path: cookiePath}
+	c.SetCookie(expirationCookie)
+}
+
 func getCloudSessions(c echo.Context) (*ibmcloud.Session, error) {
 	var accessToken string
 	var refreshToken string

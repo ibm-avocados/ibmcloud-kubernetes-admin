@@ -15,7 +15,7 @@ var now = time.Now
 type Claims struct {
 	Provider string `json:"provider"`
 	Login    bool   `json:"login"`
-	Account  string `json:"account"`
+	ExtraData  string `json:"extraData"`
 }
 
 type _Claims struct {
