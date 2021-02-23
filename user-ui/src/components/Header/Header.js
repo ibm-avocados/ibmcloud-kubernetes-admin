@@ -5,20 +5,24 @@ import {UserAvatar20} from '@carbon/icons-react';
 
 import './Header.css';
 
-function HomeHeader() {
+const HomeHeader = (props) => {
     return (
         <>
             <Header aria-label="IBM Platform Name">
                 <HeaderName href="#" prefix="IBM">
                     Developer
                 </HeaderName>
+
                 <HeaderGlobalBar>
-                    <div className="userAvatar">
-                        <UserAvatar20/>
-                    </div>
-                    <div className="userName">
-                        Mofi Rahman
-                    </div>
+                    {props.loggedIn ?
+                        <>
+                            <div className="userAvatar">
+                                <UserAvatar20/>
+                            </div>
+                            <div className="userName">
+                                Mofi Rahman
+                            </div>
+                        </> : <Button>Signin</Button>}
                 </HeaderGlobalBar>
             </Header>
         </>

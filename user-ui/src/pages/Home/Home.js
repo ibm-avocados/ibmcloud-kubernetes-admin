@@ -7,7 +7,6 @@ import './Home.css';
 const Home = () => {
     return (
         <>
-            <HomeHeader/>
             <div className="homeForm">
                 <FormGroup legendText="Cluster Type">
                     <RadioButtonGroup defaultSelected="OpenShift" onChange={(e) => console.log(e)}>
