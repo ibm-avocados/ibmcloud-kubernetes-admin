@@ -1,13 +1,13 @@
-import React from "react";
+import React from 'react';
 import {
   TextInput,
   Checkbox,
   InlineLoading,
   InlineNotification,
   Button,
-} from "carbon-components-react";
+} from 'carbon-components-react';
 
-import history from "../../globalHistory";
+import history from '../../globalHistory';
 
 const Spacer = ({ height }) => <div style={{ marginTop: height }} />;
 
@@ -67,7 +67,7 @@ const WorkshopView = ({
   const [apiKeyValid, setApiKeyValid] = React.useState(false);
 
   const onSettingsButtonClicked = () => {
-    history.push("/settings");
+    history.push('/settings');
   };
   React.useEffect(() => {
     const checkMetadata = async () => {
@@ -77,8 +77,8 @@ const WorkshopView = ({
         if (metadata !== null) {
           setMetadataAvailable(true);
         }
-        const apiKey = await fetch("/api/v1/schedule/api", {
-          method: "post",
+        const apiKey = await fetch('/api/v1/schedule/api', {
+          method: 'post',
           body: JSON.stringify({
             accountID: accountID,
           }),
@@ -113,7 +113,7 @@ const WorkshopView = ({
       <TextInput
         id="workshop_issue"
         value={githubIssue}
-        invalid={isNaN(githubIssue) || githubIssue === ""}
+        invalid={isNaN(githubIssue) || githubIssue === ''}
         invalidText="Must be a number"
         onChange={(e) => setGithubIssue(e.target.value.trim())}
         labelText="Github Issue Number"
@@ -121,7 +121,7 @@ const WorkshopView = ({
       <TextInput
         id="user_per_cluster"
         value={userPerCluster}
-        invalid={isNaN(userPerCluster) || userPerCluster === ""}
+        invalid={isNaN(userPerCluster) || userPerCluster === ''}
         invalidText="Must be a number"
         onChange={(e) => setUserPerCluster(e.target.value.trim())}
         labelText="Users Per Cluster"
