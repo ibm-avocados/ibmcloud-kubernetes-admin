@@ -13,3 +13,23 @@
     padding-left: 32px;
     padding-right: 4px;
 }
+
+.button {
+    display: flex;
+    height: auto;
+    background: #0F62FE;
+    color: white;
+    align-items: center;
+    padding-left: 32px;
+    padding-right: 32px;
+}
+
+.button:hover {
+    background: #0353E9;
+    cursor: pointer;
+}
+
+.link {
+    color: white;
+    text-decoration: none;
+}
