@@ -2,6 +2,7 @@ package main
 
 import (
 	_ "github.com/joho/godotenv/autoload"
+	"github.com/moficodes/ibmcloud-kubernetes-admin/internals/notifier"
 	"github.com/moficodes/ibmcloud-kubernetes-admin/pkg/eventstream"
 
 	"encoding/json"
@@ -44,6 +45,12 @@ func main() {
 			switch e := ev.(type) {
 			case *kafka.Message:
 				log.Printf("Message on %s:\n%s\n", e.TopicPartition, string(e.Value))
+				n, err := notifier.GetNotifier(e)
+				if err != nil {
+					log.Printf("Error %v\n", err)
+				}
+
+				n.Send()
 			case kafka.Error:
 				log.Printf("ErrorL %v\n", e)
 			case *kafka.Stats:
