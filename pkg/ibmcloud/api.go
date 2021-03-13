@@ -339,7 +339,6 @@ func createPolicy(token, accountID, iamID, serviceName, serviceInstance, role st
 			Attribute{Name: "iam_id", Value: iamID}}}},
 		Roles: []Role{
 			Role{role},
-			Role{"crn:v1:bluemix:public:iam::::role:Viewer"}},
 		Resources: []AttributeList{AttributeList{[]Attribute{
 			Attribute{Name: "accountId", Value: accountID},
 			Attribute{Name: "serviceName", Value: serviceName},
