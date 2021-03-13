@@ -141,6 +141,21 @@ func (s *Session) GetAccessGroups(accountID string) (*AccessGroups, error) {
 	return getAccessGroups(s.Token.AccessToken, accountID)
 }
 
+// InviteUserToAccount returns UserInviteResponseList
+func (s *Session) InviteUserToAccount(accountID, email string) (*UserInviteList, error) {
+	return inviteUserToAccount(s.Token.AccessToken, accountID, email)
+}
+
+// AddMemberToAccessGroup returns MemberAddResponseList
+func (s *Session) AddMemberToAccessGroup(accessGroupID, iamID, memberType string) (*MemberList, error) {
+	return addMemberToAccessGroup(s.Token.AccessToken, accessGroupID, iamID, memberType)
+}
+
+// CreatePolicy returns Policy
+func (s *Session) CreatePolicy(accountID, iamID, serviceName, serviceInstance, role string) (*PolicyResponse, error) {
+	return createPolicy(s.Token.AccessToken, accountID, iamID, serviceName, serviceInstance, role)
+}
+
 // GetAccountResources return AccountResources
 func (s *Session) GetAccountResources(accountID string) (*AccountResources, error) {
 	return getAccountResources(s.Token.AccessToken, accountID)

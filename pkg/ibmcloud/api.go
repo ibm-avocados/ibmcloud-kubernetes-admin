@@ -47,6 +47,8 @@ const (
 	resourceEndoint        = protocol + subdomainResourceController + api + "/v1/resource_groups"
 	apikeyEndpoint         = protocol + subdomainIAM + api + "/v1/apikeys"
 	iamEndpoint            = protocol + subdomainIAM + api + "/v2/groups"
+	userManagementEndpoint = protocol + subdomainUserManagement + api + "/v2/accounts"
+	policyEndpoint         = protocol + subdomainIAM + api + "/v1/policies"
 )
 
 const (
@@ -260,6 +262,100 @@ func getAccessGroups(token, accountID string) (*AccessGroups, error) {
 
 	err := fetch(iamEndpoint, header, query, &result)
 	if err != nil {
+		return nil, err
+	}
+
+	return &result, nil
+}
+
+// Add user to account
+func inviteUserToAccount(token, accountID, email string) (*UserInviteList, error) {
+	var result UserInviteList
+	header := map[string]string{
+		"Authorization": "Bearer " + token,
+	}
+
+	usersToInvite := []UserInvite{UserInvite{Email: email, AccountRole: "Member"}}
+	userInviteList := UserInviteList{Users: usersToInvite}
+
+	body, err := json.Marshal(userInviteList)
+	if err != nil {
+		return nil, err
+	}
+
+	inviteUserEndpoint := userManagementEndpoint + "/" + accountID + "/users/"
+
+
+
+	err = postBody(inviteUserEndpoint, header, nil, body, &result)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	return &result, nil
+}
+
+// Add user to access group
+func addMemberToAccessGroup(token, accessGroupID, iamID, memberType string) (*MemberList, error) {
+	var result MemberList
+	header := map[string]string{
+		"Authorization": "Bearer " + token,
+		"Content-Type":  "application/json",
+		"Accepts":       "application/json",
+	}
+
+	membersToAdd := []Member{Member{IamID: iamID, Type: memberType}}
+	memberAddList := MemberList{membersToAdd}
+
+	body, err := json.Marshal(memberAddList)
+	if err != nil {
+		return nil, err
+	}
+
+	addMemberEndpoint := iamEndpoint + "/" + accessGroupID + "/members"
+
+	err = put(addMemberEndpoint, header, nil, body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return &result, nil
+}
+
+// CreatePolicy
+func createPolicy(token, accountID, iamID, serviceName, serviceInstance, role string) (*PolicyResponse, error) {
+	var result PolicyResponse
+	header := map[string]string{
+		"Authorization": "Bearer " + token,
+		"Content-Type":  "application/json",
+		"Accepts":       "application/json",
+	}		
+
+	policy := Policy{
+		Type: "access",
+		Description: "Access to instance",
+		Subjects: []AttributeList{AttributeList{[]Attribute{
+			Attribute{Name: "iam_id", Value: iamID}}}},
+		Roles: []Role{
+			Role{role},
+			Role{"crn:v1:bluemix:public:iam::::role:Viewer"}},
+		Resources: []AttributeList{AttributeList{[]Attribute{
+			Attribute{Name: "accountId", Value: accountID},
+			Attribute{Name: "serviceName", Value: serviceName},
+			Attribute{Name: "serviceInstance", Value: serviceInstance}}}},
+	}
+
+	
+	body, err := json.Marshal(policy)
+	if err != nil {
+		return nil, err
+	}
+
+
+	err = postBody(policyEndpoint, header, nil, body, &result)
+	if err != nil {
+		fmt.Println(err) //TODO delete after debugging
 		return nil, err
 	}
 
