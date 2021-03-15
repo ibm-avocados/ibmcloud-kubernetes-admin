@@ -73,6 +73,10 @@ func main() {
 	api.DELETE("/clusters", server.ClusterDeleteHandler)
 	api.GET("/resourcegroups/:accountID", server.ResourceGroupHandler)
 	api.GET("/iam/accessGroups/:accountID", server.AccessGroupsHandler)
+	api.PUT("/iam/accessGroups/:accessGroupID/members", server.AddMemberHandler)
+	api.POST("/iam/policies", server.CreatePolicyHandler)
+	api.POST("/users/account/:accountID", server.InviteUserHandler)
+	api.GET("/user/info", server.UserInfoHandler)
 
 	api.GET("/clusters/:datacenter/vlans", server.VlanEndpointHandler)
 	api.GET("/clusters/:clusterID", server.ClusterHandler)
