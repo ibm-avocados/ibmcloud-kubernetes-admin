@@ -10,6 +10,9 @@ build-user-ui:
 build-user:
 	go build -o user ./cmd/user/main.go
 
+run-user:
+	source .env && go run cmd/user/main.go
+
 start-user: build-user-ui build-user
 	source .env && ./user
 
