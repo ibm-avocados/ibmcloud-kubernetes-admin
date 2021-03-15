@@ -658,9 +658,10 @@ type GithubIssueClusterRequest struct {
 }
 
 type UserInviteList struct {
-	Users []UserInvite `json:"users,omitempty"`
+	Users     []UserInvite `json:"users,omitempty"`
 	Resources []UserInvite `json:"resources,omitempty"`
 }
+
 // type UserInvite struct {
 // 	Email       string `json:"email"`
 // 	AccountRole string `json:"account_role,omitempty"`
@@ -671,10 +672,10 @@ type UserInviteList struct {
 // }
 
 type UserInvite struct {
-	ID    string `json:"id,omitempty"`
+	ID          string `json:"id,omitempty"`
 	AccountRole string `json:"account_role,omitempty"`
-	Email string `json:"email"`
-	State string `json:"state,omitempty"`
+	Email       string `json:"email"`
+	State       string `json:"state,omitempty"`
 }
 
 type MemberList struct {
@@ -690,29 +691,29 @@ type Member struct {
 }
 
 type Attribute struct {
-	Name     string `json:"name"`
-	Value    string `json:"value"`
+	Name  string `json:"name"`
+	Value string `json:"value"`
 	// Operator string `json:"operator,omitempty"`
 }
 
 type Policy struct {
-	Type        string      `json:"type"`
-	Description string      `json:"description"`
-	Subjects    []AttributeList  `json:"subjects"`
-	Roles       []Role     `json:"roles"`
+	Type        string          `json:"type"`
+	Description string          `json:"description"`
+	Subjects    []AttributeList `json:"subjects"`
+	Roles       []Role          `json:"roles"`
 	Resources   []AttributeList `json:"resources"`
 }
 type PolicyResponse struct {
-	Type        string      `json:"type"`
-	Description string      `json:"description"`
-	Subjects    []AttributeList  `json:"subjects"`
-	Roles       []Role     `json:"roles"`
-	Resources   []AttributeList `json:"resources"`
-	Href             string      `json:"href",omitempty`
-	CreatedAt        time.Time   `json:"created_at,omitempty"`
-	CreatedByID      string      `json:"created_by_id,omitempty"`
-	LastModifiedAt   time.Time   `json:"last_modified_at,omitempty"`
-	LastModifiedByID string      `json:"last_modified_by_id,omitempty"`
+	Type             string          `json:"type"`
+	Description      string          `json:"description"`
+	Subjects         []AttributeList `json:"subjects"`
+	Roles            []Role          `json:"roles"`
+	Resources        []AttributeList `json:"resources"`
+	Href             string          `json:"href",omitempty`
+	CreatedAt        time.Time       `json:"created_at,omitempty"`
+	CreatedByID      string          `json:"created_by_id,omitempty"`
+	LastModifiedAt   time.Time       `json:"last_modified_at,omitempty"`
+	LastModifiedByID string          `json:"last_modified_by_id,omitempty"`
 }
 
 type Role struct {

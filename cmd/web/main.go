@@ -75,9 +75,9 @@ func main() {
 	api.DELETE("/clusters", server.ClusterDeleteHandler)
 	api.GET("/resourcegroups/:accountID", server.ResourceGroupHandler)
 	api.GET("/iam/accessGroups/:accountID", server.AccessGroupsHandler)
-	api.PUT("/groups/:accessGroupID/members", server.AddMemberHandler)
-	api.POST("/accounts/:accountID/users", server.InviteUserHandler)
-	api.POST("/policies", server.CreatePolicyHandler)
+	api.PUT("/iam/accessGroups/:accessGroupID/members", server.AddMemberHandler)
+	api.POST("/iam/policies", server.CreatePolicyHandler)
+	api.POST("/users/account/:accountID", server.InviteUserHandler)
 	api.GET("/user/info", server.UserInfoHandler)
 
 	api.GET("/clusters/:datacenter/vlans", server.VlanEndpointHandler)
