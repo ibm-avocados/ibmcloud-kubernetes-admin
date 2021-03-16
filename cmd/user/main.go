@@ -46,7 +46,7 @@ func main() {
 
 	api.GET("/login", server.LoginHandler)
 
-	port := ":9000"
+	port := ":9090"
 
 	log.Println("starting server on port serving index", port)
 

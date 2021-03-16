@@ -285,8 +285,6 @@ func inviteUserToAccount(token, accountID, email string) (*UserInviteList, error
 
 	inviteUserEndpoint := userManagementEndpoint + "/" + accountID + "/users/"
 
-
-
 	err = postBody(inviteUserEndpoint, header, nil, body, &result)
 	if err != nil {
 		fmt.Println(err)
@@ -330,27 +328,48 @@ func createPolicy(token, accountID, iamID, serviceName, serviceInstance, role st
 		"Authorization": "Bearer " + token,
 		"Content-Type":  "application/json",
 		"Accepts":       "application/json",
-	}		
-
-	policy := Policy{
-		Type: "access",
-		Description: "Access to instance",
-		Subjects: []AttributeList{AttributeList{[]Attribute{
-			Attribute{Name: "iam_id", Value: iamID}}}},
-		Roles: []Role{
-			Role{role},
-		Resources: []AttributeList{AttributeList{[]Attribute{
-			Attribute{Name: "accountId", Value: accountID},
-			Attribute{Name: "serviceName", Value: serviceName},
-			Attribute{Name: "serviceInstance", Value: serviceInstance}}}},
 	}
 
-	
+	policy := Policy{
+		Type:        "access",
+		Description: "Access to instance",
+		Subjects: []AttributeList{
+			{
+				[]Attribute{
+					Attribute{
+						Name:  "iam_id",
+						Value: iamID,
+					},
+				},
+			},
+		},
+		Roles: []Role{
+			Role{role},
+		},
+		Resources: []AttributeList{
+			{
+				[]Attribute{
+					Attribute{
+						Name:  "accountId",
+						Value: accountID,
+					},
+					Attribute{
+						Name:  "serviceName",
+						Value: serviceName,
+					},
+					Attribute{
+						Name:  "serviceInstance",
+						Value: serviceInstance,
+					},
+				},
+			},
+		},
+	}
+
 	body, err := json.Marshal(policy)
 	if err != nil {
 		return nil, err
 	}
-
 
 	err = postBody(policyEndpoint, header, nil, body, &result)
 	if err != nil {
