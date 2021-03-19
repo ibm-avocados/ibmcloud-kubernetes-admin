@@ -690,25 +690,12 @@ type Member struct {
 	StatusCode  int        `json:"status_code,omitempty"`
 }
 
-type Attribute struct {
-	Name  string `json:"name"`
-	Value string `json:"value"`
-	// Operator string `json:"operator,omitempty"`
-}
-
-type Policy struct {
-	Type        string          `json:"type"`
-	Description string          `json:"description"`
-	Subjects    []AttributeList `json:"subjects"`
-	Roles       []Role          `json:"roles"`
-	Resources   []AttributeList `json:"resources"`
-}
 type PolicyResponse struct {
-	Type             string          `json:"type"`
-	Description      string          `json:"description"`
-	Subjects         []AttributeList `json:"subjects"`
-	Roles            []Role          `json:"roles"`
-	Resources        []AttributeList `json:"resources"`
+	Type        string      `json:"type"`
+	Description string      `json:"description"`
+	Subjects    []Subjects  `json:"subjects"`
+	Roles       []Roles     `json:"roles"`
+	Resources   []PolicyResources `json:"resources"`
 	Href             string          `json:"href",omitempty`
 	CreatedAt        time.Time       `json:"created_at,omitempty"`
 	CreatedByID      string          `json:"created_by_id,omitempty"`
@@ -716,9 +703,23 @@ type PolicyResponse struct {
 	LastModifiedByID string          `json:"last_modified_by_id,omitempty"`
 }
 
-type Role struct {
+type Policy struct {
+	Type        string      `json:"type"`
+	Description string      `json:"description"`
+	Subjects    []Subjects  `json:"subjects"`
+	Roles       []Roles     `json:"roles"`
+	Resources   []PolicyResources `json:"resources"`
+}
+type Attribute struct {
+	Name  string `json:"name"`
+	Value string `json:"value"`
+}
+type Subjects struct {
+	Attributes []Attribute `json:"attributes"`
+}
+type Roles struct {
 	RoleID string `json:"role_id"`
 }
-type AttributeList struct {
+type PolicyResources struct {
 	Attributes []Attribute `json:"attributes"`
 }

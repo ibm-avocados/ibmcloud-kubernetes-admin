@@ -156,6 +156,11 @@ func (s *Session) CreatePolicy(accountID, iamID, serviceName, serviceInstance, r
 	return createPolicy(s.Token.AccessToken, accountID, iamID, serviceName, serviceInstance, role)
 }
 
+// IsMemberOfAccessGroup checks to see if a user is a member of the specified access group
+func (s *Session) IsMemberOfAccessGroup(accessGroupID, iamID string) error {
+	return isMemberOfAccessGroup(s.Token.AccessToken, accessGroupID, iamID)
+}
+
 // GetAccountResources return AccountResources
 func (s *Session) GetAccountResources(accountID string) (*AccountResources, error) {
 	return getAccountResources(s.Token.AccessToken, accountID)

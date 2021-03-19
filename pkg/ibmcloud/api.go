@@ -335,11 +335,11 @@ func createPolicy(token, accountID, iamID, serviceName, serviceInstance, role st
 	policy := Policy{
 		Type: "access",
 		Description: "Access to instance",
-		Subjects: []AttributeList{AttributeList{[]Attribute{
+		Subjects: []Subjects{Subjects{[]Attribute{
 			Attribute{Name: "iam_id", Value: iamID}}}},
-		Roles: []Role{
-			Role{role},
-		Resources: []AttributeList{AttributeList{[]Attribute{
+		Roles: []Roles{
+			Roles{role}},
+		Resources: []PolicyResources{PolicyResources{[]Attribute{
 			Attribute{Name: "accountId", Value: accountID},
 			Attribute{Name: "serviceName", Value: serviceName},
 			Attribute{Name: "serviceInstance", Value: serviceInstance}}}},
@@ -354,11 +354,25 @@ func createPolicy(token, accountID, iamID, serviceName, serviceInstance, role st
 
 	err = postBody(policyEndpoint, header, nil, body, &result)
 	if err != nil {
-		fmt.Println(err) //TODO delete after debugging
 		return nil, err
 	}
 
 	return &result, nil
+}
+
+func isMemberOfAccessGroup(token, accessGroupID, iamID string) error {
+
+	header := map[string]string{
+		"Authorization":         "Bearer " + token,
+	}
+
+	checkMembershipEndpoint := iamEndpoint + "/" + accessGroupID + "/members/" + iamID
+	err := head(checkMembershipEndpoint, header, nil, nil)
+	if err != nil {
+		return err
+	}
+	log.Println("User: " + iamID + " is a member of " + accessGroupID)
+	return nil
 }
 
 func getAccountResources(token, accountID string) (*AccountResources, error) {

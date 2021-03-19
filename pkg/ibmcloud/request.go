@@ -124,3 +124,13 @@ func delete(endpoint string, header, query map[string]string, res interface{}) e
 
 	return handleRequest(request, header, query, res)
 }
+
+func head(endpoint string, header, query map[string]string, res interface{}) error {
+	request, err := http.NewRequest(http.MethodHead, endpoint, nil)
+
+	if err != nil {
+		return err
+	}
+	
+	return handleRequest(request, header, query, res)
+}
