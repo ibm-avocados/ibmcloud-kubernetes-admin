@@ -45,6 +45,7 @@ func main() {
 	}))
 
 	api.GET("/login", server.LoginHandler)
+	api.GET("/user/info", server.UserInfoHandler)
 
 	port := ":9090"
 

@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React from 'react';
 import { Header, HeaderName } from 'carbon-components-react';
 import HeaderGlobalBar from 'carbon-components-react/lib/components/UIShell/HeaderGlobalBar';
 import { UserAvatar20 } from '@carbon/icons-react';
@@ -7,11 +7,6 @@ import queryString from 'query-string';
 import './Header.css';
 
 const RootHeader = (props) => {
-  useEffect(() => {
-    console.log(props);
-  }, [])
-
-
   const getQuery = () => {
     const { search } = location;
     const query = queryString.parse(search);
@@ -34,13 +29,13 @@ const RootHeader = (props) => {
         </HeaderName>
 
         <HeaderGlobalBar>
-          {props.loggedIn ?
+          {props.loggedIn && props.user?
             <>
               <div className="userAvatar">
                 <UserAvatar20 />
               </div>
               <div className="userName">
-                {props.userName}
+                {props.user.name}
               </div>
             </> : <div className="button">
               <a href={getQuery()} className="link">Sign In</a>
