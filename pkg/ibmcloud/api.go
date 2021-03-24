@@ -333,18 +333,40 @@ func createPolicy(token, accountID, iamID, serviceName, serviceInstance, role st
 	}		
 
 	policy := Policy{
-		Type: "access",
+		Type:        "access",
 		Description: "Access to instance",
-		Subjects: []Subjects{Subjects{[]Attribute{
-			Attribute{Name: "iam_id", Value: iamID}}}},
-		Roles: []Roles{
-			Roles{role}},
-		Resources: []PolicyResources{PolicyResources{[]Attribute{
-			Attribute{Name: "accountId", Value: accountID},
-			Attribute{Name: "serviceName", Value: serviceName},
-			Attribute{Name: "serviceInstance", Value: serviceInstance}}}},
+		Subjects: []AttributeList{
+			{
+				[]Attribute{
+					Attribute{
+						Name:  "iam_id",
+						Value: iamID,
+					},
+				},
+			},
+		},
+		Roles: []Role{
+			Role{role},
+		},
+		Resources: []AttributeList{
+			{
+				[]Attribute{
+					Attribute{
+						Name:  "accountId",
+						Value: accountID,
+					},
+					Attribute{
+						Name:  "serviceName",
+						Value: serviceName,
+					},
+					Attribute{
+						Name:  "serviceInstance",
+						Value: serviceInstance,
+					},
+				},
+			},
+		},
 	}
-
 	
 	body, err := json.Marshal(policy)
 	if err != nil {
