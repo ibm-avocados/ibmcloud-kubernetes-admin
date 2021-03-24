@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState } from 'react';
 import {
   DataTable,
   DataTableSkeleton,
@@ -14,7 +14,7 @@ import {
   SkeletonText,
   TagSkeleton,
   StructuredListSkeleton,
-} from "carbon-components-react";
+} from 'carbon-components-react';
 import {
   Delete16 as Delete,
   TagGroup16 as TagGroup,
@@ -22,15 +22,15 @@ import {
   Money16 as Money,
   VirtualMachine16 as VM,
   Deploy32 as Deploy
-} from "@carbon/icons-react";
+} from '@carbon/icons-react';
 
-import headers from "../../common/data/headers";
+import headers from '../../common/data/headers';
 
-import "./Cluster.css";
-import styles from "./cluster.module.css";
-import useClusters from "./useClusters";
+import './Cluster.css';
+import styles from './cluster.module.css';
+import useClusters from './useClusters';
 
-import history from "../../globalHistory";
+import history from '../../globalHistory';
 
 const calculateDays = (date) => {
   const _dateSince = Date.parse(date);
@@ -79,7 +79,7 @@ const CustomExpandedRow = ({
     {workers ? (
       <WorkerDetails workers={workers} />
     ) : workersLoading ? (
-      <div style={{ width: "500px" }}>
+      <div style={{ width: '500px' }}>
         <StructuredListSkeleton rowCount={3} />
       </div>
     ) : (
@@ -131,7 +131,7 @@ const Clusters = ({ query, accountID }) => {
 
   console.log(clusters.data);
 
-  const [tagText, setTagText] = useState("");
+  const [tagText, setTagText] = useState('');
   const [billingLoading, setBillingLoading] = useState(false);
   const [workersLoading, setWorkersLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -156,7 +156,7 @@ const Clusters = ({ query, accountID }) => {
 
   const onSetTagClicked = useCallback(
     (clusters, tagText) => {
-      setTagText("");
+      setTagText('');
       setTag(clusters, tagText);
     },
     [setTag]
@@ -165,29 +165,29 @@ const Clusters = ({ query, accountID }) => {
   const CustomCell = ({ cell, crn, id, ingressHost, ingressSecret }) => {
     const { info, value } = cell;
     switch (info.header) {
-      case "state":
+      case 'state':
         return (
           <span className="oneline">
             <span className={`status ${value}`} />
             {value}
           </span>
         );
-      case "masterKubeVersion":
+      case 'masterKubeVersion':
         return (
           <span className="oneline">
             <img
               alt="logo"
               className="logo-image"
               src={
-                value.includes("openshift")
-                  ? "https://i.ibb.co/tLktm91/os-icon.png"
-                  : "https://i.ibb.co/Hh2TzLH/k8s-icon.png"
+                value.includes('openshift')
+                  ? 'https://i.ibb.co/tLktm91/os-icon.png'
+                  : 'https://i.ibb.co/Hh2TzLH/k8s-icon.png'
               }
             />
             {value}
           </span>
         );
-      case "tags":
+      case 'tags':
         return (
           <>
             {value ? (
@@ -209,38 +209,38 @@ const Clusters = ({ query, accountID }) => {
             )}
           </>
         );
-      case "createdDate":
+      case 'createdDate':
         return (
         <>{calculateDays(value)} Days</>
         )
-      case "ingress":
+      case 'ingress':
         return (
           <>
-            {ingressHost !== "" && ingressSecret !== "" ? (
+            {ingressHost !== '' && ingressSecret !== '' ? (
               <span className="oneline">
-                <span className={`status normal`} />
+                <span className={'status normal'} />
                 Ok
               </span>
             ) : (
               <span className="oneline">
-                <span className={`status critical`} />
+                <span className={'status critical'} />
                 Error
               </span>
             )}
           </>
         );
-      case "cost":
+      case 'cost':
         if (value) {
           return <>${value}</>;
         }
         return (
           <>
             {billingLoading ? (
-              <div style={{ width: "50px" }}>
+              <div style={{ width: '50px' }}>
                 <SkeletonText />
               </div>
             ) : (
-              "$"
+              '$'
             )}
           </>
         );

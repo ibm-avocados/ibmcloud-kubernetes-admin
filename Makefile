@@ -4,6 +4,18 @@ build-frontend:
 build-backend:
 	go build -o kubeadmin ./cmd/web/main.go
 
+build-user-ui:
+	cd user-ui; yarn; yarn run build; cd ..;
+
+build-user:
+	go build -o user ./cmd/user/main.go
+
+run-user:
+	source .env && go run cmd/user/main.go
+
+start-user: build-user-ui build-user
+	source .env && ./user
+
 build: build-frontend build-backend
 
 start: build

@@ -1186,12 +1186,25 @@
   resolved "https://registry.yarnpkg.com/@carbon/icon-helpers/-/icon-helpers-10.13.0.tgz#aea93dbc46cd3cb9e97a94c6dbd1822e88909b4d"
   integrity sha512-XNz0YQswcHxCsf4IWETVjpl6/TLsuP6VnidEHdR2VugbJpmtezZZnIgn7aNvPn1szqt3RmRQfzSbmU0Ye3NyWg==
 
+"@carbon/icon-helpers@^10.14.0":
+  version "10.14.0"
+  resolved "https://registry.yarnpkg.com/@carbon/icon-helpers/-/icon-helpers-10.14.0.tgz#8c24ff6519d5210bb609c07cf5badb4c3125f5e8"
+  integrity sha512-dTU/+YYojsqwqGdh+QPMqj28C4gj2dP/ImlWoZsk8syiKqEZ7DeHksGIGz6EweQ8UhGEJFP1rFV7WwQ/ybXrFw==
+
 "@carbon/icons-react@^10.24.0":
   version "10.25.0"
   resolved "https://registry.yarnpkg.com/@carbon/icons-react/-/icons-react-10.25.0.tgz#22381a786e7565d6b692f0f159366558e2dc6bff"
   integrity sha512-OjHaHFr7z0w45wQXmW2Qjn+lyPatgD7047+tk0jg3//KPkRhkV0QsFKJT/EUY7gUkQzDcU3FCnvDjtdKRP7e6A==
   dependencies:
     "@carbon/icon-helpers" "^10.13.0"
+    prop-types "^15.7.2"
+
+"@carbon/icons-react@^10.27.0":
+  version "10.27.0"
+  resolved "https://registry.yarnpkg.com/@carbon/icons-react/-/icons-react-10.27.0.tgz#0973ca72f1ad18207e9df27d3013aebd17b64712"
+  integrity sha512-973t1PuenH6UOTdODGFtTekd0m/QXHhKyB2nlKDuu8SJm5MnzQBSXT2UXwdF3c8yyrZWKXsQEI0siSr2S9xlyw==
+  dependencies:
+    "@carbon/icon-helpers" "^10.14.0"
     prop-types "^15.7.2"
 
 "@carbon/telemetry@0.0.0-alpha.6":
@@ -1816,6 +1829,13 @@
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/@types/http-cache-semantics/-/http-cache-semantics-4.0.0.tgz#9140779736aa2655635ee756e2467d787cfe8a2a"
   integrity sha512-c3Xy026kOF7QOTn00hbIllV1dLR9hG9NkSrLQgCVs8NF6sBU+VGWjD3wLPhmh1TYAc7ugCFsvHYMN4VcBN1U1A==
+
+"@types/http-proxy@^1.17.4":
+  version "1.17.5"
+  resolved "https://registry.yarnpkg.com/@types/http-proxy/-/http-proxy-1.17.5.tgz#c203c5e6e9dc6820d27a40eb1e511c70a220423d"
+  integrity sha512-GNkDE7bTv6Sf8JbV2GksknKOsk7OznNYHSdrtvPJXO0qJ9odZig6IZKUi5RFGi6d1bf6dgIAe4uXi3DBc7069Q==
+  dependencies:
+    "@types/node" "*"
 
 "@types/istanbul-lib-coverage@*", "@types/istanbul-lib-coverage@^2.0.0", "@types/istanbul-lib-coverage@^2.0.1":
   version "2.0.3"
@@ -5353,6 +5373,11 @@ fill-range@^7.0.1:
   dependencies:
     to-regex-range "^5.0.1"
 
+filter-obj@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/filter-obj/-/filter-obj-1.1.0.tgz#9b311112bc6c6127a16e016c6c5d7f19e0805c5b"
+  integrity sha1-mzERErxsYSehbgFsbF1/GeCAXFs=
+
 finalhandler@~1.1.2:
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/finalhandler/-/finalhandler-1.1.2.tgz#b7e7d000ffd11938d0fdb053506f6ebabe9f587d"
@@ -6109,7 +6134,18 @@ http-proxy-middleware@0.19.1:
     lodash "^4.17.11"
     micromatch "^3.1.10"
 
-http-proxy@^1.17.0:
+http-proxy-middleware@^1.0.6:
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/http-proxy-middleware/-/http-proxy-middleware-1.0.6.tgz#0618557722f450375d3796d701a8ac5407b3b94e"
+  integrity sha512-NyL6ZB6cVni7pl+/IT2W0ni5ME00xR0sN27AQZZrpKn1b+qRh+mLbBxIq9Cq1oGfmTc7BUq4HB77mxwCaxAYNg==
+  dependencies:
+    "@types/http-proxy" "^1.17.4"
+    http-proxy "^1.18.1"
+    is-glob "^4.0.1"
+    lodash "^4.17.20"
+    micromatch "^4.0.2"
+
+http-proxy@^1.17.0, http-proxy@^1.18.1:
   version "1.18.1"
   resolved "https://registry.yarnpkg.com/http-proxy/-/http-proxy-1.18.1.tgz#401541f0534884bbf95260334e72f88ee3976549"
   integrity sha512-7mz/721AbnJwIVbnaSv1Cz3Am0ZLT/UBwkC92VlxhXv/k/BBQfM2fXElQNC27BVGr0uwUpplYPQM9LnaBMR5NQ==
@@ -9673,6 +9709,16 @@ query-string@^4.1.0:
     object-assign "^4.1.0"
     strict-uri-encode "^1.0.0"
 
+query-string@^6.14.1:
+  version "6.14.1"
+  resolved "https://registry.yarnpkg.com/query-string/-/query-string-6.14.1.tgz#7ac2dca46da7f309449ba0f86b1fd28255b0c86a"
+  integrity sha512-XDxAeVmpfu1/6IjyT/gXHOl+S0vQ9owggJ30hhWKdHAsNPOcasn5o9BW0eejZqL2e4vMjhAxoW3jVHcD6mbcYw==
+  dependencies:
+    decode-uri-component "^0.2.0"
+    filter-obj "^1.1.0"
+    split-on-first "^1.0.0"
+    strict-uri-encode "^2.0.0"
+
 querystring-es3@^0.2.0:
   version "0.2.1"
   resolved "https://registry.yarnpkg.com/querystring-es3/-/querystring-es3-0.2.1.tgz#9ec61f79049875707d69414596fd907a4d711e73"
@@ -10893,6 +10939,11 @@ spdy@^4.0.2:
     select-hose "^2.0.0"
     spdy-transport "^3.0.0"
 
+split-on-first@^1.0.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/split-on-first/-/split-on-first-1.1.0.tgz#f610afeee3b12bce1d0c30425e76398b78249a5f"
+  integrity sha512-43ZssAJaMusuKWL8sKUBQXHWOpq8d6CfN/u1p4gUzfJkM05C8rxTmYrkIPTXapZpORA6LkkzcUulJ8FqA7Uudw==
+
 split-string@^3.0.1, split-string@^3.0.2:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/split-string/-/split-string-3.1.0.tgz#7cb09dda3a86585705c64b39a6466038682e8fe2"
@@ -11017,6 +11068,11 @@ strict-uri-encode@^1.0.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/strict-uri-encode/-/strict-uri-encode-1.1.0.tgz#279b225df1d582b1f54e65addd4352e18faa0713"
   integrity sha1-J5siXfHVgrH1TmWt3UNS4Y+qBxM=
+
+strict-uri-encode@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/strict-uri-encode/-/strict-uri-encode-2.0.0.tgz#b9c7330c7042862f6b142dc274bbcc5866ce3546"
+  integrity sha1-ucczDHBChi9rFC3CdLvMWGbONUY=
 
 string-length@^4.0.1:
   version "4.0.1"

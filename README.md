@@ -35,6 +35,11 @@ JWT_SECRET=
 AWX_ACCESS_TOKEN=
 # Required for posting comment to issue post provision.
 GITHUB_ISSUE_REPO=
+# vault related secrets
+# vault is used for getting secrets
+# if vault auth is done via github
+VAULT_AUTH_GITHUB_TOKEN=
+VAULT_ADDR=
 ```
 
 
