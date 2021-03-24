@@ -74,6 +74,7 @@ func main() {
 	api.GET("/resourcegroups/:accountID", server.ResourceGroupHandler)
 	api.GET("/iam/accessGroups/:accountID", server.AccessGroupsHandler)
 	api.PUT("/iam/accessGroups/:accessGroupID/members", server.AddMemberHandler)
+	api.GET("/iam/accessGroups/:accessGroupID/members/:iamID", server.MembershipCheckHandler)
 	api.POST("/iam/policies", server.CreatePolicyHandler)
 	api.POST("/users/account/:accountID", server.InviteUserHandler)
 	api.GET("/user/info", server.UserInfoHandler)

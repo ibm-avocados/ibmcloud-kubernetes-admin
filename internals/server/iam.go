@@ -131,3 +131,19 @@ func CreatePolicyHandler(c echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, policy)
 }
+
+func MembershipCheckHandler(c echo.Context) error {
+	session, err := getCloudSessions(c)
+	if err != nil {
+		return err
+	}
+
+	accessGroupID := c.Param("accessGroupID")
+	iamID := c.Param("iamID")
+
+	err = session.IsMemberOfAccessGroup(accessGroupID, iamID)
+	if err != nil {
+		return err
+	}
+	return c.JSON(http.StatusOK, StatusOK{Message: "User found in access group"})
+}
