@@ -1,8 +1,10 @@
 package main
 
 import (
+	_ "github.com/joho/godotenv/autoload"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/moficodes/ibmcloud-kubernetes-admin/internals/server"
 	"log"
 )
 
@@ -32,7 +34,20 @@ func main() {
 	})
 	static.Use(middleware.Static("user-ui/build/static"))
 
-	port := ":9500"
+	auth := e.Group("/auth")
+
+	auth.GET("", server.AuthHandler)
+	auth.GET("/callback", server.AuthDoneHandler) //url/auth/callback
+
+	api := e.Group("/api/v1")
+	api.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
+		Format: "method=${method}, uri=${uri}, status=${status}, time=${latency_human}\n",
+	}))
+
+	api.GET("/login", server.LoginHandler)
+	api.GET("/user/info", server.UserInfoHandler)
+
+	port := ":9090"
 
 	log.Println("starting server on port serving index", port)
 

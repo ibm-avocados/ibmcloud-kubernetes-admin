@@ -64,7 +64,7 @@ func AuthHandler(c echo.Context) error {
 	log.Println(account)
 	settings, ok := oauthSettings[provider]
 	if !ok {
-		return errors.New("Invalid provider")
+		return errors.New("invalid provider")
 	}
 
 	redirectURL, err := buildRedirect(provider, login, extraData, settings)
@@ -129,7 +129,7 @@ func AuthDoneHandler(c echo.Context) error {
 	session := &ibmcloud.Session{Token: token}
 	setCookie(c, session)
 	fmt.Printf("%+v", claims)
-	return c.Redirect(http.StatusFound, "/?" + claims.ExtraData)
+	return c.Redirect(http.StatusFound, "/?"+claims.ExtraData)
 }
 
 func AuthenticationHandler(c echo.Context) error {

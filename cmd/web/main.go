@@ -44,15 +44,13 @@ func main() {
 	auth := e.Group("/auth")
 
 	auth.GET("", server.AuthHandler)
-	auth.GET("/callback", server.AuthDoneHandler)
+	auth.GET("/callback", server.AuthDoneHandler) //url/auth/callback
 	auth.POST("/logout", server.LogoutHandler)
 
 	api := e.Group("/api/v1")
 	api.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
 		Format: "method=${method}, uri=${uri}, status=${status}, time=${latency_human}\n",
 	}))
-
-	api.Use()
 
 	api.POST("/auth/check", server.CheckApiKeyHandler)
 
