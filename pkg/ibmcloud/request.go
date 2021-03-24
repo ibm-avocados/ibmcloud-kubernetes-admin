@@ -131,6 +131,6 @@ func head(endpoint string, header, query map[string]string, res interface{}) err
 	if err != nil {
 		return err
 	}
-	
+
 	return handleRequest(request, header, query, res)
 }

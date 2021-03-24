@@ -285,8 +285,6 @@ func inviteUserToAccount(token, accountID, email string) (*UserInviteList, error
 
 	inviteUserEndpoint := userManagementEndpoint + "/" + accountID + "/users/"
 
-
-
 	err = postBody(inviteUserEndpoint, header, nil, body, &result)
 	if err != nil {
 		fmt.Println(err)
@@ -330,7 +328,7 @@ func createPolicy(token, accountID, iamID, serviceName, serviceInstance, role st
 		"Authorization": "Bearer " + token,
 		"Content-Type":  "application/json",
 		"Accepts":       "application/json",
-	}		
+	}
 
 	policy := Policy{
 		Type:        "access",
@@ -345,8 +343,8 @@ func createPolicy(token, accountID, iamID, serviceName, serviceInstance, role st
 				},
 			},
 		},
-		Roles: []Role{
-			Role{role},
+		Roles: []Roles{
+			Roles{role},
 		},
 		Resources: []AttributeList{
 			{
@@ -367,12 +365,11 @@ func createPolicy(token, accountID, iamID, serviceName, serviceInstance, role st
 			},
 		},
 	}
-	
+
 	body, err := json.Marshal(policy)
 	if err != nil {
 		return nil, err
 	}
-
 
 	err = postBody(policyEndpoint, header, nil, body, &result)
 	if err != nil {
@@ -385,7 +382,7 @@ func createPolicy(token, accountID, iamID, serviceName, serviceInstance, role st
 func isMemberOfAccessGroup(token, accessGroupID, iamID string) error {
 
 	header := map[string]string{
-		"Authorization":         "Bearer " + token,
+		"Authorization": "Bearer " + token,
 	}
 
 	checkMembershipEndpoint := iamEndpoint + "/" + accessGroupID + "/members/" + iamID
