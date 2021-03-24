@@ -13,6 +13,6 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	secret, err := client.Logical().Read("generic/user/mofizur-rahman/pg")
+	secret, err := client.Logical().Read("generic/user/mofizur-rahman/<accountID>")
 	fmt.Printf("%+v", secret)
 }
