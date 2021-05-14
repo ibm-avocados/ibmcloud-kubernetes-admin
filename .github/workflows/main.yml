@@ -31,4 +31,4 @@ jobs:
           file: docker/Dockerfile.Web
           context: .
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME}}/kubeadmin:${{ env.GITHUB_REF }}
+          tags: ${{ secrets.DOCKER_USERNAME }}/kubeadmin:$GITHUB_REF
