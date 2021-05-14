@@ -3,11 +3,15 @@ package awx
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 )
 
 const (
-	protocol    = "https://"
-	awxEndpoint = "awx.ibmdeveloper.net"
+	protocol = "https://"
+)
+
+var (
+	awxEndpoint = os.Getenv("AWX_ENDPOINT")
 )
 
 func getWorkflowJobTemplates(token string) (*WorkflowJobTemplates, error) {

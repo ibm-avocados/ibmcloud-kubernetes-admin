@@ -466,7 +466,7 @@ const CreateForm = ({ accountID }) => {
     return request;
   };
 
-  const getGrantClusterReuqest = () => {
+  const getGrantClusterReuqest = async () => {
     const data = {
       access_group_id: selectedAccessGroup.id,
       event_name: clusterNamePrefix,
@@ -477,8 +477,15 @@ const CreateForm = ({ accountID }) => {
       ibmcloud_api_key: apiKey,
       account: accountID,
     };
+
+    const grantClusterWorkflow = await grab(
+      '/api/v1/awx/grantclusterid'
+    );
+
+    console.log(grantClusterWorkflow);
+
     return {
-      id: '20',
+      id: grantClusterWorkflow.id,
       extra_vars: JSON.stringify(data),
     };
   };
@@ -490,7 +497,7 @@ const CreateForm = ({ accountID }) => {
     setCreateSuccess(false);
 
     if (deployGrantCluster) {
-      const grantClusterRequest = getGrantClusterReuqest();
+      const grantClusterRequest = await getGrantClusterReuqest();
       const grantClusterResponse = await grab(
         '/api/v1/awx/workflowjobtemplate/launch',
         {

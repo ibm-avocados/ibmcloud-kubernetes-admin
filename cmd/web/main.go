@@ -117,6 +117,7 @@ func main() {
 	api.GET("/awx/workflowjobtemplate", server.GetAWXWorkflowJobTemplates)
 	api.GET("/awx/jobtemplate", server.GetAWXJobTemplates)
 	api.POST("/awx/workflowjobtemplate/launch", server.LaunchAWXWorkflowJobTemplate)
+	api.GET("/awx/grantclusterid", server.GetGrantClusterID)
 
 	// spa := spaHandler{staticPath: "client/build", indexPath: "index.html"}
 	// r.PathPrefix("/").Handler(spa)

@@ -68,3 +68,16 @@ func LaunchAWXWorkflowJobTemplate(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, res)
 }
+
+func GetGrantClusterID(c echo.Context) error {
+	grantclusterWorkflowID, ok := os.LookupEnv("GRANT_CLUSTER_WORKFLOW_ID")
+	if !ok {
+		return echo.NewHTTPError(http.StatusNotFound, "grant cluster workflow id not set")
+	}
+	data := struct {
+		ID string `json:"id"`
+	}{
+		ID: grantclusterWorkflowID,
+	}
+	return c.JSON(http.StatusOK, data)
+}

@@ -47,6 +47,16 @@ spec:
               secretKeyRef:
                 name: awx-secret
                 key: apikey
+          - name: AWX_ENDPOINT
+            valueFrom:
+              secretKeyRef:
+                name: awx-secret
+                key: baseurl
+          - name: GRANT_CLUSTER_WORKFLOW_ID
+            valueFrom:
+              secretKeyRef:
+                name: awx-secret
+                key: grantclusterworkflowid
           - name: SENDGRID_API_KEY
             valueFrom:
               secretKeyRef:
