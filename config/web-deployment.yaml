@@ -21,7 +21,7 @@ spec:
         run:  admin
     spec:
       containers:
-      - image:  moficodes/ibmcloud-kubernetes-admin:v0.2.24
+      - image:  moficodes/kubeadmin:v0.2.33
         imagePullPolicy: Always
         name:  kubeadmin
         env:
@@ -88,6 +88,8 @@ spec:
               secretKeyRef:
                 name: ibmcloud-secret
                 key: jwt_secret
+          - name: GITHUB_ISSUE_REPO
+            value: "https://github.ibm.com/jja/cloud-workshop-requests"
         resources:
           limits:
             cpu: 1000m

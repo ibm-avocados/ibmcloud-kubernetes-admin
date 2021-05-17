@@ -46,7 +46,7 @@ func processURL(url string) (string, string, string, error) {
 	}
 	parts := strings.Split(url, "/")
 	if len(parts) != 3 {
-		return "", "", "", fmt.Errorf("malformed url")
+		return "", "", "", fmt.Errorf("malformed url: " + url)
 	}
 	return parts[0], parts[1], parts[2], nil
 }

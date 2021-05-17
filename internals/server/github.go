@@ -16,7 +16,7 @@ func GithubCommentHandler(c echo.Context) error {
 		return err
 	}
 
-	err := github.CreateComment(*comment, "templates/message.gotmpl")
+	err := github.CreateComment(*comment, "../../templates/message.gotmpl")
 
 	if err != nil {
 		return err
