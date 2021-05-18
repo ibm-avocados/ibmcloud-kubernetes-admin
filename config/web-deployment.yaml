@@ -21,7 +21,7 @@ spec:
         run:  admin
     spec:
       containers:
-      - image:  moficodes/kubeadmin:v0.2.33
+      - image:  moficodes/kubeadmin:v0.3.0
         imagePullPolicy: Always
         name:  kubeadmin
         env:
