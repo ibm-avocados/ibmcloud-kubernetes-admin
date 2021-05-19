@@ -1,4 +1,4 @@
-package server
+package kubeadmin
 
 import (
 	"encoding/json"

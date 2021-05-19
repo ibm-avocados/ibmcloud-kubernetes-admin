@@ -1,21 +1,6 @@
-package ibmcloud
+package infra
 
 import "time"
-
-type Session struct {
-	Token *Token
-}
-
-// Token is used in every request that need authentication
-type Token struct {
-	AccessToken  string `json:"access_token"`
-	RefreshToken string `json:"refresh_token"`
-	ImsUserID    int    `json:"ims_user_id"`
-	TokenType    string `json:"token_type"`
-	ExpiresIn    int    `json:"expires_in"`
-	Expiration   int    `json:"expiration"`
-	Scope        string `json:"scope"`
-}
 
 type IdentityEndpoints struct {
 	Issuer                            string   `json:"issuer"`
@@ -31,6 +16,12 @@ type IdentityEndpoints struct {
 	IDTokenSigningAlgValuesSupported  []string `json:"id_token_signing_alg_values_supported"`
 	ScopesSupported                   []string `json:"scopes_supported"`
 	ClaimsSupported                   []string `json:"claims_supported"`
+}
+
+type AuthToken struct {
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+	Expiration   int64  `json:"expiration"`
 }
 
 //ACCOUNT RELATED TYPES

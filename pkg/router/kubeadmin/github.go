@@ -1,4 +1,4 @@
-package server
+package kubeadmin
 
 import (
 	"net/http"
@@ -21,5 +21,5 @@ func GithubCommentHandler(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	return c.JSON(http.StatusOK, statusOkMessage)
+	return c.String(http.StatusOK, "OK")
 }

@@ -1,4 +1,4 @@
-package server
+package kubeadmin
 
 type AccountEmailBody struct {
 	AccountID string   `json:"accountID"`
@@ -14,7 +14,7 @@ type AccountLogin struct {
 }
 
 type Bill struct {
-	Bill string `json:"bill"`
+	Bill interface{} `json:"bill"`
 }
 
 type OauthSettings struct {

@@ -1,7 +1,5 @@
 package ibmcloud
 
-// TODO: return errors
-
 import (
 	"encoding/json"
 	"errors"
@@ -13,6 +11,10 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/moficodes/ibmcloud-kubernetes-admin/pkg/infra"
+
+	"github.com/moficodes/ibmcloud-kubernetes-admin/pkg/restclient"
 )
 
 // protocol
@@ -83,7 +85,7 @@ func timeTaken(t time.Time, name string) {
 }
 
 func getError(resp *http.Response) error {
-	var errorTemplate ErrorMessage
+	var errorTemplate infra.ErrorMessage
 	if err := json.NewDecoder(resp.Body).Decode(&errorTemplate); err != nil {
 		return err
 	}
@@ -96,14 +98,26 @@ func getError(resp *http.Response) error {
 	return errors.New("unknown")
 }
 
-func getIdentityEndpoints() (*IdentityEndpoints, error) {
-	result := &IdentityEndpoints{}
-	err := fetch(identityEndpoint, nil, nil, result)
+func getIdentityEndpoints() (*infra.IdentityEndpoints, error) {
+	result := &infra.IdentityEndpoints{}
+	err := restclient.Fetch(identityEndpoint, nil, nil, result)
 	if err != nil {
 		return nil, err
 	}
 
 	return result, nil
+}
+
+func bindAccountToToken(refreshToken, accountID string) (*Session, error) {
+	err := cacheIdentityEndpoints()
+	if err != nil {
+		return nil, err
+	}
+	token, err := upgradeToken(endpoints.TokenEndpoint, refreshToken, accountID)
+	if err != nil {
+		return nil, err
+	}
+	return &Session{Token: token}, nil
 }
 
 func getToken(endpoint string, otp string) (*Token, error) {
@@ -116,7 +130,7 @@ func getToken(endpoint string, otp string) (*Token, error) {
 	form.Add("passcode", otp)
 
 	result := Token{}
-	err := postForm(endpoint, header, nil, form, &result)
+	err := restclient.PostForm(endpoint, header, nil, form, &result)
 
 	if err != nil {
 		log.Println("error in post form")
@@ -126,7 +140,7 @@ func getToken(endpoint string, otp string) (*Token, error) {
 	return &result, nil
 }
 
-func checkToken(token, apikey string) (*ApiKeyDetails, error) {
+func checkToken(token, apikey string) (*infra.ApiKeyDetails, error) {
 	header := map[string]string{
 		"Authorization": "Bearer " + token,
 		"IAM-Apikey":    apikey,
@@ -134,8 +148,8 @@ func checkToken(token, apikey string) (*ApiKeyDetails, error) {
 
 	endpoint := apikeyEndpoint + "/details"
 
-	var res ApiKeyDetails
-	err := fetch(endpoint, header, nil, &res)
+	var res infra.ApiKeyDetails
+	err := restclient.Fetch(endpoint, header, nil, &res)
 
 	if err != nil {
 		return nil, err
@@ -154,7 +168,7 @@ func getTokenFromIAM(endpoint string, apikey string) (*Token, error) {
 	form.Add("apikey", apikey)
 
 	result := &Token{}
-	err := postForm(endpoint, header, nil, form, result)
+	err := restclient.PostForm(endpoint, header, nil, form, result)
 	if err != nil {
 		return nil, err
 	}
@@ -175,7 +189,7 @@ func upgradeToken(endpoint string, refreshToken string, accountID string) (*Toke
 	}
 
 	result := &Token{}
-	err := postForm(endpoint, header, nil, form, result)
+	err := restclient.PostForm(endpoint, header, nil, form, result)
 	if err != nil {
 		return nil, err
 	}
@@ -183,30 +197,30 @@ func upgradeToken(endpoint string, refreshToken string, accountID string) (*Toke
 	return result, nil
 }
 
-func getUserInfo(endpoint string, token string) (*UserInfo, error) {
+func getUserInfo(endpoint string, token string) (*infra.UserInfo, error) {
 	if endpoint == "" {
 		return nil, errors.New("endpoint cannot be empty")
 	}
 	header := map[string]string{
 		"Authorization": "Bearer " + token,
 	}
-	var result UserInfo
-	err := fetch(endpoint, header, nil, &result)
+	var result infra.UserInfo
+	err := restclient.Fetch(endpoint, header, nil, &result)
 	if err != nil {
 		return nil, err
 	}
 	return &result, nil
 }
 
-func getUserPreference(userID, token string) (*User, error) {
+func getUserPreference(userID, token string) (*infra.User, error) {
 	endpoint := userPreferenceEndpoint + userID
 
 	header := map[string]string{
 		"Authorization": "Bearer " + token,
 	}
 
-	var result User
-	err := fetch(endpoint, header, nil, &result)
+	var result infra.User
+	err := restclient.Fetch(endpoint, header, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -214,7 +228,7 @@ func getUserPreference(userID, token string) (*User, error) {
 	return &result, nil
 }
 
-func getAccounts(endpoint *string, token string) (*Accounts, error) {
+func getAccounts(endpoint *string, token string) (*infra.Accounts, error) {
 	if endpoint == nil {
 		endpointString := accountsEndpoint
 		endpoint = &endpointString
@@ -226,8 +240,8 @@ func getAccounts(endpoint *string, token string) (*Accounts, error) {
 	header := map[string]string{
 		"Authorization": "Bearer " + token,
 	}
-	var result Accounts
-	err := fetch(*endpoint, header, nil, &result)
+	var result infra.Accounts
+	err := restclient.Fetch(*endpoint, header, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -235,23 +249,23 @@ func getAccounts(endpoint *string, token string) (*Accounts, error) {
 	return &result, nil
 }
 
-func getZones(showFlavors, location string) ([]Zone, error) {
-	var result []Zone
+func getZones(showFlavors, location string) ([]infra.Zone, error) {
+	var result []infra.Zone
 	query := map[string]string{
 		"showFlavors": showFlavors,
 	}
 	if len(location) > 0 {
 		query["location"] = location
 	}
-	err := fetch(containersEndpoint+"/zones", nil, query, &result)
+	err := restclient.Fetch(containersEndpoint+"/zones", nil, query, &result)
 	if err != nil {
 		return nil, err
 	}
 	return result, nil
 }
 
-func getAccessGroups(token, accountID string) (*AccessGroups, error) {
-	var result AccessGroups
+func getAccessGroups(token, accountID string) (*infra.AccessGroups, error) {
+	var result infra.AccessGroups
 	header := map[string]string{
 		"Authorization": "Bearer " + token,
 	}
@@ -260,7 +274,7 @@ func getAccessGroups(token, accountID string) (*AccessGroups, error) {
 		"account_id": accountID,
 	}
 
-	err := fetch(iamEndpoint, header, query, &result)
+	err := restclient.Fetch(iamEndpoint, header, query, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -269,14 +283,14 @@ func getAccessGroups(token, accountID string) (*AccessGroups, error) {
 }
 
 // Add user to account
-func inviteUserToAccount(token, accountID, email string) (*UserInviteList, error) {
-	var result UserInviteList
+func inviteUserToAccount(token, accountID, email string) (*infra.UserInviteList, error) {
+	var result infra.UserInviteList
 	header := map[string]string{
 		"Authorization": "Bearer " + token,
 	}
 
-	usersToInvite := []UserInvite{UserInvite{Email: email, AccountRole: "Member"}}
-	userInviteList := UserInviteList{Users: usersToInvite}
+	usersToInvite := []infra.UserInvite{infra.UserInvite{Email: email, AccountRole: "Member"}}
+	userInviteList := infra.UserInviteList{Users: usersToInvite}
 
 	body, err := json.Marshal(userInviteList)
 	if err != nil {
@@ -285,7 +299,7 @@ func inviteUserToAccount(token, accountID, email string) (*UserInviteList, error
 
 	inviteUserEndpoint := userManagementEndpoint + "/" + accountID + "/users/"
 
-	err = postBody(inviteUserEndpoint, header, nil, body, &result)
+	err = restclient.PostBody(inviteUserEndpoint, header, nil, body, &result)
 	if err != nil {
 		fmt.Println(err)
 		return nil, err
@@ -295,16 +309,16 @@ func inviteUserToAccount(token, accountID, email string) (*UserInviteList, error
 }
 
 // Add user to access group
-func addMemberToAccessGroup(token, accessGroupID, iamID, memberType string) (*MemberList, error) {
-	var result MemberList
+func addMemberToAccessGroup(token, accessGroupID, iamID, memberType string) (*infra.MemberList, error) {
+	var result infra.MemberList
 	header := map[string]string{
 		"Authorization": "Bearer " + token,
 		"Content-Type":  "application/json",
 		"Accepts":       "application/json",
 	}
 
-	membersToAdd := []Member{Member{IamID: iamID, Type: memberType}}
-	memberAddList := MemberList{membersToAdd}
+	membersToAdd := []infra.Member{infra.Member{IamID: iamID, Type: memberType}}
+	memberAddList := infra.MemberList{membersToAdd}
 
 	body, err := json.Marshal(memberAddList)
 	if err != nil {
@@ -313,7 +327,7 @@ func addMemberToAccessGroup(token, accessGroupID, iamID, memberType string) (*Me
 
 	addMemberEndpoint := iamEndpoint + "/" + accessGroupID + "/members"
 
-	err = put(addMemberEndpoint, header, nil, body, &result)
+	err = restclient.Put(addMemberEndpoint, header, nil, body, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -322,42 +336,42 @@ func addMemberToAccessGroup(token, accessGroupID, iamID, memberType string) (*Me
 }
 
 // CreatePolicy
-func createPolicy(token, accountID, iamID, serviceName, serviceInstance, role string) (*PolicyResponse, error) {
-	var result PolicyResponse
+func createPolicy(token, accountID, iamID, serviceName, serviceInstance, role string) (*infra.PolicyResponse, error) {
+	var result infra.PolicyResponse
 	header := map[string]string{
 		"Authorization": "Bearer " + token,
 		"Content-Type":  "application/json",
 		"Accepts":       "application/json",
 	}
 
-	policy := Policy{
+	policy := infra.Policy{
 		Type:        "access",
 		Description: "Access to instance",
-		Subjects: []AttributeList{
+		Subjects: []infra.AttributeList{
 			{
-				[]Attribute{
-					Attribute{
+				[]infra.Attribute{
+					infra.Attribute{
 						Name:  "iam_id",
 						Value: iamID,
 					},
 				},
 			},
 		},
-		Roles: []Roles{
-			Roles{role},
+		Roles: []infra.Roles{
+			infra.Roles{role},
 		},
-		Resources: []AttributeList{
+		Resources: []infra.AttributeList{
 			{
-				[]Attribute{
-					Attribute{
+				[]infra.Attribute{
+					infra.Attribute{
 						Name:  "accountId",
 						Value: accountID,
 					},
-					Attribute{
+					infra.Attribute{
 						Name:  "serviceName",
 						Value: serviceName,
 					},
-					Attribute{
+					infra.Attribute{
 						Name:  "serviceInstance",
 						Value: serviceInstance,
 					},
@@ -371,7 +385,7 @@ func createPolicy(token, accountID, iamID, serviceName, serviceInstance, role st
 		return nil, err
 	}
 
-	err = postBody(policyEndpoint, header, nil, body, &result)
+	err = restclient.PostBody(policyEndpoint, header, nil, body, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -386,7 +400,7 @@ func isMemberOfAccessGroup(token, accessGroupID, iamID string) error {
 	}
 
 	checkMembershipEndpoint := iamEndpoint + "/" + accessGroupID + "/members/" + iamID
-	err := head(checkMembershipEndpoint, header, nil, nil)
+	err := restclient.Head(checkMembershipEndpoint, header, nil, nil)
 	if err != nil {
 		return err
 	}
@@ -394,8 +408,8 @@ func isMemberOfAccessGroup(token, accessGroupID, iamID string) error {
 	return nil
 }
 
-func getAccountResources(token, accountID string) (*AccountResources, error) {
-	var result AccountResources
+func getAccountResources(token, accountID string) (*infra.AccountResources, error) {
+	var result infra.AccountResources
 	header := map[string]string{
 		"Authorization": "Bearer " + token,
 	}
@@ -404,7 +418,7 @@ func getAccountResources(token, accountID string) (*AccountResources, error) {
 		"account_id": accountID,
 	}
 
-	err := fetch(resourceEndoint, header, query, &result)
+	err := restclient.Fetch(resourceEndoint, header, query, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -412,8 +426,8 @@ func getAccountResources(token, accountID string) (*AccountResources, error) {
 	return &result, nil
 }
 
-func getDatacenterVlan(token, refreshToken, datacenter string) ([]Vlan, error) {
-	var result []Vlan
+func getDatacenterVlan(token, refreshToken, datacenter string) ([]infra.Vlan, error) {
+	var result []infra.Vlan
 	header := map[string]string{
 		"Authorization":        "Bearer " + token,
 		"X-Auth-Refresh-Token": refreshToken,
@@ -421,7 +435,7 @@ func getDatacenterVlan(token, refreshToken, datacenter string) ([]Vlan, error) {
 
 	url := datacentersEndpoint + "/" + datacenter + "/vlans"
 
-	err := fetch(url, header, nil, &result)
+	err := restclient.Fetch(url, header, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -429,31 +443,31 @@ func getDatacenterVlan(token, refreshToken, datacenter string) ([]Vlan, error) {
 	return result, nil
 }
 
-func getVersions() (*ClusterVersion, error) {
-	var result ClusterVersion
-	err := fetch(versionEndpount, nil, nil, &result)
+func getVersions() (*infra.ClusterVersion, error) {
+	var result infra.ClusterVersion
+	err := restclient.Fetch(versionEndpount, nil, nil, &result)
 	if err != nil {
 		return nil, err
 	}
 	return &result, nil
 }
 
-func getLocations() ([]Location, error) {
-	var result []Location
-	err := fetch(locationEndpoint, nil, nil, &result)
+func getLocations() ([]infra.Location, error) {
+	var result []infra.Location
+	err := restclient.Fetch(locationEndpoint, nil, nil, &result)
 	if err != nil {
 		return nil, err
 	}
 	return result, nil
 }
 
-func getGeoLocations(geo string) ([]Location, error) {
+func getGeoLocations(geo string) ([]infra.Location, error) {
 	locations, err := getLocations()
 	if err != nil {
 		return nil, err
 	}
 
-	geoLocations := make([]Location, 0, 10)
+	geoLocations := make([]infra.Location, 0, 10)
 
 	for _, location := range locations {
 		if location.Kind == "dc" && location.Geography == geo {
@@ -463,15 +477,15 @@ func getGeoLocations(geo string) ([]Location, error) {
 	return geoLocations, nil
 }
 
-func getMachineTypes(datacenter, serverType, os string, cpuLimit, memoryLimit int) ([]MachineFlavor, error) {
-	var result []MachineFlavor
+func getMachineTypes(datacenter, serverType, os string, cpuLimit, memoryLimit int) ([]infra.MachineFlavor, error) {
+	var result []infra.MachineFlavor
 	machineTypeEndpoint := fmt.Sprintf("%s/%s/machine-types", datacentersEndpoint, datacenter)
-	err := fetch(machineTypeEndpoint, nil, nil, &result)
+	err := restclient.Fetch(machineTypeEndpoint, nil, nil, &result)
 	if err != nil {
 		return nil, err
 	}
 	if serverType != "" && os != "" {
-		filtered := make([]MachineFlavor, 0)
+		filtered := make([]infra.MachineFlavor, 0)
 		toLower := strings.ToLower
 		atoi := strconv.Atoi
 		for _, machine := range result {
@@ -489,22 +503,22 @@ func getMachineTypes(datacenter, serverType, os string, cpuLimit, memoryLimit in
 	return result, nil
 }
 
-func getCluster(token, clusterID, resourceGroup string) (*Cluster, error) {
-	var result Cluster
+func getCluster(token, clusterID, resourceGroup string) (*infra.Cluster, error) {
+	var result infra.Cluster
 	header := map[string]string{
 		"Authorization":         "Bearer " + token,
 		"X-Auth-Resource-Group": resourceGroup,
 	}
-	err := fetch(clusterEndpoint+"/"+clusterID, header, nil, &result)
+	err := restclient.Fetch(clusterEndpoint+"/"+clusterID, header, nil, &result)
 	if err != nil {
 		return nil, err
 	}
 	return &result, err
 }
 
-func getClusters(token, location string) ([]*Cluster, error) {
+func getClusters(token, location string) ([]*infra.Cluster, error) {
 	defer timeTaken(time.Now(), "GetCluster :")
-	var result []*Cluster
+	var result []*infra.Cluster
 	header := map[string]string{
 		"Authorization": "Bearer " + token,
 	}
@@ -514,7 +528,7 @@ func getClusters(token, location string) ([]*Cluster, error) {
 		query["location"] = location
 	}
 
-	err := fetch(clusterEndpoint, header, query, &result)
+	err := restclient.Fetch(clusterEndpoint, header, query, &result)
 
 	if err != nil {
 		return nil, err
@@ -582,7 +596,7 @@ func getBillingData(token, accountID, clusterID, resourceInstanceID string) (str
 	return s, nil
 }
 
-func calcuateCostFromResourceUsage(usage *ResourceUsage) float64 {
+func calcuateCostFromResourceUsage(usage *infra.ResourceUsage) float64 {
 	total := 0.0
 	for _, resource := range usage.Resources {
 		for _, use := range resource.Usage {
@@ -592,8 +606,13 @@ func calcuateCostFromResourceUsage(usage *ResourceUsage) float64 {
 	return total
 }
 
-func createCluster(token string, request CreateClusterRequest) (*CreateClusterResponse, error) {
-	var result CreateClusterResponse
+func createCluster(token string, b []byte) (*infra.CreateClusterResponse, error) {
+	var request infra.CreateClusterRequest
+	if err := json.Unmarshal(b, &request); err != nil {
+		return nil, err
+	}
+
+	var result infra.CreateClusterResponse
 	header := map[string]string{
 		"Authorization":         "Bearer " + token,
 		"X-Auth-Resource-Group": request.ResourceGroup,
@@ -605,7 +624,7 @@ func createCluster(token string, request CreateClusterRequest) (*CreateClusterRe
 		return nil, err
 	}
 
-	err = postBody(clusterEndpoint, header, nil, body, &result)
+	err = restclient.PostBody(clusterEndpoint, header, nil, body, &result)
 
 	if err != nil {
 		log.Println("error creating cluster : ", request.ClusterRequest.Name, err)
@@ -626,7 +645,7 @@ func deleteCluster(token, id, resourceGroup, deleteResources string) error {
 	}
 
 	deleteEndpoint := clusterEndpoint + "/" + id
-	err := delete(deleteEndpoint, header, query, nil)
+	err := restclient.Delete(deleteEndpoint, header, query, nil)
 	if err != nil {
 		return err
 	}
@@ -634,15 +653,15 @@ func deleteCluster(token, id, resourceGroup, deleteResources string) error {
 	return nil
 }
 
-func getClusterWorkers(token, id string) ([]Worker, error) {
-	var result []Worker
+func getClusterWorkers(token, id string) ([]infra.Worker, error) {
+	var result []infra.Worker
 	header := map[string]string{
 		"Authorization": "Bearer " + token,
 	}
 
 	workerEndpoint := clusterEndpoint + "/" + id + "/workers"
 
-	err := fetch(workerEndpoint, header, nil, &result)
+	err := restclient.Fetch(workerEndpoint, header, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -650,8 +669,8 @@ func getClusterWorkers(token, id string) ([]Worker, error) {
 	return result, nil
 }
 
-func getResourceUsagePerNode(token, accountID, billingMonth, resourceInstanceID, workerID string) (*ResourceUsage, error) {
-	var result ResourceUsage
+func getResourceUsagePerNode(token, accountID, billingMonth, resourceInstanceID, workerID string) (*infra.ResourceUsage, error) {
+	var result infra.ResourceUsage
 	header := map[string]string{
 		"Authorization": "Bearer " + token,
 	}
@@ -665,31 +684,31 @@ func getResourceUsagePerNode(token, accountID, billingMonth, resourceInstanceID,
 
 	endpoint := billingEndpoint + "/" + accountID + "/resource_instances/usage/" + billingMonth
 
-	err := fetch(endpoint, header, query, &result)
+	err := restclient.Fetch(endpoint, header, query, &result)
 
 	if err != nil {
-		return nil, fmt.Errorf("error fetching resources usage %v", err)
+		return nil, fmt.Errorf("error restclient.Fetching resources usage %v", err)
 	}
 
 	return &result, err
 }
 
-func getTags(token string, crn string) (*Tags, error) {
-	var result Tags
+func getTags(token string, crn string) (*infra.Tags, error) {
+	var result infra.Tags
 	header := map[string]string{
 		"Authorization": "Bearer " + token,
 	}
 	query := map[string]string{
 		"attached_to": crn,
 	}
-	err := fetch(tagEndpoint, header, query, &result)
+	err := restclient.Fetch(tagEndpoint, header, query, &result)
 	if err != nil {
 		return nil, err
 	}
 	return &result, nil
 }
 
-func setClusterTags(token, tag, clusterID, resourceGroup string) (*TagResult, error) {
+func setClusterTags(token, tag, clusterID, resourceGroup string) (*infra.TagResult, error) {
 	cluster, err := getCluster(token, clusterID, resourceGroup)
 	if err != nil {
 		log.Println("get cluster : ", err)
@@ -697,10 +716,14 @@ func setClusterTags(token, tag, clusterID, resourceGroup string) (*TagResult, er
 	}
 	crn := cluster.Crn
 
-	resources := make([]Resource, 1)
-	resources[0] = Resource{ResourceID: crn}
-	updateTag := UpdateTag{TagName: tag, Resources: resources}
-	tagResult, err := setTags(token, updateTag)
+	resources := make([]infra.Resource, 1)
+	resources[0] = infra.Resource{ResourceID: crn}
+	updateTag := infra.UpdateTag{TagName: tag, Resources: resources}
+	b, err := json.Marshal(updateTag)
+	if err != nil {
+		return nil, err
+	}
+	tagResult, err := setTags(token, b)
 	if err != nil {
 		log.Println("set tag : ", err)
 		return nil, err
@@ -708,19 +731,19 @@ func setClusterTags(token, tag, clusterID, resourceGroup string) (*TagResult, er
 	return tagResult, nil
 }
 
-func setTags(token string, updateTag UpdateTag) (*TagResult, error) {
+func setTags(token string, updateTag []byte) (*infra.TagResult, error) {
 	setTagsEndpoint := tagEndpoint + "/" + "attach"
 	return updateTags(setTagsEndpoint, token, updateTag)
 }
 
-func deleteTags(token string, updateTag UpdateTag) (*TagResult, error) {
+func deleteTags(token string, updateTag []byte) (*infra.TagResult, error) {
 	setTagsEndpoint := tagEndpoint + "/" + "detach"
 
 	return updateTags(setTagsEndpoint, token, updateTag)
 }
 
-func updateTags(endpoint, token string, updateTag UpdateTag) (*TagResult, error) {
-	var result TagResult
+func updateTags(endpoint, token string, updateTag []byte) (*infra.TagResult, error) {
+	var result infra.TagResult
 	header := map[string]string{
 		"Authorization": "Bearer " + token,
 		"Content-Type":  "application/json",
@@ -731,13 +754,7 @@ func updateTags(endpoint, token string, updateTag UpdateTag) (*TagResult, error)
 		"providers": "ghost",
 	}
 
-	body, err := json.Marshal(updateTag)
-	if err != nil {
-		return nil, err
-	}
-
-	err = postBody(endpoint, header, query, body, &result)
-	if err != nil {
+	if err := restclient.PostBody(endpoint, header, query, updateTag, &result); err != nil {
 		return nil, err
 	}
 

@@ -1,4 +1,4 @@
-package ibmcloud
+package restclient
 
 import (
 	"bytes"
@@ -56,8 +56,8 @@ func handleRequest(request *http.Request, header map[string]string, query map[st
 	return nil
 }
 
-// fileUpload takes in data and handles making the put request
-func fileUpload(endpoint string, header, query map[string]string, body io.Reader, res interface{}) error {
+// FileUpload takes in data and handles making the put request
+func FileUpload(endpoint string, header, query map[string]string, body io.Reader, res interface{}) error {
 	request, err := http.NewRequest(http.MethodPut, endpoint, body)
 	if err != nil {
 		return err
@@ -66,8 +66,8 @@ func fileUpload(endpoint string, header, query map[string]string, body io.Reader
 	return handleRequest(request, header, query, res)
 }
 
-// postForm makes a post request with form data
-func postForm(endpoint string, header, query map[string]string, form url.Values, res interface{}) error {
+// PostForm makes a post request with form data
+func PostForm(endpoint string, header, query map[string]string, form url.Values, res interface{}) error {
 	request, err := http.NewRequest(http.MethodPost, endpoint, strings.NewReader(form.Encode()))
 	if err != nil {
 		return err
@@ -76,8 +76,8 @@ func postForm(endpoint string, header, query map[string]string, form url.Values,
 	return handleRequest(request, header, query, res)
 }
 
-// postBody makes a post request with json body
-func postBody(endpoint string, header, query map[string]string, jsonValue []byte, res interface{}) error {
+// PostBody makes a post request with json body
+func PostBody(endpoint string, header, query map[string]string, jsonValue []byte, res interface{}) error {
 	request, err := http.NewRequest(http.MethodPost, endpoint, bytes.NewBuffer(jsonValue))
 	if err != nil {
 		return err
@@ -86,7 +86,8 @@ func postBody(endpoint string, header, query map[string]string, jsonValue []byte
 	return handleRequest(request, header, query, res)
 }
 
-func put(endpoint string, header, query map[string]string, body []byte, res interface{}) error {
+// Put makes a put request
+func Put(endpoint string, header, query map[string]string, body []byte, res interface{}) error {
 	request, err := http.NewRequest(http.MethodPut, endpoint, bytes.NewBuffer(body))
 	if err != nil {
 		return err
@@ -94,8 +95,8 @@ func put(endpoint string, header, query map[string]string, body []byte, res inte
 	return handleRequest(request, header, query, res)
 }
 
-// patch makes a patch request to url
-func patch(endpoint string, header, query map[string]string, body []byte, res interface{}) error {
+// Patch makes a patch request to url
+func Patch(endpoint string, header, query map[string]string, body []byte, res interface{}) error {
 	request, err := http.NewRequest(http.MethodPatch, endpoint, bytes.NewBuffer(body))
 	if err != nil {
 		return err
@@ -104,8 +105,8 @@ func patch(endpoint string, header, query map[string]string, body []byte, res in
 	return handleRequest(request, header, query, res)
 }
 
-// fetch makes a get request to endpoint
-func fetch(endpoint string, header, query map[string]string, res interface{}) error {
+// Fetch makes a get request to endpoint
+func Fetch(endpoint string, header, query map[string]string, res interface{}) error {
 	request, err := http.NewRequest(http.MethodGet, endpoint, nil)
 
 	if err != nil {
@@ -115,7 +116,7 @@ func fetch(endpoint string, header, query map[string]string, res interface{}) er
 	return handleRequest(request, header, query, res)
 }
 
-func delete(endpoint string, header, query map[string]string, res interface{}) error {
+func Delete(endpoint string, header, query map[string]string, res interface{}) error {
 	request, err := http.NewRequest(http.MethodDelete, endpoint, nil)
 
 	if err != nil {
@@ -125,7 +126,7 @@ func delete(endpoint string, header, query map[string]string, res interface{}) e
 	return handleRequest(request, header, query, res)
 }
 
-func head(endpoint string, header, query map[string]string, res interface{}) error {
+func Head(endpoint string, header, query map[string]string, res interface{}) error {
 	request, err := http.NewRequest(http.MethodHead, endpoint, nil)
 
 	if err != nil {
