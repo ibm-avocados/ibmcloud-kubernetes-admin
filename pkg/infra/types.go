@@ -631,23 +631,6 @@ type Groups struct {
 	Href             string    `json:"href"`
 }
 
-type GithubIssueComment struct {
-	IssueNumber    string                    `json:"issueNumber"`
-	EventName      string                    `json:"eventName"`
-	Password       string                    `json:"password"`
-	AccountID      string                    `json:"accountID"`
-	GithubUser     string                    `json:"githubUser"`
-	GithubToken    string                    `json:"githubToken"`
-	ClusterRequest GithubIssueClusterRequest `json:"clusterRequest"`
-}
-
-type GithubIssueClusterRequest struct {
-	Count      int    `json:"count"`
-	Type       string `json:"type"`
-	ErrorCount int    `json:"errorCount"`
-	Regions    string `json:"regions"`
-}
-
 type UserInviteList struct {
 	Users     []UserInvite `json:"users,omitempty"`
 	Resources []UserInvite `json:"resources,omitempty"`

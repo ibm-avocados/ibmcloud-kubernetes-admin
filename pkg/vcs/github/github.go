@@ -7,12 +7,13 @@ import (
 	"os"
 	"strings"
 
-	"github.com/moficodes/ibmcloud-kubernetes-admin/pkg/ibmcloud"
+	"github.com/moficodes/ibmcloud-kubernetes-admin/pkg/vcs"
+
 	"github.com/moficodes/ibmcloud-kubernetes-admin/pkg/notification"
 )
 
-func CreateComment(comment ibmcloud.GithubIssueComment, templateFile string) error {
-	c, err := getCommentString(comment, templateFile)
+func CreateComment(comment vcs.GithubIssueComment) error {
+	c, err := getCommentString(comment)
 	if err != nil {
 		log.Println("could not get comment string")
 		return err

@@ -10,18 +10,18 @@ import (
 
 	"github.com/labstack/echo/v4"
 
-	"github.com/moficodes/ibmcloud-kubernetes-admin/pkg/ibmcloud"
+	"github.com/moficodes/ibmcloud-kubernetes-admin/pkg/vcs"
 )
 
 func TestGithubCommentHandler(t *testing.T) {
-	issue := ibmcloud.GithubIssueComment{
+	issue := vcs.GithubIssueComment{
 		IssueNumber: os.Getenv("TEST_GITHUB_REPO"),
 		EventName:   "handlertest",
 		Password:    "password",
 		AccountID:   "1234",
 		GithubUser:  "Mofizur-Rahman",
 		GithubToken: os.Getenv("TEST_GITHUB_TOKEN"),
-		ClusterRequest: ibmcloud.GithubIssueClusterRequest{
+		ClusterRequest: vcs.GithubIssueClusterRequest{
 			Count:      10,
 			Type:       "kubernetes",
 			ErrorCount: 0,

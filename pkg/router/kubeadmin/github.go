@@ -3,20 +3,21 @@ package kubeadmin
 import (
 	"net/http"
 
+	"github.com/moficodes/ibmcloud-kubernetes-admin/pkg/vcs"
+
 	"github.com/labstack/echo/v4"
-	"github.com/moficodes/ibmcloud-kubernetes-admin/internals/github"
-	"github.com/moficodes/ibmcloud-kubernetes-admin/pkg/ibmcloud"
+	"github.com/moficodes/ibmcloud-kubernetes-admin/pkg/vcs/github"
 )
 
 func GithubCommentHandler(c echo.Context) error {
-	comment := new(ibmcloud.GithubIssueComment)
+	comment := new(vcs.GithubIssueComment)
 	c.Request().Header.Add("Content-Type", "application/json")
 
 	if err := c.Bind(comment); err != nil {
 		return err
 	}
 
-	err := github.CreateComment(*comment, "../../templates/message.gotmpl")
+	err := github.CreateComment(*comment)
 
 	if err != nil {
 		return err

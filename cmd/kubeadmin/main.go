@@ -5,6 +5,8 @@ import (
 
 	"github.com/moficodes/ibmcloud-kubernetes-admin/pkg/infra/ibmcloud"
 	"github.com/moficodes/ibmcloud-kubernetes-admin/pkg/router/kubeadmin"
+
+	_ "github.com/joho/godotenv/autoload"
 )
 
 func main() {
