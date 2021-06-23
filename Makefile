@@ -2,7 +2,7 @@ build-frontend:
 	cd client; yarn; yarn run build; cd ..;
 
 build-backend:
-	go build -o kubeadmin ./cmd/web/main.go
+	go build -o kubeadmin ./cmd/kubeadmin/main.go
 
 build-user-ui:
 	cd user-ui; yarn; yarn run build; cd ..;

@@ -11,4 +11,4 @@ spec:
   ports:
   - port: 80
     protocol: TCP
-    targetPort: 9000
+    targetPort: 9030
