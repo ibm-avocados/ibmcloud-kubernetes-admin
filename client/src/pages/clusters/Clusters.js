@@ -14,6 +14,7 @@ import {
   SkeletonText,
   TagSkeleton,
   StructuredListSkeleton,
+  Search,
 } from 'carbon-components-react';
 import {
   Delete16 as Delete,
@@ -52,7 +53,6 @@ const {
   TableExpandedRow,
   TableSelectAll,
   TableToolbar,
-  TableToolbarSearch,
   TableToolbarContent,
   TableBatchActions,
   TableBatchAction,
@@ -307,7 +307,7 @@ const Clusters = ({ query, accountID }) => {
             />
           </TableBatchActions>
           <TableToolbarContent>
-            <TableToolbarSearch
+            <Search
               tabIndex={getBatchActionProps().shouldShowBatchActions ? -1 : 0}
               onChange={onInputChange}
             />
