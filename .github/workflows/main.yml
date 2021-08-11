@@ -9,33 +9,31 @@ jobs:
   docker:
     runs-on: ubuntu-latest
     steps:
-      -
-        name: Checkout
+
+      - name: Checkout
         uses: actions/checkout@v2
-      -
-        name: Set up QEMU
+
+      - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
-      -
-        name: Set up Docker Buildx
+
+      - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
-      -
-        name: Login to DockerHub
+
+      - name: Login to DockerHub
         uses: docker/login-action@v1
         with:
           registry: quay.io
           username: ${{ secrets.QUAY_USERNAME }}
           password: ${{ secrets.QUAY_PASSWORD }}
 
-			-
-        name: Get latest tag
+      - name: Get latest tag
         uses: oprypin/find-latest-tag@v1
         with:
           repository: ibm-avocados/ibmcloud-kubernetes-admin  # The repository to scan.
           releases-only: true  # We know that all relevant tags have a GitHub release for them.
         id: tag  # The step ID to refer to later.
 
-      -
-        name: build-and-push-kubeadmin
+      - name: build-and-push-kubeadmin
         uses: docker/build-push-action@v2
         with:
           file: ./docker/Dockerfile.kubeadmin
