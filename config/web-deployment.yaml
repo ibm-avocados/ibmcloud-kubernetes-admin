@@ -21,7 +21,7 @@ spec:
         run:  admin
     spec:
       containers:
-      - image:  moficodes/kubeadmin:v0.3.0
+      - image:  quay.io/ibm-avocados/ibmcloud-kubernetes-admin:v0.3.0
         imagePullPolicy: Always
         name:  kubeadmin
         env:
@@ -65,9 +65,9 @@ spec:
           - name: ADMIN_FROM_EMAIL
             value: iksadmin@ibm.com
           - name: ADMIN_TO_EMAIL
-            value: "moficodes@ibm.com,awesome@ibm.com"
+            value: "awesome@ibm.com"
           - name: IBM_REDIRECT_URI
-            value: https://kubernetes.admin.ibmdeveloper.net/auth/callback
+            value: https://kubeadmin-tool.dc4.usva.ibm.com/auth/callback
           - name: IBM_LOGIN_USER
             valueFrom:
               secretKeyRef:
