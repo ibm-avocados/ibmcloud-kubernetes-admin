@@ -1,4 +1,4 @@
-module github.com/moficodes/ibmcloud-kubernetes-admin
+module github.com/ibm-avocados/ibmcloud-kubernetes-admin
 
 go 1.14
 

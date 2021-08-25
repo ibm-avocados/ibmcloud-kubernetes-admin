@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/ibm-avocados/ibmcloud-kubernetes-admin/pkg/awx"
 	"github.com/labstack/echo/v4"
-	"github.com/moficodes/ibmcloud-kubernetes-admin/pkg/awx"
 )
 
 func GetAWXWorkflowJobTemplates(c echo.Context) error {

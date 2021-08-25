@@ -13,9 +13,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/moficodes/ibmcloud-kubernetes-admin/pkg/infra"
+	"github.com/ibm-avocados/ibmcloud-kubernetes-admin/pkg/infra"
 
-	"github.com/moficodes/ibmcloud-kubernetes-admin/internals/token"
+	"github.com/ibm-avocados/ibmcloud-kubernetes-admin/internals/token"
 
 	"github.com/labstack/echo/v4"
 )

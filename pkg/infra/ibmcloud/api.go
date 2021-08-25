@@ -12,9 +12,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/moficodes/ibmcloud-kubernetes-admin/pkg/infra"
+	"github.com/ibm-avocados/ibmcloud-kubernetes-admin/pkg/infra"
 
-	"github.com/moficodes/ibmcloud-kubernetes-admin/pkg/restclient"
+	"github.com/ibm-avocados/ibmcloud-kubernetes-admin/pkg/restclient"
 )
 
 // protocol

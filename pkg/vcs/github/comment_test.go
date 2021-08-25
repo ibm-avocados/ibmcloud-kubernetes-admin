@@ -3,7 +3,7 @@ package github
 import (
 	"testing"
 
-	"github.com/moficodes/ibmcloud-kubernetes-admin/pkg/vcs"
+	"github.com/ibm-avocados/ibmcloud-kubernetes-admin/pkg/vcs"
 )
 
 func TestCommentString(t *testing.T) {

@@ -22,7 +22,7 @@ spec:
         run:  admin
     spec:
       containers:
-      - image:  moficodes/ibmcloud-kubernetes-admin:$TRAVIS_TAG
+      - image:  ibm-avocados/ibmcloud-kubernetes-admin:$TRAVIS_TAG
         imagePullPolicy: Always
         name:  destination
         env:

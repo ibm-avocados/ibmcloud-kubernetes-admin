@@ -1,9 +1,9 @@
 package kubeadmin
 
 import (
+	"github.com/ibm-avocados/ibmcloud-kubernetes-admin/pkg/infra"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/moficodes/ibmcloud-kubernetes-admin/pkg/infra"
 )
 
 type router struct {

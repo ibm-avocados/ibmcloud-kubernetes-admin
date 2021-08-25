@@ -3,10 +3,10 @@ package kubeadmin
 import (
 	"net/http"
 
-	"github.com/moficodes/ibmcloud-kubernetes-admin/pkg/vcs"
+	"github.com/ibm-avocados/ibmcloud-kubernetes-admin/pkg/vcs"
 
+	"github.com/ibm-avocados/ibmcloud-kubernetes-admin/pkg/vcs/github"
 	"github.com/labstack/echo/v4"
-	"github.com/moficodes/ibmcloud-kubernetes-admin/pkg/vcs/github"
 )
 
 func GithubCommentHandler(c echo.Context) error {

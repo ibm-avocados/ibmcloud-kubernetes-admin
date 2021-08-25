@@ -10,7 +10,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 
-	"github.com/moficodes/ibmcloud-kubernetes-admin/pkg/vcs"
+	"github.com/ibm-avocados/ibmcloud-kubernetes-admin/pkg/vcs"
 )
 
 func TestGithubCommentHandler(t *testing.T) {

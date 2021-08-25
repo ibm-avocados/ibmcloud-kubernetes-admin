@@ -25,10 +25,10 @@ run:
 	./kubeadmin
 
 docker: 
-	docker build -t moficodes/ibm-kubernetes-admin:$(tag) -f docker/Dockerfile.web .
+	docker build -t ibm-avocados/ibm-kubernetes-admin:$(tag) -f docker/Dockerfile.web .
 
 push:
-	docker push moficodes/ibm-kubernetes-admin:$(tag)
+	docker push ibm-avocados/ibm-kubernetes-admin:$(tag)
 
 run-local:
 	go run ./cmd/web/main.go; 

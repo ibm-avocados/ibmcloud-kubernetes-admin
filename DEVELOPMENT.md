@@ -9,7 +9,7 @@ This tool was made to manage large IBM Cloud accounts and the Kubernetes Cluster
 1. Set up your development environment
 -Open terminal and cd to a desired location and clone the Git repository 
 ```
-git clone https://github.com/moficodes/ibmcloud-kubernetes-admin.git
+git clone https://github.com/ibm-avocados/ibmcloud-kubernetes-admin.git
 ```
 
 -Install Homebrew with 

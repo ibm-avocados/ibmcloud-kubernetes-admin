@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/moficodes/ibmcloud-kubernetes-admin/pkg/infra"
+	"github.com/ibm-avocados/ibmcloud-kubernetes-admin/pkg/infra"
 
 	"github.com/labstack/echo/v4"
 )
