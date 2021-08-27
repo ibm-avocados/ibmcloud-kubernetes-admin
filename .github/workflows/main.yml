@@ -40,3 +40,20 @@ jobs:
           context: .
           push: true
           tags: quay.io/ibm-avocados/ibmcloud-kubernetes-admin:${{ steps.tag.outputs.tag }}
+
+      - name: Install IBM Cloud CLI
+        run: |
+          curl -fsSL https://clis.cloud.ibm.com/install/linux | sh
+          ibmcloud --version
+          ibmcloud config --check-version=false
+          ibmcloud plugin install -f kubernetes-service 
+
+      - name: Authenticate with IBM Cloud CLI
+        run: |
+          ibmcloud login --apikey "${{ secrets.IBM_CLOUD_API_KEY }}" -r "${{ secrets.IBM_CLOUD_REGION }}" -g default
+
+      - name: Deploy to IKS
+        run: |
+          ibmcloud ks cluster config --cluster ${{ secrets.IKS_CLUSTER }}
+          kubectl config set-context --current --namespace=kubeadmin
+          kubectl patch deployment admin -n kubeadmin --patch '{"spec": {"template": {"spec": {"containers": [{"name": "kubeadmin", "image": "quay.io/ibm-avocados/ibmcloud-kubernetes-admin:${{ steps.tag.outputs.tag }}" }]}}}}'
