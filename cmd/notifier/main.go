@@ -1,17 +1,16 @@
 package main
 
 import (
+	_ "github.com/joho/godotenv/autoload"
 	"github.com/ibm-avocados/ibmcloud-kubernetes-admin/internals/notifier"
 	"github.com/ibm-avocados/ibmcloud-kubernetes-admin/pkg/eventstream"
-	_ "github.com/joho/godotenv/autoload"
 
 	"encoding/json"
+	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
-
-	"github.com/confluentinc/confluent-kafka-go/kafka"
 )
 
 func main() {
