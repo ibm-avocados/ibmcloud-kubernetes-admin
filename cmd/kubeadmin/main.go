@@ -3,8 +3,8 @@ package main
 import (
 	"log"
 
-	"github.com/moficodes/ibmcloud-kubernetes-admin/pkg/infra/ibmcloud"
-	"github.com/moficodes/ibmcloud-kubernetes-admin/pkg/router/kubeadmin"
+	"github.com/ibm-avocados/ibmcloud-kubernetes-admin/pkg/infra/ibmcloud"
+	"github.com/ibm-avocados/ibmcloud-kubernetes-admin/pkg/router/kubeadmin"
 
 	_ "github.com/joho/godotenv/autoload"
 )

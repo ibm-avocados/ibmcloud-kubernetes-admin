@@ -7,9 +7,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/moficodes/ibmcloud-kubernetes-admin/pkg/vcs"
+	"github.com/ibm-avocados/ibmcloud-kubernetes-admin/pkg/vcs"
 
-	"github.com/moficodes/ibmcloud-kubernetes-admin/pkg/notification"
+	"github.com/ibm-avocados/ibmcloud-kubernetes-admin/pkg/notification"
 )
 
 func CreateComment(comment vcs.GithubIssueComment) error {
