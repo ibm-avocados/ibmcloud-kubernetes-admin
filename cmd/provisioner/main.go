@@ -1,11 +1,10 @@
 package main
 
 import (
-	"fmt"
-	"log"
-
 	"github.com/ibm-avocados/ibmcloud-kubernetes-admin/pkg/vault"
 	_ "github.com/joho/godotenv/autoload"
+	"fmt"
+	"log"
 )
 
 func main() {
