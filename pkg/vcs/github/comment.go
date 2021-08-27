@@ -8,7 +8,7 @@ import (
 	"runtime"
 	"text/template"
 
-	"github.com/moficodes/ibmcloud-kubernetes-admin/pkg/vcs"
+	"github.com/ibm-avocados/ibmcloud-kubernetes-admin/pkg/vcs"
 )
 
 func getCommentString(comment vcs.GithubIssueComment) (string, error) {

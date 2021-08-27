@@ -2,8 +2,8 @@ package main
 
 import (
 	_ "github.com/joho/godotenv/autoload"
-	"github.com/moficodes/ibmcloud-kubernetes-admin/internals/notifier"
-	"github.com/moficodes/ibmcloud-kubernetes-admin/pkg/eventstream"
+	"github.com/ibm-avocados/ibmcloud-kubernetes-admin/internals/notifier"
+	"github.com/ibm-avocados/ibmcloud-kubernetes-admin/pkg/eventstream"
 
 	"encoding/json"
 	"github.com/confluentinc/confluent-kafka-go/kafka"

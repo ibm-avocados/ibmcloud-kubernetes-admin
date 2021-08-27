@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	_ "github.com/joho/godotenv/autoload"
-	"github.com/moficodes/ibmcloud-kubernetes-admin/pkg/vault"
+	"github.com/ibm-avocados/ibmcloud-kubernetes-admin/pkg/vault"
 	"log"
 )
 

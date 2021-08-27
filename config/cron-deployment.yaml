@@ -21,7 +21,7 @@ spec:
         run:  cron
     spec:
       containers:
-      - image:  moficodes/ibmcloud-kubernetes-cron:v0.2.7
+      - image:  ibm-avocados/ibmcloud-kubernetes-cron:v0.2.7
         imagePullPolicy: Always
         name:  cron
         env:
@@ -50,7 +50,7 @@ spec:
           - name: ADMIN_FROM_EMAIL
             value: iksadmin@ibm.com
           - name: ADMIN_TO_EMAIL
-            value: moficodes@ibm.com,awesome@ibm.com
+            value: ibm-avocados@ibm.com,awesome@ibm.com
         resources:
           limits:
             cpu: 500m
