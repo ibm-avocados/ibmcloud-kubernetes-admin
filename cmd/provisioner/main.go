@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/ibm-avocados/ibmcloud-kubernetes-admin/pkg/vault"
-	_ "github.com/joho/godotenv/autoload"
 	"fmt"
+	_ "github.com/joho/godotenv/autoload"
+	"github.com/ibm-avocados/ibmcloud-kubernetes-admin/pkg/vault"
 	"log"
 )
 
