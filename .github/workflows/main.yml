@@ -50,7 +50,7 @@ jobs:
 
       - name: Authenticate with IBM Cloud CLI
         run: |
-          ibmcloud login --apikey "${{ secrets.IBM_CLOUD_API_KEY }}" -r "${{ secrets.IBM_CLOUD_REGION }}" -g default
+          ibmcloud login --apikey "${{ secrets.IBM_CLOUD_API_KEY }}" -r "${{ secrets.IBM_CLOUD_REGION }}" -g opentec
 
       - name: Deploy to IKS
         run: |
